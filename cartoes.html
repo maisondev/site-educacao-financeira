@@ -15,10 +15,10 @@
       background: linear-gradient(135deg, #4a154b 0%, #1264a3 100%);
       color: white;
       border-radius: 12px;
-      padding: var(--espacamento-xl);
+      padding: var(--espacamento-lg);
       position: relative;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      min-height: 180px;
+      min-height: 140px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -28,29 +28,32 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: var(--espacamento-md);
+      margin-bottom: var(--espacamento-sm);
+      padding-right: 60px;
     }
 
     .card-cartao-titulo {
       margin: 0;
-      font-size: 16px;
-      font-weight: 500;
-      opacity: 0.9;
+      font-size: 20px;
+      font-weight: bold;
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
 
     .card-cartao-bandeira {
-      font-size: 12px;
+      font-size: 11px;
       text-transform: uppercase;
       font-weight: 600;
-      letter-spacing: 1px;
-      opacity: 0.8;
+      letter-spacing: 0.5px;
+      opacity: 0.85;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     .card-cartao-numero {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
       letter-spacing: 2px;
-      margin: var(--espacamento-md) 0;
+      margin: var(--espacamento-sm) 0;
       font-family: 'Courier New', monospace;
     }
 
@@ -58,7 +61,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .card-cartao-info-item {
@@ -67,29 +70,30 @@
     }
 
     .card-cartao-label {
-      font-size: 11px;
-      opacity: 0.7;
+      font-size: 10px;
+      opacity: 0.75;
       text-transform: uppercase;
       margin-bottom: 2px;
+      letter-spacing: 0.5px;
     }
 
     .card-cartao-botoes {
       position: absolute;
-      top: var(--espacamento-md);
-      right: var(--espacamento-md);
+      top: var(--espacamento-lg);
+      right: var(--espacamento-lg);
       display: flex;
-      gap: 8px;
+      gap: 6px;
     }
 
     .btn-acao-cartao {
-      background-color: rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.25);
       border: none;
       color: white;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -97,7 +101,7 @@
     }
 
     .btn-acao-cartao:hover {
-      background-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(255, 255, 255, 0.4);
     }
 
     .lista-vazia {
@@ -219,6 +223,20 @@
       <button class="btn btn-primary" onclick="abrirModalCartao()">+ Adicionar Cartão</button>
     </div>
 
+    <div id="resumo-saldos" style="display: none; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-lg);">
+      <h3 style="margin: 0 0 var(--espacamento-sm) 0; color: #856404;">Resumo de Faturas Abertas</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--espacamento-md);">
+        <div>
+          <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: #666;">Total devido</p>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #856404;" id="total-saldos-abertos">R$ 0,00</p>
+        </div>
+        <div>
+          <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: #666;">Cartões com saldo</p>
+          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #856404;" id="quantidade-cartoes-saldo">0</p>
+        </div>
+      </div>
+    </div>
+
     <div id="lista-cartoes" class="cartoes-container"></div>
 
     <section class="proximos-passos">
@@ -281,9 +299,52 @@
         <input type="text" id="input-cartao-vencimento" placeholder="ex: 20" maxlength="2" inputmode="numeric">
       </div>
 
+      <div class="form-group">
+        <label for="input-cartao-saldo-aberto">Saldo da Fatura Aberta (R$) - Opcional</label>
+        <input type="text" id="input-cartao-saldo-aberto" placeholder="ex: 1.500,00" class="campo-moeda">
+        <small style="color: #666; margin-top: 4px; display: block;">Quanto já foi gasto neste mês antes do fechamento</small>
+      </div>
+
+      <div style="text-align: center; margin: var(--espacamento-lg) 0;">
+        <button type="button" class="btn btn-secondary" id="btn-gerenciar-datas" onclick="abrirModalDatasMes()" hidden>Gerenciar datas por mês</button>
+      </div>
+
       <div class="botoes-modal">
         <button class="btn btn-primary" onclick="salvarCartao()">Salvar</button>
         <button class="btn btn-fechar" onclick="fecharModalCartao()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para gerenciar datas por mês -->
+  <div id="modal-datas-mes" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Datas por Mês - <span id="nome-cartao-datas"></span></h2>
+        <button class="btn-fechar" onclick="fecharModalDatasMes()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="select-mes-data">Mês/Ano</label>
+          <input type="month" id="select-mes-data">
+        </div>
+        <div class="form-group">
+          <label for="input-fechamento-mes">Dia de Fechamento</label>
+          <input type="number" id="input-fechamento-mes" min="1" max="31" placeholder="27">
+        </div>
+        <div class="form-group">
+          <label for="input-vencimento-mes">Dia de Vencimento</label>
+          <input type="number" id="input-vencimento-mes" min="1" max="31" placeholder="10">
+        </div>
+        <div class="form-group">
+          <label for="input-saldo-mes">Saldo da Fatura Aberta (R$) - Opcional</label>
+          <input type="text" id="input-saldo-mes" placeholder="1.500,00" class="campo-moeda">
+        </div>
+        <div id="historico-datas-mes" style="margin-top: var(--espacamento-lg); max-height: 200px; overflow-y: auto;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="salvarDatasMes()">Salvar</button>
+        <button class="btn btn-fechar" onclick="fecharModalDatasMes()">Fechar</button>
       </div>
     </div>
   </div>
