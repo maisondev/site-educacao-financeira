@@ -273,11 +273,21 @@ function extrairDados(texto) {
 }
 
 function extrairValor(texto) {
-  // Encontra valores formatados como "R$ 1.234,56" ou "1234.56" ou "1234,56"
-  const match = texto.match(/R?\$?\s*([\d.]+,\d{2}|[\d.]+)/);
-  if (match) {
-    const valor = match[1].replace(/\./g, '').replace(',', '.');
-    return parseFloat(valor);
+  // Procura todos os números no formato monetário
+  const matches = texto.match(/[\d.,]+/g);
+  if (!matches) return null;
+
+  // Filtra números que parecem valores monetários (maiores que 100)
+  const valoresCandidatos = matches
+    .map(m => {
+      const valor = normalizarValor(m);
+      return valor;
+    })
+    .filter(v => v >= 100); // Valores monetários costumam ser >= 100
+
+  // Retorna o maior valor encontrado (geralmente o valor principal, não ref)
+  if (valoresCandidatos.length > 0) {
+    return Math.max(...valoresCandidatos);
   }
   return null;
 }
