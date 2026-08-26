@@ -203,6 +203,7 @@ function limparFormulario() {
 
 function obterTipoInvestimento(tipo) {
   const tipos = {
+    'poupanca': 'Poupança',
     'acoes': 'Ações',
     'fundo': 'Fundo de Investimento',
     'tesouro': 'Tesouro Direto',
