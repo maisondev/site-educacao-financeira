@@ -745,6 +745,12 @@ function carregarHistorico() {
   document.getElementById('secao-historico').removeAttribute('hidden');
 
   const tbody = document.getElementById('tabela-historico');
+
+  // Calcular totais
+  const totalBruto = historico.reduce((sum, c) => sum + (c.totalBruto || 0), 0);
+  const totalDescontos = historico.reduce((sum, c) => sum + (c.totalDescontos || 0), 0);
+  const totalLiquido = historico.reduce((sum, c) => sum + (c.salarioLiquido || 0), 0);
+
   tbody.innerHTML = historico.map(contrato => `
     <tr class="linha-historico" style="cursor: pointer;" onclick="verDetalheHistorico('${contrato.competencia}')" title="Clique para ver o detalhamento">
       <td>${contrato.competencia || 'Desconhecida'}</td>
@@ -752,7 +758,14 @@ function carregarHistorico() {
       <td>${formatarMoeda(contrato.totalDescontos || 0)}</td>
       <td><strong>${formatarMoeda(contrato.salarioLiquido || 0)}</strong></td>
     </tr>
-  `).join('');
+  `).join('') + `
+    <tr style="font-weight: bold; border-top: 2px solid var(--cor-borda); background-color: var(--cor-fundo-hover);">
+      <td>Total (${historico.length} meses)</td>
+      <td>${formatarMoeda(totalBruto)}</td>
+      <td>${formatarMoeda(totalDescontos)}</td>
+      <td>${formatarMoeda(totalLiquido)}</td>
+    </tr>
+  `;
 
   desenharGraficoEvolucao(historico);
 }
