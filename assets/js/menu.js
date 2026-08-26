@@ -65,6 +65,11 @@ const MENU_ITEMS = [
     submenu: null
   },
   {
+    label: 'Balanço Patrimonial',
+    href: './balanco-patrimonial.html',
+    submenu: null
+  },
+  {
     label: 'Ferramentas',
     href: './ferramentas/calculadora-juros-compostos.html',
     submenu: [

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balanço Patrimonial | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .resumo-patrimonio {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-patrimonio {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-patrimonio p {
+      margin: 0 0 var(--espacamento-sm) 0;
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .card-patrimonio .valor {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .card-ativo .valor {
+      color: var(--cor-verde);
+    }
+
+    .card-passivo .valor {
+      color: var(--cor-vermelho);
+    }
+
+    .card-liquido .valor {
+      color: var(--cor-primaria);
+    }
+
+    .grid-ativos-passivos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-xl);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .secao-ativo-passivo {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+    }
+
+    .secao-titulo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--espacamento-lg);
+      padding-bottom: var(--espacamento-lg);
+      border-bottom: 2px solid var(--cor-borda);
+    }
+
+    .secao-titulo h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .secao-titulo.ativo h3 {
+      color: var(--cor-verde);
+    }
+
+    .secao-titulo.passivo h3 {
+      color: var(--cor-vermelho);
+    }
+
+    .total-secao {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .total-secao.ativo {
+      color: var(--cor-verde);
+    }
+
+    .total-secao.passivo {
+      color: var(--cor-vermelho);
+    }
+
+    .btn-adicionar {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .btn-adicionar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .lista-items {
+      display: grid;
+      gap: var(--espacamento-md);
+    }
+
+    .item-patrimonio {
+      background-color: var(--cor-cinza-leve);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .item-info h4 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+    }
+
+    .item-categoria {
+      margin: 0;
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+    }
+
+    .item-valor {
+      text-align: right;
+    }
+
+    .item-valor-principal {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .item-ativo .item-valor-principal {
+      color: var(--cor-verde);
+    }
+
+    .item-passivo .item-valor-principal {
+      color: var(--cor-vermelho);
+    }
+
+    .btn-remover {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: var(--espacamento-md);
+    }
+
+    .btn-remover:hover {
+      color: #c53030;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-lg);
+      color: #999;
+      font-style: italic;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body {
+      padding: var(--espacamento-lg);
+    }
+
+    .form-group {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-salvar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-cancelar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    .btn-cancelar:hover {
+      background-color: #e8e8e8;
+    }
+
+    @media (max-width: 640px) {
+      .resumo-patrimonio {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-ativos-passivos {
+        grid-template-columns: 1fr;
+      }
+
+      .item-patrimonio {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .item-valor {
+        text-align: left;
+        margin-top: var(--espacamento-md);
+        width: 100%;
+      }
+
+      .btn-remover {
+        position: absolute;
+        right: var(--espacamento-lg);
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Balanço Patrimonial</p>
+
+    <h1>Balanço Patrimonial</h1>
+
+    <p>
+      Visualize seu patrimônio: o que você possui (Ativo) menos o que você deve (Passivo).
+      Seu patrimônio líquido é a diferença entre esses dois valores.
+    </p>
+
+    <div class="resumo-patrimonio">
+      <div class="card-patrimonio card-ativo">
+        <p>Ativo Total</p>
+        <p class="valor" id="total-ativo">R$ 0,00</p>
+      </div>
+      <div class="card-patrimonio card-passivo">
+        <p>Passivo Total</p>
+        <p class="valor" id="total-passivo">R$ 0,00</p>
+      </div>
+      <div class="card-patrimonio card-liquido">
+        <p>Patrimônio Líquido</p>
+        <p class="valor" id="patrimonio-liquido">R$ 0,00</p>
+      </div>
+    </div>
+
+    <div class="grid-ativos-passivos">
+      <section class="secao-ativo-passivo">
+        <div class="secao-titulo ativo">
+          <h3>Ativo (O que você possui)</h3>
+          <span class="total-secao ativo" id="total-ativo-secao">R$ 0,00</span>
+        </div>
+
+        <button class="btn-adicionar" onclick="abrirModalAtivo()">Adicionar Ativo</button>
+
+        <div id="lista-ativos" class="lista-items">
+          <div class="lista-vazia">Nenhum ativo registrado</div>
+        </div>
+      </section>
+
+      <section class="secao-ativo-passivo">
+        <div class="secao-titulo passivo">
+          <h3>Passivo (O que você deve)</h3>
+          <span class="total-secao passivo" id="total-passivo-secao">R$ 0,00</span>
+        </div>
+
+        <button class="btn-adicionar" onclick="abrirModalPassivo()">Adicionar Passivo</button>
+
+        <div id="lista-passivos" class="lista-items">
+          <div class="lista-vazia">Nenhum passivo registrado</div>
+        </div>
+      </section>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Entendendo seu balanço</h2>
+      <ul>
+        <li><strong>Ativo:</strong> Banco, Investimentos, Imóvel, Carro, Joias, etc - tudo o que tem valor</li>
+        <li><strong>Passivo:</strong> Dívidas, Empréstimos, Financiamentos - obrigações financeiras</li>
+        <li><strong>Patrimônio Líquido:</strong> Ativo - Passivo = sua riqueza real</li>
+        <li>Acompanhe mensalmente para ver sua evolução patrimonial</li>
+        <li>Um patrimônio líquido positivo significa que você tem mais do que deve</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Modal para adicionar Ativo -->
+  <div id="modal-ativo" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Ativo</h2>
+        <button class="btn-fechar" onclick="fecharModalAtivo()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-ativo-nome">Descrição do Ativo *</label>
+          <input type="text" id="input-ativo-nome" placeholder="Ex: Conta Poupança" required>
+        </div>
+        <div class="form-group">
+          <label for="select-ativo-categoria">Categoria *</label>
+          <select id="select-ativo-categoria" required>
+            <option value="">Selecione</option>
+            <option value="banco">Banco / Poupança</option>
+            <option value="investimentos">Investimentos</option>
+            <option value="imovel">Imóvel</option>
+            <option value="veiculo">Veículo</option>
+            <option value="joias">Joias / Ouro</option>
+            <option value="outros">Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-ativo-valor">Valor (R$) *</label>
+          <input type="text" id="input-ativo-valor" data-moeda placeholder="Ex: 10.000,00" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" onclick="salvarAtivo()">Adicionar</button>
+        <button class="btn-cancelar" onclick="fecharModalAtivo()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para adicionar Passivo -->
+  <div id="modal-passivo" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Passivo</h2>
+        <button class="btn-fechar" onclick="fecharModalPassivo()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-passivo-nome">Descrição da Dívida *</label>
+          <input type="text" id="input-passivo-nome" placeholder="Ex: Empréstimo Pessoal" required>
+        </div>
+        <div class="form-group">
+          <label for="select-passivo-categoria">Categoria *</label>
+          <select id="select-passivo-categoria" required>
+            <option value="">Selecione</option>
+            <option value="emprestimo">Empréstimo Pessoal</option>
+            <option value="financiamento">Financiamento (Carro/Imóvel)</option>
+            <option value="cartao">Cartão de Crédito</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-passivo-valor">Valor (R$) *</label>
+          <input type="text" id="input-passivo-valor" data-moeda placeholder="Ex: 5.000,00" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" onclick="salvarPassivo()">Adicionar</button>
+        <button class="btn-cancelar" onclick="fecharModalPassivo()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/balanco-patrimonial.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      configurarTodosCamposMoeda();
+      inicializarBalanco();
+    });
+  </script>
+</body>
+</html>
