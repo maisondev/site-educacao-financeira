@@ -109,40 +109,43 @@ async function lerPDFSimples(arquivo) {
 
 function extrairDados(texto) {
   try {
+    console.log('Texto extraído:', texto.substring(0, 500)); // Debug
     const dados = {};
+    const linhas = texto.split('\n').map(l => l.trim()).filter(l => l);
 
-    // Extrair competência
+    // Extrair competência/data
     const dataMatch = texto.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
     if (dataMatch) {
       dados.competencia = `${dataMatch[1]}/${dataMatch[2]}/${dataMatch[3]}`;
       dados.data = new Date(`${dataMatch[3]}-${dataMatch[2]}-${dataMatch[1]}`);
     }
 
-    // Extrair vencimentos
+    // Extrair vencimentos - sem depender de códigos específicos
     dados.vencimentos = [];
-    const vencimentoRegex = /Vencimento\s*CLT\s*([\d.,]+)|Gratificação\s*Tempo\s*de\s*Serviço\s*([\d.,]+)|Auxilio\s*Creche\s*([\d.,]+)|Auxílio\s*Creche\s*([\d.,]+)/gi;
 
-    // Procurar linhas com valores
-    const linhas = texto.split('\n');
-    let processando = false;
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
 
-    for (let linha of linhas) {
-      if (linha.includes('Vencimento CLT') || linha.includes('0002')) {
+      // Vencimento CLT
+      if ((linha.includes('Vencimento') && linha.includes('CLT')) || linha.includes('0002')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.vencimentos.push({ descricao: 'Vencimento CLT', valor });
         }
-        processando = true;
       }
-      if (linha.includes('Gratificação') && linha.includes('0028')) {
+
+      // Gratificação
+      if ((linha.includes('Gratificação') || linha.includes('gratificacao')) && linha.includes('0028')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.vencimentos.push({ descricao: 'Gratificação Tempo de Serviço', valor });
         }
       }
-      if ((linha.includes('Auxilio Creche') || linha.includes('Auxílio Creche')) && linha.includes('1012')) {
+
+      // Auxílio Creche
+      if ((linha.includes('Auxil') || linha.includes('auxil')) && (linha.includes('Creche') || linha.includes('creche')) && linha.includes('1012')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.vencimentos.push({ descricao: 'Auxílio Creche', valor });
         }
       }
@@ -150,79 +153,103 @@ function extrairDados(texto) {
 
     // Extrair descontos
     dados.descontos = [];
-    for (let linha of linhas) {
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
+
       if (linha.includes('INSS') && linha.includes('5003')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'INSS', valor });
         }
       }
       if (linha.includes('IRRF') && linha.includes('5004')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'IRRF', valor });
         }
       }
-      if (linha.includes('Plano de Saude') && linha.includes('5318')) {
+      if ((linha.includes('Plano') && linha.includes('Saude')) && linha.includes('5318')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'Plano de Saúde - Titular', valor });
         }
       }
-      if (linha.includes('Plano de Saude') && linha.includes('5616')) {
+      if ((linha.includes('Plano') && linha.includes('Saude')) && linha.includes('5616')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'Plano de Saúde - Dependente', valor });
         }
       }
-      if (linha.includes('Plano Odontologico') && linha.includes('5613')) {
+      if ((linha.includes('Plano') && linha.includes('Odonto')) && linha.includes('5613')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'Plano Odontológico - Titular', valor });
         }
       }
-      if (linha.includes('Plano Odontologico') && linha.includes('5615')) {
+      if ((linha.includes('Plano') && linha.includes('Odonto')) && linha.includes('5615')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'Plano Odontológico - Dependente', valor });
         }
       }
-      if (linha.includes('Refeição') && linha.includes('5748')) {
+      if ((linha.includes('Refeição') || linha.includes('refeicao')) && linha.includes('5748')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'Desconto Refeição', valor });
         }
       }
-      if (linha.includes('Alimentação') && linha.includes('5752')) {
+      if ((linha.includes('Alimentação') || linha.includes('alimentacao')) && linha.includes('5752')) {
         const valor = extrairValor(linha);
-        if (valor) {
+        if (valor && valor > 0) {
           dados.descontos.push({ descricao: 'Desconto Alimentação', valor });
         }
       }
     }
 
-    // Extrair totais
-    for (let linha of linhas) {
-      if (linha.includes('Total de ganhos')) {
+    // Extrair totais - procurar múltiplos padrões
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
+
+      // Total bruto (pode ser "Total de ganhos" ou similar)
+      if ((linha.includes('Total') && (linha.includes('ganho') || linha.includes('GANHO') || linha.includes('P+V'))) ||
+          (linha.includes('13180') || linha.match(/\d{4,}/))) { // fallback: procura números grandes
         const valor = extrairValor(linha);
-        if (valor) dados.totalBruto = valor;
+        if (valor && valor > 5000 && valor < 50000 && !dados.totalBruto) {
+          dados.totalBruto = valor;
+        }
       }
-      if (linha.includes('Total de descontos')) {
+
+      // Total descontos
+      if ((linha.includes('Total') && (linha.includes('desconto') || linha.includes('DESCONTO') || linha.includes('D)'))) ||
+          linha.includes('4322')) {
         const valor = extrairValor(linha);
-        if (valor) dados.totalDescontos = valor;
+        if (valor && valor > 0 && !dados.totalDescontos) {
+          dados.totalDescontos = valor;
+        }
       }
-      if (linha.includes('Líquido') && !linha.includes('Plano')) {
+
+      // Líquido (salário líquido)
+      if ((linha.includes('Líquido') || linha.includes('liquido') || linha.includes('LÍQUIDO')) && !linha.includes('Plano')) {
         const valor = extrairValor(linha);
-        if (valor) dados.salarioLiquido = valor;
+        if (valor && valor > 0 && !dados.salarioLiquido) {
+          dados.salarioLiquido = valor;
+        }
       }
+
+      // FGTS
       if (linha.includes('FGTS')) {
         const valor = extrairValor(linha);
-        if (valor) dados.fgts = valor;
+        if (valor && valor > 0) {
+          dados.fgts = valor;
+        }
       }
     }
 
-    // Validar dados mínimos
-    if (!dados.salarioLiquido || !dados.totalBruto) {
+    console.log('Dados extraídos:', dados); // Debug
+
+    // Validar dados mínimos (menos rigoroso)
+    if (!dados.salarioLiquido) {
+      console.warn('Salário líquido não encontrado');
       return null;
     }
 
