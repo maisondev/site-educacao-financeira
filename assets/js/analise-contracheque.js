@@ -234,7 +234,16 @@ function extrairDados(texto) {
       dados.fgts = normalizarValor(fgtsMatch[1]);
     }
 
-    console.log('Dados extraídos:', dados); // Debug
+    // Se não tem totais, calcular a partir dos arrays de vencimentos e descontos
+    if (!dados.totalBruto && dados.vencimentos && dados.vencimentos.length > 0) {
+      dados.totalBruto = dados.vencimentos.reduce((sum, v) => sum + v.valor, 0);
+      console.log('Total bruto calculado:', dados.totalBruto);
+    }
+
+    if (!dados.totalDescontos && dados.descontos && dados.descontos.length > 0) {
+      dados.totalDescontos = dados.descontos.reduce((sum, d) => sum + d.valor, 0);
+      console.log('Total descontos calculado:', dados.totalDescontos);
+    }
 
     // Se não encontrou o líquido, calcular como bruto - descontos
     if (!dados.salarioLiquido && dados.totalBruto && dados.totalDescontos) {
@@ -242,9 +251,17 @@ function extrairDados(texto) {
       console.log('Líquido calculado como:', dados.salarioLiquido);
     }
 
-    // Validar dados mínimos
+    console.log('Dados extraídos finais:', dados); // Debug
+
+    // Validar dados mínimos - precisa de pelo menos vencimentos ou descontos
+    if ((!dados.vencimentos || dados.vencimentos.length === 0) &&
+        (!dados.descontos || dados.descontos.length === 0)) {
+      console.warn('Nenhum vencimento ou desconto encontrado');
+      return null;
+    }
+
     if (!dados.salarioLiquido || dados.salarioLiquido <= 0) {
-      console.warn('Não foi possível extrair o salário líquido. Dados:', dados);
+      console.warn('Não foi possível calcular o salário líquido. Dados:', dados);
       return null;
     }
 
