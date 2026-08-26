@@ -241,13 +241,27 @@ function removerCartao(id) {
   }
 }
 
+function obterSaldoMesAtual(cartao) {
+  const hoje = new Date();
+  const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+  const datas = cartao.datasPorMes || [];
+  const dataAtual = datas.find(d => d.mes === mesAtual);
+  return dataAtual?.saldo || null;
+}
+
 function atualizarVisualizacao() {
   const cartoes = obterCartoes();
   const container = document.getElementById('lista-cartoes');
 
-  // Calcular resumo de saldos abertos
-  const cartoesComSaldo = cartoes.filter(c => c.saldoAberto && c.saldoAberto > 0);
-  const totalSaldosAbertos = cartoesComSaldo.reduce((sum, c) => sum + (c.saldoAberto || 0), 0);
+  // Calcular resumo de saldos abertos (mes atual ou geral)
+  const cartoesComSaldo = cartoes.filter(c => {
+    const saldoMes = obterSaldoMesAtual(c);
+    return saldoMes > 0 || (c.saldoAberto && c.saldoAberto > 0);
+  });
+  const totalSaldosAbertos = cartoesComSaldo.reduce((sum, c) => {
+    const saldoMes = obterSaldoMesAtual(c);
+    return sum + (saldoMes || c.saldoAberto || 0);
+  }, 0);
 
   // Mostrar/esconder resumo
   const resumoDiv = document.getElementById('resumo-saldos');
@@ -264,7 +278,10 @@ function atualizarVisualizacao() {
     return;
   }
 
-  container.innerHTML = cartoes.map(cartao => `
+  container.innerHTML = cartoes.map(cartao => {
+    const saldoMesAtual = obterSaldoMesAtual(cartao);
+    const saldoVisivel = saldoMesAtual || cartao.saldoAberto;
+    return `
     <div class="card-cartao">
       <div class="card-cartao-botoes">
         <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário">📅</button>
@@ -290,20 +307,22 @@ function atualizarVisualizacao() {
         </div>
       </div>
 
-      ${cartao.saldoAberto ? `
-      <div style="margin-top: var(--espacamento-sm); padding-top: var(--espacamento-sm); border-top: 1px solid rgba(255,255,255,0.2);">
-        <div style="font-size: 10px; opacity: 0.7; text-transform: uppercase; margin-bottom: 3px; letter-spacing: 0.5px;">Fatura Aberta</div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 12px;">
-          <span>${formatarMoedaBrasileira(cartao.saldoAberto)}</span>
-          ${cartao.limite ? `<span>${Math.round((cartao.saldoAberto / cartao.limite) * 100)}%</span>` : ''}
+      ${saldoVisivel ? `
+      <div style="margin-top: var(--espacamento-sm); padding: var(--espacamento-sm); background: rgba(255,255,255,0.15); border-radius: 6px; border-top: 1px solid rgba(255,255,255,0.3);">
+        <div style="font-size: 11px; opacity: 0.85; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; font-weight: 600;">
+          ${saldoMesAtual ? '📅 Fatura Este Mês' : 'Saldo Aberto'}
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <span style="font-size: 16px; font-weight: bold;">${formatarMoedaBrasileira(saldoVisivel)}</span>
+          ${cartao.limite ? `<span style="font-size: 11px; opacity: 0.8;">${Math.round((saldoVisivel / cartao.limite) * 100)}%</span>` : ''}
         </div>
         ${cartao.limite ? `
-        <div style="background: rgba(255,255,255,0.25); border-radius: 3px; height: 5px; overflow: hidden;">
-          <div style="background: rgba(255,255,255,0.95); height: 100%; width: ${Math.min((cartao.saldoAberto / cartao.limite) * 100, 100)}%;"></div>
+        <div style="background: rgba(255,255,255,0.25); border-radius: 3px; height: 6px; overflow: hidden; margin-top: 4px;">
+          <div style="background: rgba(255,255,255,0.95); height: 100%; width: ${Math.min((saldoVisivel / cartao.limite) * 100, 100)}%;"></div>
         </div>
         ` : ''}
       </div>
-      ` : ''}
+      ` : ''}`
     </div>
   `).join('');
 }
