@@ -300,37 +300,34 @@ function exportarCartaoParaCalendario(cartaoId) {
   // Estrutura do arquivo iCalendar
   const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Educação Financeira//
+PRODID:-//Educação Financeira//NONSGML v1.0//PT
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Cartão - ${cartao.nome}
 X-WR-TIMEZONE:America/Sao_Paulo
 X-WR-CALDESC:Lembretes de fechamento e vencimento do cartão ${cartao.nome}
-
 BEGIN:VEVENT
 UID:${idFechamento}
 DTSTAMP:${agora}
-DTSTART:${dataFechamento}T090000
-DTEND:${dataFechamento}T100000
+DTSTART:${dataFechamento}T120000Z
+DTEND:${dataFechamento}T130000Z
 RRULE:FREQ=MONTHLY;BYMONTHDAY=${cartao.vencimento}
 SUMMARY:Fechamento - ${cartao.nome}
 DESCRIPTION:Dia de fechamento do cartão ${cartao.nome}. Até este dia você pode adicionar despesas à próxima fatura.
-LOCATION:
 STATUS:CONFIRMED
+TRANSP:OPAQUE
 END:VEVENT
-
 BEGIN:VEVENT
 UID:${idVencimento}
 DTSTAMP:${agora}
-DTSTART:${dataVencimento}T180000
-DTEND:${dataVencimento}T190000
+DTSTART:${dataVencimento}T180000Z
+DTEND:${dataVencimento}T190000Z
 RRULE:FREQ=MONTHLY;BYMONTHDAY=${cartao.vencimento + 1}
 SUMMARY:Vencimento - ${cartao.nome}
 DESCRIPTION:Dia de vencimento da fatura do cartão ${cartao.nome}. Faça o pagamento até este dia.
-LOCATION:
 STATUS:CONFIRMED
+TRANSP:OPAQUE
 END:VEVENT
-
 END:VCALENDAR`;
 
   // Cria e faz download do arquivo
