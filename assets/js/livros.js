@@ -3,7 +3,7 @@ const LIVROS = [
     titulo: 'O Investidor Inteligente',
     autor: 'Benjamin Graham',
     ano: 1949,
-    emoji: '📖',
+    corCapa: 'linear-gradient(135deg, #8B4513 0%, #D2691E 100%)',
     resumo: 'O livro que revolucionou o investimento. Graham ensina como investir com segurança, analisando fundamentais e encontrando o valor real das empresas.',
     ensinamentos: [
       'Diferença entre investidor e especulador',
@@ -13,13 +13,13 @@ const LIVROS = [
       'Estude empresas antes de investir',
       'Emoção é inimiga do lucro'
     ],
-    citacao: 'O objetivo do investi independentemente de análise é descobrir e explorar discrepâncias entre preço e valor.'
+    citacao: 'O objetivo do investidor é descobrir e explorar discrepâncias entre preço e valor.'
   },
   {
     titulo: 'O Homem Mais Rico da Babilônia',
     autor: 'George S. Clason',
     ano: 1926,
-    emoji: '💰',
+    corCapa: 'linear-gradient(135deg, #FFD700 0%, #DAA520 100%)',
     resumo: 'Histórias clássicas de Babilônia que ensinam princípios de riqueza. Mostra como economizar, investir e construir riqueza ao longo do tempo.',
     ensinamentos: [
       'Poupar parte da sua renda (10%) é essencial',
@@ -35,7 +35,7 @@ const LIVROS = [
     titulo: 'Pai Rico, Pai Pobre',
     autor: 'Robert Kiyosaki',
     ano: 1997,
-    emoji: '🏠',
+    corCapa: 'linear-gradient(135deg, #DC143C 0%, #8B0000 100%)',
     resumo: 'Compara a mentalidade de um pai rico (empreendedor) com um pai pobre (funcionário). Essencial para entender a diferença entre renda ativa e passiva.',
     ensinamentos: [
       'Diferença entre ativos e passivos',
@@ -51,7 +51,7 @@ const LIVROS = [
     titulo: 'A Psicologia do Dinheiro',
     autor: 'Morgan Housel',
     ano: 2020,
-    emoji: '🧠',
+    corCapa: 'linear-gradient(135deg, #2C5282 0%, #1A365D 100%)',
     resumo: 'Explora como psicologia humana afeta decisões financeiras. Mostra que sucesso financeiro é mais sobre comportamento que sobre técnica.',
     ensinamentos: [
       'Sorte e risco são parte do jogo',
@@ -67,7 +67,7 @@ const LIVROS = [
     titulo: 'Hábitos Atômicos',
     autor: 'James Clear',
     ano: 2018,
-    emoji: '⚛️',
+    corCapa: 'linear-gradient(135deg, #1B4965 0%, #0D2A3D 100%)',
     resumo: 'Pequenas mudanças geram grandes resultados. Mostra como construir hábitos financeiros positivos que se compõem ao longo do tempo.',
     ensinamentos: [
       'Pequenos hábitos geram resultados enormes',
@@ -83,7 +83,7 @@ const LIVROS = [
     titulo: 'O Poder do Hábito',
     autor: 'Charles Duhigg',
     ano: 2012,
-    emoji: '🔄',
+    corCapa: 'linear-gradient(135deg, #9B59B6 0%, #6C3483 100%)',
     resumo: 'Desvenda a ciência por trás dos hábitos. Ensina como mudanças pequenas podem gerar transformações maiores na vida financeira e pessoal.',
     ensinamentos: [
       'Hábitos controlam 40% das ações',
@@ -93,13 +93,13 @@ const LIVROS = [
       'Acreditar na mudança é essencial',
       'Hábitos se propagam em grupos'
     ],
-    citacao: 'Mudanças de hábito ocorrem em um ponto em que algumas pessoas se acreditam capazes de mudança.'
+    citacao: 'Mudanças de hábito ocorrem quando pessoas acreditam serem capazes de mudança.'
   },
   {
     titulo: 'Principles',
     autor: 'Ray Dalio',
     ano: 2017,
-    emoji: '⚙️',
+    corCapa: 'linear-gradient(135deg, #1F4788 0%, #0F2847 100%)',
     resumo: 'Radiografia dos princípios que guiaram o sucesso de um bilionário. Ensina como criar princípios pessoais para tomar melhores decisões.',
     ensinamentos: [
       'Crie seus próprios princípios',
@@ -115,7 +115,7 @@ const LIVROS = [
     titulo: 'Liberte-se do Dinheiro',
     autor: 'Tony Robbins',
     ano: 2014,
-    emoji: '🚀',
+    corCapa: 'linear-gradient(135deg, #E74C3C 0%, #C0392B 100%)',
     resumo: 'Estratégias práticas de um guru motivacional para dominar finanças. Foco em psicologia, investimento e criação de riqueza duradoura.',
     ensinamentos: [
       'Decisão precede ação',
@@ -138,13 +138,14 @@ function mostrarLivros(livros) {
 
   container.innerHTML = livros.map(livro => `
     <div class="card-livro">
-      <div class="livro-capa">
-        ${livro.emoji}
+      <div class="livro-capa" style="background: ${livro.corCapa};">
+        <div class="livro-capa-conteudo">
+          <h3 class="livro-capa-titulo">${livro.titulo}</h3>
+          <p class="livro-capa-autor">${livro.autor}</p>
+        </div>
       </div>
 
       <div class="livro-conteudo">
-        <h3 class="livro-titulo">${livro.titulo}</h3>
-        <p class="livro-autor">por ${livro.autor}</p>
         <span class="livro-ano">${livro.ano}</span>
 
         <p class="livro-resumo">${livro.resumo}</p>

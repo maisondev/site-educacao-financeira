@@ -30,16 +30,49 @@
     }
 
     .livro-capa {
-      background: linear-gradient(135deg, #4a154b 0%, #1264a3 100%);
       color: white;
       padding: var(--espacamento-xl);
       text-align: center;
-      min-height: 200px;
+      min-height: 280px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .livro-capa::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.8;
+      z-index: 0;
+    }
+
+    .livro-capa-conteudo {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+
+    .livro-capa-titulo {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 0 0 var(--espacamento-md) 0;
+      line-height: 1.3;
+    }
+
+    .livro-capa-autor {
+      font-size: 14px;
+      opacity: 0.95;
     }
 
     .livro-conteudo {
