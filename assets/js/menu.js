@@ -15,64 +15,34 @@ const MENU_ITEMS = [
     ]
   },
   {
-    label: 'Metas',
+    label: 'Acompanhamento',
     href: './metas.html',
-    submenu: null
+    submenu: [
+      { label: 'Metas', href: './metas.html' },
+      { label: 'Reserva de Emergência', href: './reserva-emergencia.html' },
+      { label: 'Dívidas', href: './dividas.html' },
+      { label: 'Investimentos', href: './investimentos.html' },
+      { label: 'Despesas Fixas', href: './despesas-fixas.html' },
+      { label: 'Renda Extra', href: './renda-extra.html' },
+      { label: 'Cartão de Crédito', href: './cartao.html' },
+      { label: 'Envelopes', href: './envelopes.html' }
+    ]
   },
   {
-    label: 'Reserva',
-    href: './reserva-emergencia.html',
-    submenu: null
-  },
-  {
-    label: 'Dívidas',
-    href: './dividas.html',
-    submenu: null
-  },
-  {
-    label: 'Investimentos',
-    href: './investimentos.html',
-    submenu: null
-  },
-  {
-    label: 'Despesas Fixas',
-    href: './despesas-fixas.html',
-    submenu: null
-  },
-  {
-    label: 'Renda',
-    href: './renda-extra.html',
-    submenu: null
-  },
-  {
-    label: 'Cartão',
-    href: './cartao.html',
-    submenu: null
-  },
-  {
-    label: 'Envelopes',
-    href: './envelopes.html',
-    submenu: null
-  },
-  {
-    label: 'Máximas',
-    href: './maximas.html',
-    submenu: null
-  },
-  {
-    label: 'Relatórios',
+    label: 'Análise',
     href: './relatorios.html',
-    submenu: null
+    submenu: [
+      { label: 'Relatórios', href: './relatorios.html' },
+      { label: 'Balanço Patrimonial', href: './balanco-patrimonial.html' }
+    ]
   },
   {
-    label: 'Balanço Patrimonial',
-    href: './balanco-patrimonial.html',
-    submenu: null
-  },
-  {
-    label: 'Glossário',
+    label: 'Referência',
     href: './glossario.html',
-    submenu: null
+    submenu: [
+      { label: 'Glossário', href: './glossario.html' },
+      { label: 'Grandes Máximas', href: './maximas.html' }
+    ]
   },
   {
     label: 'Ferramentas',
