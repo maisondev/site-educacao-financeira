@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatórios | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .periodo-relatorio {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .periodo-info h2 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+
+    .periodo-info p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .botoes-relatorio {
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .btn-acao {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-imprimir {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-imprimir:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-refresh {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    .btn-refresh:hover {
+      background-color: #e8e8e8;
+    }
+
+    .secoes-relatorio {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-xl);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .secao-relatorio {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      page-break-inside: avoid;
+    }
+
+    .secao-relatorio h3 {
+      margin: 0 0 var(--espacamento-md) 0;
+      font-size: 18px;
+      color: var(--cor-primaria);
+      border-bottom: 2px solid var(--cor-cinza-leve);
+      padding-bottom: var(--espacamento-md);
+    }
+
+    .item-relatorio {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--espacamento-md);
+      padding-bottom: var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-cinza-leve);
+    }
+
+    .item-relatorio:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .item-relatorio-label {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .item-relatorio-valor {
+      font-weight: bold;
+      color: var(--cor-texto);
+    }
+
+    .item-relatorio.destaque {
+      background-color: var(--cor-cinza-leve);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      border-bottom: none;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .item-relatorio.destaque .item-relatorio-valor {
+      font-size: 18px;
+      color: var(--cor-primaria);
+    }
+
+    .barra-simples {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .barra-simples-fill {
+      background-color: var(--cor-primaria);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    .status-ok {
+      background-color: #e6ffe6;
+      color: var(--cor-verde);
+    }
+
+    .status-alerta {
+      background-color: #ffe6e6;
+      color: var(--cor-vermelho);
+    }
+
+    .status-aviso {
+      background-color: #fff5e6;
+      color: var(--cor-amarelo);
+    }
+
+    .resumo-geral {
+      background-color: var(--cor-primaria);
+      color: white;
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+      page-break-inside: avoid;
+    }
+
+    .resumo-geral h2 {
+      margin: 0 0 var(--espacamento-md) 0;
+      font-size: 20px;
+    }
+
+    .resumo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--espacamento-lg);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .resumo-item {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+    }
+
+    .resumo-item-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 4px;
+    }
+
+    .resumo-item-valor {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .sem-dados {
+      text-align: center;
+      padding: var(--espacamento-lg);
+      color: #999;
+      font-style: italic;
+    }
+
+    @media print {
+      .periodo-relatorio,
+      .botoes-relatorio,
+      .proximos-passos {
+        display: none;
+      }
+
+      body {
+        background: white;
+      }
+
+      .secoes-relatorio {
+        grid-template-columns: 1fr;
+      }
+
+      .secao-relatorio,
+      .resumo-geral {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .secoes-relatorio {
+        grid-template-columns: 1fr;
+      }
+
+      .periodo-relatorio {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--espacamento-md);
+      }
+
+      .botoes-relatorio {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .btn-acao {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Relatórios</p>
+
+    <h1>Relatório Financeiro Mensal</h1>
+
+    <div class="periodo-relatorio">
+      <div class="periodo-info">
+        <h2 id="mes-ano">Relatório de Janeiro de 2025</h2>
+        <p>Gerado em <span id="data-geracao">--/--/----</span></p>
+      </div>
+      <div class="botoes-relatorio">
+        <button class="btn-acao btn-imprimir" onclick="imprimirRelatorio()">Imprimir / PDF</button>
+        <button class="btn-acao btn-refresh" onclick="recarregarRelatorio()">Atualizar</button>
+      </div>
+    </div>
+
+    <div id="resumo-geral-container"></div>
+
+    <div class="secoes-relatorio">
+      <div id="secao-despesas-fixas"></div>
+      <div id="secao-dividas"></div>
+      <div id="secao-reserva"></div>
+      <div id="secao-cartao"></div>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Dicas para ler este relatório</h2>
+      <ul>
+        <li>Use este relatório mensalmente para acompanhar sua saúde financeira</li>
+        <li>Compare com meses anteriores para identificar tendências</li>
+        <li>Imprima e guarde como histórico de sua evolução financeira</li>
+        <li>Revise suas categorias de despesas e metas regularmente</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/relatorios.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      gerarRelatorio();
+    });
+  </script>
+</body>
+</html>
