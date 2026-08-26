@@ -1,9 +1,22 @@
 function inicializarReserva() {
   const dados = obterDados();
+  const rendaCentralizada = obterRendaMensal();
+
+  // Pré-preencher com renda centralizada se disponível
+  if (rendaCentralizada && !dados.salario) {
+    document.getElementById('input-salario').value = rendaCentralizada;
+  } else if (dados.salario) {
+    document.getElementById('input-salario').value = dados.salario;
+  }
 
   if (dados.salario && dados.meses) {
     document.getElementById('resumo-container').removeAttribute('hidden');
     atualizarVisualizacao();
+  }
+
+  // Adicionar botão para usar renda definida em Envelopes
+  if (rendaCentralizada) {
+    adicionarBotaoUsarRendaDefinida(rendaCentralizada);
   }
 }
 
@@ -212,6 +225,38 @@ function formatarMoeda(valor) {
     style: 'currency',
     currency: 'BRL'
   }).format(valor);
+}
+
+function adicionarBotaoUsarRendaDefinida(renda) {
+  const inputSalario = document.getElementById('input-salario');
+  if (!inputSalario) return;
+
+  // Verificar se o botão já existe
+  if (document.getElementById('btn-usar-renda')) return;
+
+  const pai = inputSalario.parentElement;
+  const botaoUsar = document.createElement('button');
+  botaoUsar.id = 'btn-usar-renda';
+  botaoUsar.type = 'button';
+  botaoUsar.textContent = `Usar renda definida: ${formatarMoeda(renda)}`;
+  botaoUsar.style.cssText = `
+    margin-top: 8px;
+    padding: 8px 12px;
+    background-color: var(--cor-primaria);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+  `;
+
+  botaoUsar.addEventListener('click', () => {
+    document.getElementById('input-salario').value = renda;
+  });
+
+  pai.insertBefore(botaoUsar, inputSalario.nextSibling);
 }
 
 // Fechar modal ao clicar fora

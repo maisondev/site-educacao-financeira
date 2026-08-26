@@ -46,7 +46,12 @@ function definirRenda() {
     return;
   }
 
-  localStorage.setItem(CHAVE_RENDA, renda.toString());
+  // Usar sistema centralizado se disponível, senão usar localStorage direto
+  if (typeof atualizarRendaMensal === 'function') {
+    atualizarRendaMensal(renda);
+  } else {
+    localStorage.setItem(CHAVE_RENDA, renda.toString());
+  }
   carregarRenda();
   renderizarEnvelopes();
 }
