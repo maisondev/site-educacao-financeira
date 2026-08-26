@@ -24,7 +24,7 @@ const MENU_ITEMS = [
       { label: 'Investimentos', href: './investimentos.html' },
       { label: 'Despesas Fixas', href: './despesas-fixas.html' },
       { label: 'Renda Extra', href: './renda-extra.html' },
-      { label: 'Cartão de Crédito', href: './cartao.html' },
+      { label: 'Cartões', href: './cartoes.html' },
       { label: 'Envelopes', href: './envelopes.html' }
     ]
   },

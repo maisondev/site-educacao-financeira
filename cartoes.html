@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Cartões | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .cartoes-container {
+      display: grid;
+      gap: var(--espacamento-lg);
+    }
+
+    .card-cartao {
+      background: linear-gradient(135deg, #4a154b 0%, #1264a3 100%);
+      color: white;
+      border-radius: 12px;
+      padding: var(--espacamento-xl);
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-cartao-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .card-cartao-titulo {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .card-cartao-bandeira {
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 1px;
+      opacity: 0.8;
+    }
+
+    .card-cartao-numero {
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      margin: var(--espacamento-md) 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .card-cartao-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      font-size: 14px;
+    }
+
+    .card-cartao-info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cartao-label {
+      font-size: 11px;
+      opacity: 0.7;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .btn-remover-cartao {
+      position: absolute;
+      top: var(--espacamento-md);
+      right: var(--espacamento-md);
+      background-color: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-remover-cartao:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: #999;
+      font-style: italic;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal[hidden] {
+      display: none !important;
+    }
+
+    .modal:not([hidden]) {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      padding: var(--espacamento-xl);
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+      margin-bottom: var(--espacamento-lg);
+      color: var(--cor-primaria);
+    }
+
+    .form-group {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .botoes-modal {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .botoes-modal button {
+      flex: 1;
+    }
+
+    .btn-fechar {
+      background-color: #f0f0f0;
+      color: #333;
+      border: none;
+    }
+
+    .btn-fechar:hover {
+      background-color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Meus Cartões</p>
+
+    <h1>Meus Cartões</h1>
+
+    <p>Cadastre e organize seus cartões de crédito. Mantenha registro dos últimos dígitos e limites para melhor controle.</p>
+
+    <div style="margin-bottom: var(--espacamento-lg);">
+      <button class="btn btn-primary" onclick="abrirModalCartao()">+ Adicionar Cartão</button>
+    </div>
+
+    <div id="lista-cartoes" class="cartoes-container"></div>
+
+    <section class="proximos-passos">
+      <h2>Dicas</h2>
+      <ul>
+        <li>Cadastre os últimos 4 dígitos dos seus cartões para referência rápida</li>
+        <li>Indique a bandeira (Visa, Mastercard, etc) para melhor identificação</li>
+        <li>Registre o limite de crédito para acompanhar sua disponibilidade</li>
+        <li>Mantenha seus cartões organizados nesta página</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <!-- Modal para adicionar cartão -->
+  <div id="modal-cartao" class="modal" hidden>
+    <div class="modal-content">
+      <h2>Novo Cartão</h2>
+
+      <div class="form-group">
+        <label for="input-cartao-nome">Nome/Descrição *</label>
+        <input type="text" id="input-cartao-nome" placeholder="ex: Cartão Pessoal, Cartão Crédito">
+      </div>
+
+      <div class="form-group">
+        <label for="input-cartao-ultimos">Últimos 4 Dígitos *</label>
+        <input type="text" id="input-cartao-ultimos" placeholder="ex: 1234" maxlength="4" inputmode="numeric">
+      </div>
+
+      <div class="form-group">
+        <label for="select-cartao-bandeira">Bandeira</label>
+        <select id="select-cartao-bandeira">
+          <option value="">Selecione...</option>
+          <option value="visa">Visa</option>
+          <option value="mastercard">Mastercard</option>
+          <option value="elo">Elo</option>
+          <option value="amex">American Express</option>
+          <option value="hipercard">Hipercard</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="input-cartao-limite">Limite de Crédito</label>
+        <input type="text" id="input-cartao-limite" placeholder="ex: 5.000,00" class="campo-moeda">
+      </div>
+
+      <div class="form-group">
+        <label for="input-cartao-fechamento">Dia de Fechamento da Fatura</label>
+        <input type="text" id="input-cartao-fechamento" placeholder="ex: 10" maxlength="2" inputmode="numeric">
+      </div>
+
+      <div class="form-group">
+        <label for="input-cartao-vencimento">Dia de Vencimento da Fatura</label>
+        <input type="text" id="input-cartao-vencimento" placeholder="ex: 20" maxlength="2" inputmode="numeric">
+      </div>
+
+      <div class="botoes-modal">
+        <button class="btn btn-primary" onclick="salvarCartao()">Salvar</button>
+        <button class="btn btn-fechar" onclick="fecharModalCartao()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/cartoes.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      inicializarCartoes();
+      configurarTodosCamposMoeda();
+    });
+  </script>
+</body>
+</html>
