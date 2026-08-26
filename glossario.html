@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glossário | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .filtro-glossario {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .filtro-glossario h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .busca-container {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .busca-container input {
+      flex: 1;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .busca-container input:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .botoes-categoria {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-sm);
+    }
+
+    .btn-categoria {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      background-color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-categoria:hover {
+      border-color: var(--cor-primaria);
+      color: var(--cor-primaria);
+    }
+
+    .btn-categoria.ativo {
+      background-color: var(--cor-primaria);
+      color: white;
+      border-color: var(--cor-primaria);
+    }
+
+    .lista-termos {
+      display: grid;
+      gap: var(--espacamento-lg);
+    }
+
+    .termo-card {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .termo-card:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .termo-card.expandido {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .termo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .termo-titulo {
+      flex: 1;
+    }
+
+    .termo-titulo h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      color: var(--cor-primaria);
+    }
+
+    .termo-categoria {
+      margin: 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #999;
+      font-weight: 500;
+    }
+
+    .termo-icone {
+      font-size: 20px;
+      color: var(--cor-texto-leve);
+      transition: transform 0.2s ease;
+    }
+
+    .termo-card.expandido .termo-icone {
+      transform: rotate(180deg);
+    }
+
+    .termo-definicao {
+      display: none;
+      padding-top: var(--espacamento-md);
+      border-top: 1px solid var(--cor-cinza-leve);
+    }
+
+    .termo-card.expandido .termo-definicao {
+      display: block;
+    }
+
+    .termo-definicao p {
+      margin: 0 0 var(--espacamento-md) 0;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .termo-definicao p:last-child {
+      margin-bottom: 0;
+    }
+
+    .termo-exemplo {
+      background-color: var(--cor-cinza-leve);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      margin-top: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .termo-exemplo strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--cor-primaria);
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: #999;
+      font-style: italic;
+    }
+
+    .contador-termos {
+      font-size: 14px;
+      color: #666;
+      margin-top: var(--espacamento-md);
+    }
+
+    @media (max-width: 640px) {
+      .busca-container {
+        flex-direction: column;
+      }
+
+      .termo-header {
+        flex-direction: column;
+      }
+
+      .termo-icone {
+        margin-top: var(--espacamento-sm);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Glossário</p>
+
+    <h1>Glossário Financeiro</h1>
+
+    <p>
+      Dicionário de termos financeiros explicados de forma simples e clara.
+      Use a busca ou filtre por categoria para encontrar o termo que procura.
+    </p>
+
+    <section class="filtro-glossario">
+      <h2>Buscar e Filtrar</h2>
+
+      <div class="busca-container">
+        <input type="text" id="input-busca" placeholder="Buscar termo..." onkeyup="filtrarTermos()">
+      </div>
+
+      <div>
+        <strong style="display: block; margin-bottom: 8px;">Categorias:</strong>
+        <div class="botoes-categoria">
+          <button class="btn-categoria ativo" onclick="filtrarPorCategoria('todos')">Todos</button>
+          <button class="btn-categoria" onclick="filtrarPorCategoria('investimentos')">Investimentos</button>
+          <button class="btn-categoria" onclick="filtrarPorCategoria('juros')">Juros & Empréstimos</button>
+          <button class="btn-categoria" onclick="filtrarPorCategoria('mercado')">Mercado</button>
+          <button class="btn-categoria" onclick="filtrarPorCategoria('impostos')">Impostos</button>
+          <button class="btn-categoria" onclick="filtrarPorCategoria('conta')">Contas</button>
+        </div>
+      </div>
+
+      <div class="contador-termos" id="contador-termos"></div>
+    </section>
+
+    <section>
+      <div id="lista-termos" class="lista-termos"></div>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Dicas para usar o glossário</h2>
+      <ul>
+        <li>Clique em qualquer termo para ver sua definição completa</li>
+        <li>Use a busca para encontrar rapidamente o termo que procura</li>
+        <li>Leia os exemplos práticos para entender melhor a aplicação</li>
+        <li>Relate termos que gostaria que fossem adicionados</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/glossario.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      carregarTermos();
+    });
+  </script>
+</body>
+</html>

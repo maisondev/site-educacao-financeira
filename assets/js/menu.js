@@ -70,6 +70,11 @@ const MENU_ITEMS = [
     submenu: null
   },
   {
+    label: 'Glossário',
+    href: './glossario.html',
+    submenu: null
+  },
+  {
     label: 'Ferramentas',
     href: './ferramentas/calculadora-juros-compostos.html',
     submenu: [
