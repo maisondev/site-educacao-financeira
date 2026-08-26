@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grandes Livros | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .lista-livros {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--espacamento-xl);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-livro {
+      background: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-livro:hover {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      transform: translateY(-8px);
+    }
+
+    .livro-capa {
+      background: linear-gradient(135deg, #4a154b 0%, #1264a3 100%);
+      color: white;
+      padding: var(--espacamento-xl);
+      text-align: center;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 64px;
+    }
+
+    .livro-conteudo {
+      padding: var(--espacamento-lg);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .livro-titulo {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .livro-autor {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .livro-ano {
+      display: inline-block;
+      background-color: #f0f0f0;
+      color: #666;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: var(--espacamento-md);
+      width: fit-content;
+    }
+
+    .livro-resumo {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #555;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .livro-secao {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .livro-secao h4 {
+      color: var(--cor-primaria);
+      font-size: 13px;
+      margin: 0 0 8px 0;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-bottom: 1px solid var(--cor-cinza-leve);
+      padding-bottom: 6px;
+    }
+
+    .livro-lista {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .livro-lista li {
+      padding: 4px 0 4px 18px;
+      position: relative;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .livro-lista li:before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--cor-primaria);
+      font-weight: bold;
+    }
+
+    .livro-citacao {
+      background-color: var(--cor-cinza-leve);
+      border-left: 3px solid var(--cor-primaria);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      font-style: italic;
+      color: #666;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-top: auto;
+    }
+
+    .livro-citacao p {
+      margin: 0 0 6px 0;
+    }
+
+    .livro-citacao-autor {
+      text-align: right;
+      font-weight: 600;
+      font-style: normal;
+      color: #999;
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .lista-livros {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Grandes Livros</p>
+
+    <h1>Grandes Livros sobre Finanças e Riqueza</h1>
+
+    <p>
+      Uma curadoria dos livros mais influentes sobre educação financeira, investimentos e desenvolvimento pessoal.
+      Cada livro contém ensinamentos essenciais que mudaram a forma como milhões de pessoas pensam sobre dinheiro.
+    </p>
+
+    <div id="lista-livros" class="lista-livros"></div>
+
+    <section class="proximos-passos">
+      <h2>Como usar esta seção?</h2>
+      <ul>
+        <li>Leia o resumo de cada livro para entender seu foco principal</li>
+        <li>Note os princípios-chave que mais se alinham com seus objetivos</li>
+        <li>Use as citações como inspiração e motivação diária</li>
+        <li>Considere ler os livros que mais ressoam com você</li>
+        <li>Aplique os ensinamentos na sua vida financeira real</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/livros.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      carregarLivros();
+    });
+  </script>
+</body>
+</html>

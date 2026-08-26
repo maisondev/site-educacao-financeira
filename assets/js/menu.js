@@ -42,7 +42,8 @@ const MENU_ITEMS = [
     submenu: [
       { label: 'Glossário', href: './glossario.html' },
       { label: 'Grandes Máximas', href: './maximas.html' },
-      { label: 'Grandes Nomes', href: './pensadores.html' }
+      { label: 'Grandes Nomes', href: './pensadores.html' },
+      { label: 'Grandes Livros', href: './livros.html' }
     ]
   },
   {
