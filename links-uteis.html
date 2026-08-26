@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Links Úteis | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .links-categoria {
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .links-categoria h2 {
+      color: var(--cor-primaria);
+      margin-bottom: var(--espacamento-lg);
+      padding-bottom: var(--espacamento-md);
+      border-bottom: 2px solid var(--cor-primaria);
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--espacamento-md);
+    }
+
+    @media (min-width: 640px) {
+      .links-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .links-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      padding: var(--espacamento-lg);
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .link-card:hover {
+      box-shadow: var(--sombra-md);
+      border-color: var(--cor-primaria);
+      transform: translateY(-2px);
+      background-color: var(--cor-fundo);
+    }
+
+    .link-card h3 {
+      color: var(--cor-primaria);
+      margin-bottom: var(--espacamento-sm);
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .link-card p {
+      color: var(--cor-texto-light);
+      font-size: 14px;
+      margin-bottom: var(--espacamento-md);
+      flex-grow: 1;
+    }
+
+    .link-card-url {
+      display: inline-flex;
+      align-items: center;
+      color: var(--cor-azul);
+      font-weight: var(--fonte-peso-semibold);
+      font-size: 13px;
+      word-break: break-all;
+    }
+
+    .link-card-url::after {
+      content: "↗";
+      margin-left: 4px;
+    }
+
+    .destaque {
+      background: linear-gradient(135deg, var(--cor-primaria-light), var(--cor-primaria));
+      color: white;
+      padding: var(--espacamento-lg);
+      border-radius: var(--border-radius-md);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .destaque h2 {
+      border: none;
+      color: white;
+      margin-top: 0;
+    }
+
+    .destaque p {
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Links Úteis para Finanças</h1>
+    <p>
+      Uma curadoria dos melhores recursos disponíveis: plataformas de investimento,
+      consultoria de crédito, órgãos governamentais, educação e ferramentas para gerenciar suas finanças.
+    </p>
+
+    <div class="destaque">
+      <h2>Como usar esta página</h2>
+      <p>
+        Clique nos cards abaixo para acessar os sites. Cada link é verificado e apontado para
+        plataformas oficiais. Recomendamos fazer bookmark dos sites que usa frequentemente.
+      </p>
+    </div>
+
+    <!-- Investimentos -->
+    <section class="links-categoria">
+      <h2>Investimentos</h2>
+      <div class="links-grid">
+        <a href="https://www.tesouro.gov.br/tesouro-direto" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Tesouro Direto</h3>
+          <p>Plataforma oficial para comprar títulos do Tesouro Nacional. Invista em SELIC, Prefixado e IPCA com segurança.</p>
+          <span class="link-card-url">tesouro.gov.br</span>
+        </a>
+
+        <a href="https://www.b3.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>B3 - Bolsa de Valores</h3>
+          <p>Maior bolsa de valores da América Latina. Acesse cotações de ações, fundos, fundos imobiliários e outros ativos.</p>
+          <span class="link-card-url">b3.com.br</span>
+        </a>
+
+        <a href="https://www.gov.br/cidadania/pt-br/acesso-a-informacao/institucional/secretarias/asf/cvm" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>CVM - Comissão de Valores Mobiliários</h3>
+          <p>Órgão regulador do mercado de capitais. Consulte fundos, entidades e denuncie fraudes.</p>
+          <span class="link-card-url">cvm.gov.br</span>
+        </a>
+
+        <a href="https://www.infomoney.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Infomoney</h3>
+          <p>Portal com notícias, análises e educação sobre mercado de capitais e investimentos.</p>
+          <span class="link-card-url">infomoney.com.br</span>
+        </a>
+
+        <a href="https://www.genial.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Genial Investimentos</h3>
+          <p>Corretora com educação em investimentos, simuladores e análises de investidores.</p>
+          <span class="link-card-url">genial.com.br</span>
+        </a>
+
+        <a href="https://www.stockhero.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>StockHero</h3>
+          <p>Simulador de ações gratuito. Pratique investimento na bolsa sem risco com dinheiro virtual.</p>
+          <span class="link-card-url">stockhero.com.br</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Crédito e Score -->
+    <section class="links-categoria">
+      <h2>Crédito e Score</h2>
+      <div class="links-grid">
+        <a href="https://www.serasa.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Serasa</h3>
+          <p>Consulte seu score de crédito e análise de risco. Veja restrições e cadastros negativos associados ao seu CPF.</p>
+          <span class="link-card-url">serasa.com.br</span>
+        </a>
+
+        <a href="https://www.boavista.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Boa Vista SCPC</h3>
+          <p>Outra plataforma para consultar seu score de crédito e histórico de negativações.</p>
+          <span class="link-card-url">boavista.com.br</span>
+        </a>
+
+        <a href="https://www.bcb.gov.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Banco Central do Brasil</h3>
+          <p>Banco Central — consulte taxas de juros, histórico de política monetária e dados da economia.</p>
+          <span class="link-card-url">bcb.gov.br</span>
+        </a>
+
+        <a href="https://www.bcb.gov.br/pix" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Pix - Banco Central</h3>
+          <p>Informações oficiais sobre o Pix, transferências instantâneas e regulações.</p>
+          <span class="link-card-url">bcb.gov.br/pix</span>
+        </a>
+
+        <a href="https://simulador.serasa.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Simulador de Crédito - Serasa</h3>
+          <p>Simule empréstimos, financiamentos e crédito pessoal para comparar taxas.</p>
+          <span class="link-card-url">simulador.serasa.com.br</span>
+        </a>
+
+        <a href="https://www.seucreditoemdiaoficial.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Seu Crédito em Dia</h3>
+          <p>Programa do governo para renegociar dívidas e sair da negativação.</p>
+          <span class="link-card-url">seucreditoemdia.gov.br</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Órgãos Governamentais -->
+    <section class="links-categoria">
+      <h2>Órgãos Governamentais</h2>
+      <div class="links-grid">
+        <a href="https://www.gov.br/inss/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>INSS</h3>
+          <p>Instituto Nacional de Seguridade Social. Consulte aposentadorias, pensões e benefícios previdenciários.</p>
+          <span class="link-card-url">gov.br/inss</span>
+        </a>
+
+        <a href="https://www.gov.br/receita/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Receita Federal</h3>
+          <p>Secretaria da Receita Federal. Acesse declaração de IR, consulte CPF e gerencias seus impostos.</p>
+          <span class="link-card-url">gov.br/receita</span>
+        </a>
+
+        <a href="https://www.gov.br/cidadania/pt-br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Ministério da Cidadania</h3>
+          <p>Informações sobre programas sociais, auxílio e benefícios federais.</p>
+          <span class="link-card-url">gov.br/cidadania</span>
+        </a>
+
+        <a href="https://portaldatransparencia.gov.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Portal da Transparência</h3>
+          <p>Consulte gastos públicos, contratos, beneficiários e benefícios do governo federal.</p>
+          <span class="link-card-url">portaldatransparencia.gov.br</span>
+        </a>
+
+        <a href="https://www.gov.br/cidadania/pt-br/noticias/auxilio-brasil" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Auxílio Brasil</h3>
+          <p>Plataforma oficial do programa de transferência de renda. Consulte benefício e situação cadastral.</p>
+          <span class="link-card-url">gov.br/auxiliobrasil</span>
+        </a>
+
+        <a href="https://www.tesouro.gov.br/entenda-a-dida-publica" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Tesouro Nacional</h3>
+          <p>Secretaria do Tesouro Nacional. Dados sobre economia, dívida pública e finanças do governo.</p>
+          <span class="link-card-url">tesouro.gov.br</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Educação Financeira -->
+    <section class="links-categoria">
+      <h2>Educação Financeira</h2>
+      <div class="links-grid">
+        <a href="https://www.youtube.com/@NathaliaArcuri" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Nathalia Arcuri (YouTube)</h3>
+          <p>Canal com mais de 100 vídeos sobre educação financeira, investimentos e estratégias de riqueza.</p>
+          <span class="link-card-url">youtube.com/@NathaliaArcuri</span>
+        </a>
+
+        <a href="https://www.khanacademy.org/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Khan Academy</h3>
+          <p>Plataforma de educação com aulas gratuitas sobre finanças pessoais, economia e matemática financeira.</p>
+          <span class="link-card-url">khanacademy.org</span>
+        </a>
+
+        <a href="https://www.bcb.gov.br/educacao" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Educação Financeira - Banco Central</h3>
+          <p>Programa educativo oficial do Banco Central com conteúdo sobre literacia financeira.</p>
+          <span class="link-card-url">bcb.gov.br/educacao</span>
+        </a>
+
+        <a href="https://www.podcastdinheiro.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Podcast: Dinheiro</h3>
+          <p>Podcast sobre educação financeira, investimentos e economia com especialistas.</p>
+          <span class="link-card-url">podcastdinheiro.com.br</span>
+        </a>
+
+        <a href="https://blog.nubank.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Blog Nubank</h3>
+          <p>Artigos educacionais sobre finanças pessoais, investimentos e dicas de economia.</p>
+          <span class="link-card-url">blog.nubank.com.br</span>
+        </a>
+
+        <a href="https://www.itau.com.br/educacao-financeira/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Educação Financeira - Itaú</h3>
+          <p>Conteúdo educativo sobre planejamento financeiro, investimentos e economia.</p>
+          <span class="link-card-url">itau.com.br/educacao-financeira</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Ferramentas e Agregadores -->
+    <section class="links-categoria">
+      <h2>Ferramentas e Agregadores</h2>
+      <div class="links-grid">
+        <a href="https://www.comparabem.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>ComparaBem</h3>
+          <p>Compare taxas de juros, empréstimos, financiamentos e produtos financeiros de diferentes bancos.</p>
+          <span class="link-card-url">comparabem.com.br</span>
+        </a>
+
+        <a href="https://www.mobills.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Mobills</h3>
+          <p>App gratuito para controlar finanças pessoais, despesas, contas e investimentos.</p>
+          <span class="link-card-url">mobills.com.br</span>
+        </a>
+
+        <a href="https://www.wise.com/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Wise (Transferwise)</h3>
+          <p>Plataforma para transferências internacionais com taxas baixas e câmbio real.</p>
+          <span class="link-card-url">wise.com</span>
+        </a>
+
+        <a href="https://www.faturadigital.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Fatura Digital</h3>
+          <p>Acompanhe suas contas e faturas em um só lugar, com consolidação de cartões e boletos.</p>
+          <span class="link-card-url">faturadigital.com.br</span>
+        </a>
+
+        <a href="https://www.11financas.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>11 Finanças</h3>
+          <p>Agregador de contas e investimentos. Veja um consolidado de todas suas aplicações em um painel.</p>
+          <span class="link-card-url">11financas.com.br</span>
+        </a>
+
+        <a href="https://www.brasilpluralcapital.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Brasil Plural</h3>
+          <p>Plataforma educativa com cursos sobre investimentos, bolsa e mercado de capitais.</p>
+          <span class="link-card-url">brasilpluralcapital.com.br</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Bancos e Fintechs -->
+    <section class="links-categoria">
+      <h2>Bancos e Fintechs Principais</h2>
+      <div class="links-grid">
+        <a href="https://www.nubank.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Nubank</h3>
+          <p>Banco digital com conta, cartão de crédito, investimentos e seguros.</p>
+          <span class="link-card-url">nubank.com.br</span>
+        </a>
+
+        <a href="https://www.itau.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Itaú</h3>
+          <p>Banco tradicional com serviços completos: conta, investimentos, crédito e seguros.</p>
+          <span class="link-card-url">itau.com.br</span>
+        </a>
+
+        <a href="https://www.bradesco.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Bradesco</h3>
+          <p>Banco grande com serviços financeiros diversos: conta, investimentos, crédito.</p>
+          <span class="link-card-url">bradesco.com.br</span>
+        </a>
+
+        <a href="https://www.caixa.gov.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Caixa Econômica Federal</h3>
+          <p>Banco oficial do Brasil com foco em habitação, FGTS e programas sociais.</p>
+          <span class="link-card-url">caixa.gov.br</span>
+        </a>
+
+        <a href="https://www.inter.co/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>Banco Inter</h3>
+          <p>Banco digital com conta, cartão, investimentos e seguros sem taxa.</p>
+          <span class="link-card-url">inter.co</span>
+        </a>
+
+        <a href="https://www.99pay.com.br/" target="_blank" rel="noopener noreferrer" class="link-card">
+          <h3>99Pay</h3>
+          <p>Fintech de pagamentos e transferências. Funciona como carteira digital integrada.</p>
+          <span class="link-card-url">99pay.com.br</span>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+</body>
+</html>
