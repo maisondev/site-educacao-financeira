@@ -35,6 +35,11 @@ const MENU_ITEMS = [
     submenu: null
   },
   {
+    label: 'Despesas Fixas',
+    href: './despesas-fixas.html',
+    submenu: null
+  },
+  {
     label: 'Renda',
     href: './renda-extra.html',
     submenu: null

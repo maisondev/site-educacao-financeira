@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Despesas Fixas | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .configurar-salario {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .configurar-salario h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .input-grupo {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .input-grupo input {
+      flex: 1;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .input-grupo button {
+      padding: var(--espacamento-sm) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .input-grupo button:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .salario-info {
+      background-color: white;
+      border: 2px solid var(--cor-primaria);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .salario-info p {
+      margin: 0 0 var(--espacamento-sm) 0;
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .salario-info .valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 0;
+    }
+
+    .resumo-despesas {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-info {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-info p {
+      margin: 0 0 var(--espacamento-sm) 0;
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .card-info .valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 0;
+    }
+
+    .card-info.alerta .valor {
+      color: var(--cor-amarelo);
+    }
+
+    .card-info.sucesso .valor {
+      color: var(--cor-verde);
+    }
+
+    .alerta-percentual {
+      background-color: #ffe6e6;
+      border: 1px solid var(--cor-vermelho);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+      color: var(--cor-vermelho);
+    }
+
+    .alerta-percentual p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .alerta-percentual strong {
+      font-size: 16px;
+    }
+
+    .progresso-despesas {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .progresso-titulo {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .progresso-titulo h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .progresso-percentual {
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .barra-progresso {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 8px;
+      height: 24px;
+      overflow: hidden;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .barra-progresso-fill {
+      background-color: var(--cor-primaria);
+      height: 100%;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .barra-progresso-fill.alerta {
+      background-color: var(--cor-amarelo);
+    }
+
+    .barra-progresso-fill.erro {
+      background-color: var(--cor-vermelho);
+    }
+
+    .info-progresso {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+    }
+
+    .lista-despesas {
+      display: grid;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .despesa-item {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--cor-primaria);
+    }
+
+    .despesa-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+    }
+
+    .despesa-categoria {
+      margin: 0;
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+    }
+
+    .despesa-valor {
+      text-align: right;
+    }
+
+    .despesa-valor-principal {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-bottom: 4px;
+    }
+
+    .despesa-percentual {
+      font-size: 12px;
+      color: var(--cor-texto-leve);
+    }
+
+    .btn-remover {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-remover:hover {
+      color: #c53030;
+    }
+
+    .btn-adicionar {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .btn-adicionar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+    }
+
+    .lista-vazia p {
+      margin: 0;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body {
+      padding: var(--espacamento-lg);
+    }
+
+    .form-group {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-salvar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-cancelar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    .btn-cancelar:hover {
+      background-color: #e8e8e8;
+    }
+
+    @media (max-width: 640px) {
+      .resumo-despesas {
+        grid-template-columns: 1fr;
+      }
+
+      .despesa-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .despesa-valor {
+        text-align: left;
+        margin-top: var(--espacamento-md);
+        width: 100%;
+      }
+
+      .btn-remover {
+        position: absolute;
+        right: var(--espacamento-lg);
+        top: var(--espacamento-lg);
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Despesas Fixas</p>
+
+    <h1>Despesas Fixas Mensais</h1>
+
+    <p>
+      Registre suas despesas fixas (aluguel, internet, etc) e acompanhe quanto do seu salário
+      está comprometido. O ideal é manter despesas fixas abaixo de 50% da renda.
+    </p>
+
+    <section class="configurar-salario">
+      <h2>Seu Salário Mensal</h2>
+      <div class="input-grupo">
+        <input type="text" id="input-salario" data-moeda placeholder="Ex: 3.000,00" min="0">
+        <button onclick="definirSalario()">Definir Salário</button>
+      </div>
+      <div id="salario-info" class="salario-info" hidden>
+        <p>Salário Total Mensal</p>
+        <p class="valor" id="valor-salario">R$ 0,00</p>
+      </div>
+    </section>
+
+    <section id="resumo-container" hidden>
+      <div class="resumo-despesas">
+        <div class="card-info">
+          <p>Total de Despesas Fixas</p>
+          <p class="valor" id="valor-total-despesas">R$ 0,00</p>
+        </div>
+        <div class="card-info">
+          <p>Salário Disponível</p>
+          <p class="valor" id="valor-disponivel">R$ 0,00</p>
+        </div>
+        <div class="card-info" id="card-percentual">
+          <p>Percentual Comprometido</p>
+          <p class="valor" id="percentual-despesas">0%</p>
+        </div>
+      </div>
+
+      <div id="alerta-container"></div>
+
+      <div class="progresso-despesas">
+        <div class="progresso-titulo">
+          <h3>Quanto do seu salário está comprometido</h3>
+          <span class="progresso-percentual" id="progresso-percentual">0%</span>
+        </div>
+        <div class="barra-progresso">
+          <div class="barra-progresso-fill" id="barra-fill" style="width: 0%">
+            <span id="texto-barra"></span>
+          </div>
+        </div>
+        <div class="info-progresso">
+          <span>Ideal: até 50% do salário</span>
+          <span id="status-percentual">Dentro do esperado</span>
+        </div>
+      </div>
+
+      <section>
+        <h2>Suas Despesas Fixas</h2>
+        <button class="btn-adicionar" onclick="abrirModalDespesa()">Adicionar Despesa Fixa</button>
+
+        <div id="lista-despesas" class="lista-despesas">
+          <div class="lista-vazia">
+            <p>Nenhuma despesa registrada. Comece adicionando acima!</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Dicas para controlar despesas fixas</h2>
+      <ul>
+        <li>Despesas fixas devem ser no máximo 50% do seu salário - isso deixa margem para variáveis e metas</li>
+        <li>Mantenha um registro de todas as suas assinaturas e compromissos mensais</li>
+        <li>Revise suas despesas fixas a cada trimestre - identifique serviços que não usa mais</li>
+        <li>Negocie: internet, telefone e seguros costumam ter espaço para negociação</li>
+        <li>Se despesas fixas > 50%, considere mudar de moradia ou cortarserviços não essenciais</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Modal para adicionar despesa -->
+  <div id="modal-despesa" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Despesa Fixa</h2>
+        <button class="btn-fechar" onclick="fecharModalDespesa()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-nome">Nome da Despesa *</label>
+          <input type="text" id="input-nome" placeholder="Ex: Aluguel" required>
+        </div>
+        <div class="form-group">
+          <label for="select-categoria">Categoria *</label>
+          <select id="select-categoria" required>
+            <option value="">Selecione</option>
+            <option value="moradia">Moradia (Aluguel/Hipoteca)</option>
+            <option value="utilidades">Utilidades (Água, Luz, Internet)</option>
+            <option value="transporte">Transporte (Combustível, Carro)</option>
+            <option value="saude">Saúde (Seguro, Medicamentos)</option>
+            <option value="educacao">Educação (Cursos, Materiais)</option>
+            <option value="assinatura">Assinaturas (Netflix, Academia)</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-valor">Valor (R$) *</label>
+          <input type="text" id="input-valor" data-moeda placeholder="Ex: 1.500,00" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" onclick="salvarDespesa()">Adicionar</button>
+        <button class="btn-cancelar" onclick="fecharModalDespesa()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/despesas-fixas.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      configurarTodosCamposMoeda();
+    });
+  </script>
+</body>
+</html>
