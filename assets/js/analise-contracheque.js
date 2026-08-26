@@ -206,50 +206,45 @@ function extrairDados(texto) {
       }
     }
 
-    // Extrair totais - procurar múltiplos padrões
-    for (let i = 0; i < linhas.length; i++) {
-      const linha = linhas[i];
+    // Extrair totais - procurar em toda a string junto
+    // Procura padrões como "Total de ganhos (P+V) R$ 13.180,29"
+    const totalBrutoMatch = texto.match(/Total\s+de\s+ganhos\s*[\(\w\+\)]*\s*([\d.,]+)/i) ||
+                           texto.match(/P\+V\)\s*([\d.,]+)/i);
+    if (totalBrutoMatch) {
+      const valor = normalizarValor(totalBrutoMatch[1]);
+      if (valor > 5000) dados.totalBruto = valor;
+    }
 
-      // Total bruto (pode ser "Total de ganhos" ou similar)
-      if ((linha.includes('Total') && (linha.includes('ganho') || linha.includes('GANHO') || linha.includes('P+V'))) ||
-          (linha.includes('13180') || linha.match(/\d{4,}/))) { // fallback: procura números grandes
-        const valor = extrairValor(linha);
-        if (valor && valor > 5000 && valor < 50000 && !dados.totalBruto) {
-          dados.totalBruto = valor;
-        }
-      }
+    const totalDescMatch = texto.match(/Total\s+de\s+descontos\s*[\(\w\)]*\s*([\d.,]+)/i) ||
+                          texto.match(/\(D\)\s*([\d.,]+)/i);
+    if (totalDescMatch) {
+      const valor = normalizarValor(totalDescMatch[1]);
+      if (valor > 0) dados.totalDescontos = valor;
+    }
 
-      // Total descontos
-      if ((linha.includes('Total') && (linha.includes('desconto') || linha.includes('DESCONTO') || linha.includes('D)'))) ||
-          linha.includes('4322')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0 && !dados.totalDescontos) {
-          dados.totalDescontos = valor;
-        }
-      }
+    const liquídoMatch = texto.match(/Líquido\s*([\d.,]+)/i) ||
+                        texto.match(/Líquid\w*\s*([\d.,]+)/i);
+    if (liquídoMatch) {
+      const valor = normalizarValor(liquídoMatch[1]);
+      if (valor > 0) dados.salarioLiquido = valor;
+    }
 
-      // Líquido (salário líquido)
-      if ((linha.includes('Líquido') || linha.includes('liquido') || linha.includes('LÍQUIDO')) && !linha.includes('Plano')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0 && !dados.salarioLiquido) {
-          dados.salarioLiquido = valor;
-        }
-      }
-
-      // FGTS
-      if (linha.includes('FGTS')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.fgts = valor;
-        }
-      }
+    const fgtsMatch = texto.match(/FGTS\s*([\d.,]+)/i);
+    if (fgtsMatch) {
+      dados.fgts = normalizarValor(fgtsMatch[1]);
     }
 
     console.log('Dados extraídos:', dados); // Debug
 
-    // Validar dados mínimos (menos rigoroso)
-    if (!dados.salarioLiquido) {
-      console.warn('Salário líquido não encontrado');
+    // Se não encontrou o líquido, calcular como bruto - descontos
+    if (!dados.salarioLiquido && dados.totalBruto && dados.totalDescontos) {
+      dados.salarioLiquido = dados.totalBruto - dados.totalDescontos;
+      console.log('Líquido calculado como:', dados.salarioLiquido);
+    }
+
+    // Validar dados mínimos
+    if (!dados.salarioLiquido || dados.salarioLiquido <= 0) {
+      console.warn('Não foi possível extrair o salário líquido. Dados:', dados);
       return null;
     }
 
