@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receitas | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .formulario-receita {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .formulario-receita label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      margin-top: var(--espacamento-md);
+      color: var(--cor-texto);
+    }
+
+    .formulario-receita label:first-child {
+      margin-top: 0;
+    }
+
+    .formulario-receita input,
+    .formulario-receita select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .formulario-receita input:focus,
+    .formulario-receita select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .btn-primario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-primario:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .resumo-receitas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-resumo {
+      background-color: white;
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-resumo h3 {
+      margin: 0 0 var(--espacamento-sm) 0;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      text-transform: uppercase;
+    }
+
+    .card-resumo .valor {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .lista-receitas {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-md);
+    }
+
+    .item-receita {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--espacamento-md);
+      background: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-md) var(--espacamento-lg);
+    }
+
+    .item-receita-titulo {
+      font-weight: bold;
+      color: var(--cor-texto);
+    }
+
+    .item-receita-meta {
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+      margin-top: 2px;
+    }
+
+    .item-receita-tipo {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      background-color: #e6f2ff;
+      color: #1264a3;
+      margin-right: 6px;
+    }
+
+    .item-receita-valor {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      white-space: nowrap;
+    }
+
+    .btn-remover-receita {
+      background: none;
+      border: none;
+      color: #c0392b;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+    }
+
+    .secao-periodo {
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .periodo-titulo {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-bottom: var(--espacamento-md);
+      padding-bottom: var(--espacamento-md);
+      border-bottom: 2px solid var(--cor-primaria);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .periodo-subtotal {
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+    }
+
+    .receitas-periodo {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-md);
+    }
+
+    @media (max-width: 640px) {
+      .item-receita {
+        flex-direction: column;
+      }
+
+      .periodo-titulo {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--espacamento-sm);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Receitas</p>
+
+    <h1>Receitas</h1>
+
+    <p>
+      Registre tudo que você recebe: salário mensal, férias, 13º salário, bônus, restituição de IR, venda de item.
+      Diferente da Renda Extra (fontes recorrentes paralelas ao salário), aqui é o extrato de tudo que entrou,
+      recorrente ou pontual.
+    </p>
+
+    <div class="resumo-receitas">
+      <div class="card-resumo">
+        <h3>Total no Ano</h3>
+        <div class="valor" id="resumo-total-ano">R$ 0,00</div>
+      </div>
+      <div class="card-resumo">
+        <h3>Total no Mês</h3>
+        <div class="valor" id="resumo-total-mes">R$ 0,00</div>
+      </div>
+      <div class="card-resumo">
+        <h3>Registros</h3>
+        <div class="valor" id="resumo-quantidade">0</div>
+      </div>
+    </div>
+
+    <section style="background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-xl);">
+      <h2 style="margin-top: 0; color: #2e7d32;">Importar Salários do Contracheque</h2>
+      <p style="margin: 0 0 var(--espacamento-md) 0; color: #1b5e20;">
+        Adicione automaticamente os salários registrados em Análise de Contracheque para este ano.
+      </p>
+      <button type="button" class="btn-primario" onclick="importarSalarios()" style="background-color: #4caf50;">
+        Importar Salários de Contracheques
+      </button>
+      <div id="msg-importacao" style="margin-top: var(--espacamento-md); font-size: 0.9rem;"></div>
+    </section>
+
+    <section class="formulario-receita">
+      <h2>Registrar Receita</h2>
+
+      <label for="receita-nome">Descrição *</label>
+      <input type="text" id="receita-nome" placeholder="Ex: Férias, 13º salário, Bônus, Salário de Agosto">
+
+      <label for="receita-tipo">Tipo *</label>
+      <select id="receita-tipo">
+        <option value="salario">Salário</option>
+        <option value="ferias">Férias</option>
+        <option value="decimo">13º Salário</option>
+        <option value="bonus">Bônus/PLR</option>
+        <option value="restituicao">Restituição de IR</option>
+        <option value="venda">Venda de item</option>
+        <option value="outro">Outro</option>
+      </select>
+
+      <label for="receita-valor">Valor Líquido Recebido (R$) *</label>
+      <input type="number" id="receita-valor" min="0" step="0.01" placeholder="Ex: 15204.59">
+
+      <label for="receita-data">Data do Recebimento *</label>
+      <input type="date" id="receita-data">
+
+      <label for="receita-destino">Para onde foi/vai esse dinheiro? (opcional)</label>
+      <input type="text" id="receita-destino" placeholder="Ex: Quitação do cartão + reserva de emergência">
+
+      <button type="button" class="btn-primario" onclick="adicionarReceita()">Registrar</button>
+    </section>
+
+    <section>
+      <h2>Histórico de Receitas</h2>
+
+      <div style="margin-bottom: var(--espacamento-lg);">
+        <label for="filtro-ano" style="margin-right: var(--espacamento-md);">
+          <strong>Filtrar por Ano:</strong>
+          <select id="filtro-ano" onchange="renderizarReceitas()" style="padding: var(--espacamento-sm) var(--espacamento-md); border: 1px solid var(--cor-borda); border-radius: 4px; font-size: 14px; min-width: 100px;">
+            <option value="">Todos os anos</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="lista-receitas" class="lista-receitas">
+        <div class="lista-vazia"><p>Nenhuma receita registrada ainda.</p></div>
+      </div>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Como usar</h2>
+      <ul>
+        <li>Receitas pontuais (férias, 13º, bônus) não entram na renda mensal recorrente usada em Envelopes</li>
+        <li>Use o campo "destino" pra lembrar depois onde o dinheiro foi aplicado</li>
+        <li>Todo ano os valores sazonais (férias, 13º) tendem a se repetir — use o histórico pra já planejar o próximo</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/receitas.js"></script>
+</body>
+</html>
