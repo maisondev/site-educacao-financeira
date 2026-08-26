@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Inflação | Educação Financeira</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .calculadora-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 12px;
+      padding: var(--espacamento-xl);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .formulario-calculadora {
+      display: grid;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .form-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-md);
+    }
+
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .info-box {
+      background-color: var(--cor-cinza-leve);
+      border-left: 4px solid var(--cor-primaria);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .resultado-container {
+      background: linear-gradient(135deg, #4a154b 0%, #1264a3 100%);
+      color: white;
+      padding: var(--espacamento-xl);
+      border-radius: 12px;
+      margin-bottom: var(--espacamento-xl);
+      display: none;
+    }
+
+    .resultado-container.ativo {
+      display: block;
+    }
+
+    .resultado-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .resultado-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .resultado-label {
+      font-size: 13px;
+      opacity: 0.9;
+      text-transform: uppercase;
+    }
+
+    .resultado-valor {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .comparacao-visual {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-top: var(--espacamento-xl);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .comparacao-card {
+      background-color: #f9f9f9;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .comparacao-card h3 {
+      margin-top: 0;
+      color: var(--cor-primaria);
+      font-size: 14px;
+    }
+
+    .comparacao-valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+      margin: var(--espacamento-md) 0;
+    }
+
+    .perda-poder {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: var(--espacamento-lg);
+      border-radius: 8px;
+      margin: var(--espacamento-xl) 0;
+    }
+
+    .perda-poder h3 {
+      margin-top: 0;
+      color: #856404;
+    }
+
+    .perda-percentual {
+      font-size: 20px;
+      font-weight: bold;
+      color: #d9534f;
+    }
+
+    @media (max-width: 640px) {
+      .resultado-item {
+        grid-template-columns: 1fr;
+      }
+
+      .comparacao-visual {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="../index.html">Início</a> / <a href="#">Ferramentas</a> / Inflação</p>
+
+    <h1>Calculadora de Inflação</h1>
+
+    <p>
+      Descubra quanto um valor do passado vale hoje em termos de poder de compra.
+      A inflação reduz o valor do dinheiro ao longo do tempo.
+    </p>
+
+    <div class="calculadora-container">
+      <div class="info-box">
+        <strong>Como funciona:</strong> Insira um valor de uma data passada e veja seu equivalente
+        atual considerando a inflação. Exemplo: R$ 1.000 em 2020 vale quanto em 2026?
+      </div>
+
+      <form class="formulario-calculadora" onsubmit="calcularInflacao(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="valor-passado">Valor na data passada (R$) *</label>
+            <input type="text" id="valor-passado" placeholder="ex: 1.000,00" class="campo-moeda" required>
+          </div>
+
+          <div class="form-group">
+            <label for="taxa-inflacao">Taxa de inflação anual (%) *</label>
+            <input type="number" id="taxa-inflacao" placeholder="ex: 8.5" min="0" step="0.01" value="8.5" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="ano-inicial">Ano inicial *</label>
+            <input type="number" id="ano-inicial" min="1900" max="2100" value="2020" required>
+          </div>
+
+          <div class="form-group">
+            <label for="ano-final">Ano final (atual) *</label>
+            <input type="number" id="ano-final" min="1900" max="2100" value="2026" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <small style="color: #666;">
+            <strong>Dica:</strong> Taxa média de inflação (IPCA) no Brasil tem variado entre 2% e 10% ao ano.
+            Consulte o Banco Central para dados exatos.
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-large">Calcular</button>
+      </form>
+
+      <div id="resultado" class="resultado-container">
+        <div class="resultado-item">
+          <div>
+            <div class="resultado-label">Valor em (ano inicial)</div>
+            <div class="resultado-valor" id="resultado-valor-passado">R$ 0,00</div>
+          </div>
+          <div>
+            <div class="resultado-label">Equivalente em (ano final)</div>
+            <div class="resultado-valor" id="resultado-valor-atual">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comparacao-visual" id="comparacao" style="display: none;">
+        <div class="comparacao-card">
+          <h3>Valor Original</h3>
+          <div class="comparacao-valor" id="comp-valor-original">R$ 0,00</div>
+          <p style="color: #666; margin: 0;">em <span id="comp-ano-inicial">2020</span></p>
+        </div>
+
+        <div class="comparacao-card">
+          <h3>Valor Equivalente Hoje</h3>
+          <div class="comparacao-valor" id="comp-valor-hoje">R$ 0,00</div>
+          <p style="color: #666; margin: 0;">em <span id="comp-ano-final">2026</span></p>
+        </div>
+      </div>
+
+      <div class="perda-poder" id="perda" style="display: none;">
+        <h3>Poder de Compra Reduzido</h3>
+        <p id="perda-texto">-</p>
+        <div class="perda-percentual" id="perda-percentual">-</div>
+        <p style="margin-bottom: 0; font-size: 14px; color: #666;">
+          Seu dinheiro vale <strong>menos</strong> hoje do que valia no passado.
+        </p>
+      </div>
+    </div>
+
+    <h2>Exemplos para testar</h2>
+
+    <p>Experimente estes cenários:</p>
+
+    <ul>
+      <li>
+        <strong>Salário antigo:</strong> R$ 2.000 em 2020 (taxa 8.5%) = quanto vale em 2026?
+      </li>
+      <li>
+        <strong>Herança:</strong> R$ 50.000 em 2015 (taxa 7%) = quanto vale em 2026?
+      </li>
+      <li>
+        <strong>Poupança:</strong> R$ 10.000 em 2010 (taxa 6%) = quanto vale em 2026?
+      </li>
+    </ul>
+
+    <h2>Por que a inflação importa?</h2>
+
+    <ul>
+      <li>
+        <strong>Seu dinheiro perde valor</strong> — R$ 1.000 guardado em 2020 não compra o mesmo
+        que comprava hoje
+      </li>
+      <li>
+        <strong>Investimentos precisam render</strong> — para apenas manter o poder de compra,
+        precisa render acima da inflação
+      </li>
+      <li>
+        <strong>Planejamento financeiro</strong> — considere inflação ao planejar gastos futuros
+      </li>
+      <li>
+        <strong>Salários devem aumentar</strong> — idealmente acompanham ou superam a inflação
+      </li>
+    </ul>
+
+    <section class="proximos-passos">
+      <h2>Saiba mais</h2>
+      <ul>
+        <li><a href="../temas/juros-e-investimentos/juros-compostos-na-pratica.html">Entenda Juros Compostos</a> — investimentos que batem a inflação</li>
+        <li><a href="../ferramentas/calculadora-juros-compostos.html">Calculadora de Juros Compostos</a> — veja como seus investimentos crescem</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/formatacao.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      configurarTodosCamposMoeda();
+    });
+  </script>
+  <script src="../assets/js/calculadora-inflacao.js"></script>
+</body>
+</html>
