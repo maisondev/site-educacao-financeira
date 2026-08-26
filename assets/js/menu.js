@@ -50,7 +50,8 @@ const MENU_ITEMS = [
     label: 'Ferramentas',
     href: './ferramentas/calculadora-juros-compostos.html',
     submenu: [
-      { label: 'Calculadora de Juros', href: './ferramentas/calculadora-juros-compostos.html' }
+      { label: 'Juros Compostos', href: './ferramentas/calculadora-juros-compostos.html' },
+      { label: 'Juros Simples', href: './ferramentas/calculadora-juros-simples.html' }
     ]
   }
 ];

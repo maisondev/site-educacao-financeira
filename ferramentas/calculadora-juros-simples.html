@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Juros Simples | Educação Financeira</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <style>
+    .calculadora-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 12px;
+      padding: var(--espacamento-xl);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .formulario-calculadora {
+      display: grid;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .form-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-md);
+    }
+
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .formula-info {
+      background-color: var(--cor-cinza-leve);
+      border-left: 4px solid var(--cor-primaria);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: var(--espacamento-lg);
+      font-family: 'Courier New', monospace;
+    }
+
+    .resultado-container {
+      background: linear-gradient(135deg, #4a154b 0%, #1264a3 100%);
+      color: white;
+      padding: var(--espacamento-xl);
+      border-radius: 12px;
+      margin-bottom: var(--espacamento-xl);
+      display: none;
+    }
+
+    .resultado-container.ativo {
+      display: block;
+    }
+
+    .resultado-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .resultado-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .resultado-label {
+      font-size: 13px;
+      opacity: 0.9;
+      text-transform: uppercase;
+    }
+
+    .resultado-valor {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .tabela-juros {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--espacamento-lg);
+      font-size: 14px;
+    }
+
+    .tabela-juros thead {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .tabela-juros th {
+      padding: var(--espacamento-sm);
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .tabela-juros td {
+      padding: var(--espacamento-sm);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .tabela-juros tbody tr:hover {
+      background-color: var(--cor-cinza-leve);
+    }
+
+    .exemplo-pratico {
+      background-color: #f9f9f9;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .exemplo-pratico h3 {
+      margin-top: 0;
+      color: var(--cor-primaria);
+    }
+
+    .exemplo-pratico p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .comparacao-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .comparacao-card {
+      background-color: var(--cor-cinza-leve);
+      padding: var(--espacamento-lg);
+      border-radius: 8px;
+    }
+
+    .comparacao-card h4 {
+      margin-top: 0;
+      color: var(--cor-primaria);
+    }
+
+    .comparacao-card p {
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    @media (max-width: 640px) {
+      .resultado-item {
+        grid-template-columns: 1fr;
+      }
+
+      .comparacao-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="../index.html">Início</a> / <a href="#">Ferramentas</a> / Juros Simples</p>
+
+    <h1>Calculadora de Juros Simples</h1>
+
+    <p>
+      Calcule quanto você vai ganhar (ou pagar) de juros de forma simples.
+      Juros simples são aqueles que não se compõem ao longo do tempo.
+    </p>
+
+    <div class="calculadora-container">
+      <div class="formula-info">
+        <strong>Fórmula:</strong> J = C × i × t
+        <br>
+        <strong>Montante:</strong> M = C + J
+        <br>
+        <em>Onde: C = Capital, i = Taxa, t = Tempo, J = Juros, M = Montante</em>
+      </div>
+
+      <form class="formulario-calculadora" onsubmit="calcularJuros(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="capital">Capital Inicial *</label>
+            <input type="text" id="capital" placeholder="ex: 1.000,00" class="campo-moeda" required>
+          </div>
+
+          <div class="form-group">
+            <label for="taxa">Taxa de Juros (%) *</label>
+            <input type="number" id="taxa" placeholder="ex: 5" min="0" step="0.01" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tempo">Tempo *</label>
+            <input type="number" id="tempo" placeholder="ex: 12" min="0" step="0.1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="periodo">Período *</label>
+            <select id="periodo" required>
+              <option value="">Selecione...</option>
+              <option value="dia">Dia</option>
+              <option value="mes">Mês</option>
+              <option value="ano">Ano</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-large">Calcular</button>
+      </form>
+
+      <div id="resultado" class="resultado-container">
+        <div class="resultado-item">
+          <div>
+            <div class="resultado-label">Capital Inicial</div>
+            <div class="resultado-valor" id="resultado-capital">R$ 0,00</div>
+          </div>
+          <div>
+            <div class="resultado-label">Taxa</div>
+            <div class="resultado-valor" id="resultado-taxa">0%</div>
+          </div>
+        </div>
+
+        <div class="resultado-item">
+          <div>
+            <div class="resultado-label">Juros Ganhos</div>
+            <div class="resultado-valor" id="resultado-juros">R$ 0,00</div>
+          </div>
+          <div>
+            <div class="resultado-label">Montante Final</div>
+            <div class="resultado-valor" id="resultado-montante">R$ 0,00</div>
+          </div>
+        </div>
+
+        <table class="tabela-juros" id="tabela-progressao">
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th>Juros Acumulados</th>
+              <th>Montante</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-tabela"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="exemplo-pratico">
+      <h3>Exemplo Prático</h3>
+      <p><strong>Situação:</strong> Você tem R$ 10.000 e quer investir a 2% ao mês por 12 meses.</p>
+      <p><strong>Cálculo:</strong></p>
+      <ul>
+        <li>Juros = 10.000 × 2% × 12 = R$ 2.400</li>
+        <li>Montante = 10.000 + 2.400 = R$ 12.400</li>
+      </ul>
+      <p><strong>Resultado:</strong> Você terá R$ 12.400 ao final de 12 meses, ganhando R$ 2.400 em juros.</p>
+    </div>
+
+    <div class="comparacao-container">
+      <div class="comparacao-card">
+        <h4>Juros Simples</h4>
+        <p>Juros incidem apenas sobre o capital inicial. Crescimento linear. Usado em: empréstimos pessoais, alguns investimentos.</p>
+      </div>
+      <div class="comparacao-card">
+        <h4>Juros Compostos</h4>
+        <p>Juros incidem sobre juros. Crescimento exponencial. Usado em: poupança, investimentos, financiamentos.</p>
+      </div>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Dicas ao usar juros simples</h2>
+      <ul>
+        <li>Juros simples cresce linearmente (sempre a mesma quantidade por período)</li>
+        <li>Use quando a taxa é aplicada apenas ao capital original</li>
+        <li>Compare com juros compostos para entender a diferença</li>
+        <li>Em investimentos, juros compostos geralmente é mais favorável</li>
+        <li>Em empréstimos simples, juros simples pode ser mais vantajoso</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/menu.js"></script>
+  <script src="../assets/js/formatacao.js"></script>
+  <script src="../assets/js/calculadora-juros-simples.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      configurarTodosCamposMoeda();
+    });
+  </script>
+</body>
+</html>
