@@ -4,6 +4,39 @@ const CHAVE_CONTRACHEQUES = 'contracheques_historico';
 
 let contrachequeAtual = null;
 
+// Tabela progressiva mensal do IRRF vigente em 2026
+const TABELA_IRRF_2026 = [
+  { ate: 2428.80, aliquota: 0, deduzir: 0 },
+  { ate: 2826.65, aliquota: 0.075, deduzir: 182.16 },
+  { ate: 3751.05, aliquota: 0.15, deduzir: 394.16 },
+  { ate: 4664.68, aliquota: 0.225, deduzir: 675.49 },
+  { ate: Infinity, aliquota: 0.275, deduzir: 908.73 }
+];
+const DEDUCAO_POR_DEPENDENTE_IRRF = 189.59;
+
+function calcularIRRFEsperado(baseCalculo) {
+  if (baseCalculo <= 0) return 0;
+  const faixa = TABELA_IRRF_2026.find(f => baseCalculo <= f.ate);
+  const valor = baseCalculo * faixa.aliquota - faixa.deduzir;
+  return Math.max(0, valor);
+}
+
+// Tabela progressiva mensal do INSS (CLT) vigente em 2026
+const TABELA_INSS_2026 = [
+  { ate: 1621.00, aliquota: 0.075, deduzir: 0 },
+  { ate: 2902.84, aliquota: 0.09, deduzir: 24.32 },
+  { ate: 4354.27, aliquota: 0.12, deduzir: 111.40 },
+  { ate: 8475.55, aliquota: 0.14, deduzir: 198.49 }
+];
+const TETO_INSS_2026 = 8475.55 * 0.14 - 198.49;
+
+function calcularINSSEsperado(baseCalculo) {
+  if (baseCalculo <= 0) return 0;
+  if (baseCalculo > TABELA_INSS_2026[TABELA_INSS_2026.length - 1].ate) return TETO_INSS_2026;
+  const faixa = TABELA_INSS_2026.find(f => baseCalculo <= f.ate);
+  return Math.max(0, baseCalculo * faixa.aliquota - faixa.deduzir);
+}
+
 // Função auxiliar para normalizar valores
 function normalizarValor(str) {
   // Aceita: "R$ 8.858,08", "8.858,08", "8858,08" ou "8858.08"
@@ -135,74 +168,71 @@ function extrairDados(texto) {
       dados.data = new Date(`${dataMatch[3]}-${dataMatch[2]}-${dataMatch[1]}`);
     }
 
-    // Extrair vencimentos - abordagem: procurar número antes de cada palavra-chave
-    dados.vencimentos = [];
-
-    // Procura número (flexível com espaços) antes de palavra-chave
-    const extrairPorPalavraChave = (texto, palavra, descricao, minValor, maxValor) => {
-      // Procura: número com até 2 espaços antes da palavra
-      const regex = new RegExp(`([\\d.]+,\\d{2})\\s{0,3}[\\d.,]*\\s{0,3}${palavra}`, 'i');
+    // O pdf.js extrai cada linha da tabela invertida: "VALOR REF DESCRIÇÃO CÓDIGO"
+    // (o valor vem antes do código do evento, não depois). Por isso ancoramos
+    // a busca no código do evento, que é estável mesmo se a descrição mudar de acentuação.
+    const extrairPorCodigo = (codigo, minValor, maxValor) => {
+      // O trecho entre a descrição e o código pode ter dígitos soltos (ex: "Hora Extra 50%"),
+      // mas não pode atravessar outro número decimal "N,NN" — isso indicaria que pulou
+      // para a linha seguinte da tabela e pegaria o valor errado.
+      const regex = new RegExp(`([\\d.]+,\\d{2})\\s{0,3}[\\d.,]*\\s{0,3}(?:(?!\\d+,\\d{2})[\\s\\S]){0,120}?(?<!\\d)${codigo}(?!\\d)`, 'i');
       const match = texto.match(regex);
       if (match) {
         const valor = normalizarValor(match[1]);
         if (valor >= minValor && valor <= maxValor) {
-          return { descricao, valor };
+          return valor;
         }
       }
       return null;
     };
 
-    const vent = extrairPorPalavraChave(texto, 'Vencimento.*CLT', 'Vencimento CLT', 5000, 50000);
-    if (vent) dados.vencimentos.push(vent);
-
-    const grat = extrairPorPalavraChave(texto, 'Gratificação.*[Tt]empo', 'Gratificação Tempo de Serviço', 100, 10000);
-    if (grat) dados.vencimentos.push(grat);
-
-    const aux = extrairPorPalavraChave(texto, '[Aa]uxil.*[Cc]reche', 'Auxílio Creche', 100, 10000);
-    if (aux) dados.vencimentos.push(aux);
-
-    // Extrair descontos - mesmo padrão de vencimentos
-    dados.descontos = [];
-
-    // Procurar valores específicos por código - procura cada código individualmente
-    const codigosDescontos = [
-      { codigo: '5003', descricao: 'INSS', min: 800, max: 1500 },
-      { codigo: '5004', descricao: 'IRRF', min: 1500, max: 3000 },
-      { codigo: '5318', descricao: 'Plano de Saúde - Titular', min: 200, max: 600 },
-      { codigo: '5616', descricao: 'Plano de Saúde - Dependente', min: 200, max: 800 },
-      { codigo: '5613', descricao: 'Plano Odontológico - Titular', min: 1, max: 100 },
-      { codigo: '5615', descricao: 'Plano Odontológico - Dependente', min: 1, max: 100 },
-      { codigo: '5748', descricao: 'Desconto Refeição', min: 100, max: 500 },
-      { codigo: '5752', descricao: 'Desconto Alimentação', min: 10, max: 200 }
+    dados.vencimentos = [];
+    const eventosVencimentos = [
+      { codigo: '0002', descricao: 'Vencimento CLT', min: 5000, max: 50000 },
+      { codigo: '0028', descricao: 'Gratificação Tempo de Serviço', min: 100, max: 10000 },
+      { codigo: '0082', descricao: 'Hora Extra 50%', min: 10, max: 10000 },
+      { codigo: '0083', descricao: 'Hora Extra 100%', min: 10, max: 10000 },
+      { codigo: '1012', descricao: 'Auxílio Creche', min: 100, max: 10000 },
+      { codigo: '1124', descricao: 'DSR Horas Extras', min: 10, max: 10000 }
     ];
-
-    codigosDescontos.forEach(({ codigo, descricao, min, max }) => {
-      // Procura: "CÓDIGO ... NÚMERO,NÚMERO" (com até 200 chars entre)
-      const regex = new RegExp(`${codigo}[\\s\\S]{0,200}?([0-9.]+,[0-9]{2})`, 'i');
-      const match = texto.match(regex);
-      if (match) {
-        const valor = normalizarValor(match[1]);
-        if (valor >= min && valor <= max) {
-          dados.descontos.push({ descricao, valor });
-        }
-      }
+    eventosVencimentos.forEach(({ codigo, descricao, min, max }) => {
+      const valor = extrairPorCodigo(codigo, min, max);
+      if (valor !== null) dados.vencimentos.push({ descricao, valor });
     });
 
-    // Procurar valores na linha de totais (formato tabela final)
-    // Padrão: "FGTS ... Total de ganhos ... Total de descontos ... Líquido"
-    // Valores: "974,42  R$ 13.180,29  R$ 4.322,21  R$ 8.858,08"
+    dados.descontos = [];
+    const eventosDescontos = [
+      { codigo: '5003', descricao: 'INSS', min: 100, max: 5000 },
+      { codigo: '5004', descricao: 'IRRF', min: 100, max: 10000 },
+      { codigo: '5318', descricao: 'Plano de Saúde - Titular', min: 50, max: 2000 },
+      { codigo: '5616', descricao: 'Plano de Saúde - Dependente', min: 50, max: 3000 },
+      { codigo: '5613', descricao: 'Plano Odontológico - Titular', min: 1, max: 200 },
+      { codigo: '5615', descricao: 'Plano Odontológico - Dependente', min: 1, max: 200 },
+      { codigo: '5748', descricao: 'Desconto Participação Refeição', min: 50, max: 1000 },
+      { codigo: '5752', descricao: 'Desconto Alimentação Extra', min: 1, max: 500 }
+    ];
+    eventosDescontos.forEach(({ codigo, descricao, min, max }) => {
+      const valor = extrairPorCodigo(codigo, min, max);
+      if (valor !== null) dados.descontos.push({ descricao, valor });
+    });
 
-    // Procura TODOS os números em formato ,XX no texto
-    const todosNumeros = [...texto.matchAll(/([0-9.]+,[0-9]{2})/g)];
+    // Rodapé: o pdf.js não inverte célula a célula, e sim o BLOCO inteiro de valores
+    // e o BLOCO inteiro de rótulos separadamente. Ordem real no texto acaba sendo:
+    // [Líquido, Total Descontos, Total Ganhos, FGTS] (valores) seguido de
+    // "Líquido ... Total de descontos ... Total de ganhos ... FGTS" (rótulos).
+    const regexRodape = /([\d.]+,\d{2})\s{0,3}(?:R\$\s{0,3})?([\d.]+,\d{2})\s{0,3}(?:R\$\s{0,3})?([\d.]+,\d{2})\s{0,3}(?:R\$\s{0,3})?([\d.]+,\d{2})\s{0,3}L[ií]qu[ií]do[\s\S]{0,100}?Total\s+de\s+descontos[\s\S]{0,100}?Total\s+de\s+ganhos[\s\S]{0,60}?FGTS/i;
+    const matchRodape = texto.match(regexRodape);
 
-    if (todosNumeros.length >= 4) {
-      // Os últimos 4 números provavelmente são: FGTS, Total Bruto, Total Descontos, Líquido
-      const valores = todosNumeros.slice(-4).map(m => normalizarValor(m[1]));
-
-      if (valores[0] > 500 && valores[0] < 2000) dados.fgts = valores[0];
-      if (valores[1] > 5000 && valores[1] < 50000) dados.totalBruto = valores[1];
-      if (valores[2] > 100 && valores[2] < 10000) dados.totalDescontos = valores[2];
-      if (valores[3] > 1000 && valores[3] < 50000) dados.salarioLiquido = valores[3];
+    if (matchRodape) {
+      dados.salarioLiquido = normalizarValor(matchRodape[1]);
+      dados.totalDescontos = normalizarValor(matchRodape[2]);
+      dados.totalBruto = normalizarValor(matchRodape[3]);
+      dados.fgts = normalizarValor(matchRodape[4]);
+    } else {
+      // Fallback: pelo menos tenta achar o FGTS isolado (não depende dos outros 3)
+      const regexFgts = /([\d.]+,\d{2})\s{0,3}FGTS/i;
+      const matchFgts = texto.match(regexFgts);
+      dados.fgts = matchFgts ? normalizarValor(matchFgts[1]) : null;
     }
 
     console.log('Totais encontrados:', {
@@ -216,8 +246,9 @@ function extrairDados(texto) {
     console.log('Vencimentos extraídos:', dados.vencimentos);
     console.log('Descontos extraídos:', dados.descontos);
 
-    // Calcular total bruto a partir dos vencimentos (mais confiável que regex)
-    if (dados.vencimentos && dados.vencimentos.length > 0) {
+    // Se não achou o total de ganhos pelo rótulo do rodapé, soma os vencimentos identificados
+    // (rótulo é preferido pois é sempre completo, mesmo que surjam códigos de evento não mapeados)
+    if (!dados.totalBruto && dados.vencimentos && dados.vencimentos.length > 0) {
       dados.totalBruto = dados.vencimentos.reduce((sum, v) => sum + v.valor, 0);
       console.log('Total bruto calculado dos vencimentos:', dados.totalBruto);
     }
@@ -311,6 +342,50 @@ function exibirDados(dados) {
   // Tabelas
   preencherTabelaVencimentos(dados.vencimentos);
   preencherTabelaDescontos(dados.descontos);
+
+  atualizarConferencia();
+}
+
+function atualizarConferencia() {
+  if (!contrachequeAtual) return;
+  const dados = contrachequeAtual;
+
+  // Base de incidência = todos os vencimentos, exceto Auxílio Creche (isento).
+  // Vencimento CLT + Gratificação sozinhos não bastam: Hora Extra, DSR etc. também incidem.
+  const baseIncidencia = dados.vencimentos
+    .filter(v => v.descricao !== 'Auxílio Creche')
+    .reduce((sum, v) => sum + v.valor, 0);
+
+  const inssExtraido = dados.descontos.find(d => d.descricao === 'INSS')?.valor || 0;
+  const irrfExtraido = dados.descontos.find(d => d.descricao === 'IRRF')?.valor || 0;
+
+  const dependentes = parseInt(document.getElementById('input-dependentes-irrf').value, 10) || 0;
+  const baseIRRF = baseIncidencia - inssExtraido - (dependentes * DEDUCAO_POR_DEPENDENTE_IRRF);
+  const irrfEsperado = calcularIRRFEsperado(baseIRRF);
+  const diferencaIRRF = irrfExtraido - irrfEsperado;
+  const irrfOk = Math.abs(diferencaIRRF) <= 1;
+
+  const inssEsperado = calcularINSSEsperado(baseIncidencia);
+  const diferencaINSS = inssExtraido - inssEsperado;
+  const inssOk = Math.abs(diferencaINSS) <= 1;
+
+  const grid = document.getElementById('grid-conferencia');
+  grid.innerHTML = `
+    <div class="card-dado" style="border-left-color: ${irrfOk ? 'var(--cor-sucesso)' : 'var(--cor-erro)'};">
+      <div class="card-dado-label">IRRF Esperado (tabela 2026)</div>
+      <div class="card-dado-valor" style="font-size: 1.2rem;">${formatarMoeda(irrfEsperado)}</div>
+      <div style="font-size: 0.85rem; margin-top: 0.3rem; color: ${irrfOk ? 'var(--cor-sucesso)' : 'var(--cor-erro)'};">
+        ${irrfOk ? 'Bate com o valor extraído' : `Diferença de ${formatarMoeda(diferencaIRRF)} em relação ao extraído (${formatarMoeda(irrfExtraido)})`}
+      </div>
+    </div>
+    <div class="card-dado" style="border-left-color: ${inssOk ? 'var(--cor-sucesso)' : 'var(--cor-erro)'};">
+      <div class="card-dado-label">INSS Esperado (tabela 2026)</div>
+      <div class="card-dado-valor" style="font-size: 1.2rem;">${formatarMoeda(inssEsperado)}</div>
+      <div style="font-size: 0.85rem; margin-top: 0.3rem; color: ${inssOk ? 'var(--cor-sucesso)' : 'var(--cor-erro)'};">
+        ${inssOk ? 'Bate com o valor extraído' : `Diferença de ${formatarMoeda(diferencaINSS)} em relação ao extraído (${formatarMoeda(inssExtraido)})`}
+      </div>
+    </div>
+  `;
 }
 
 function desenharGraficoRenda(salarioBase, beneficios) {
@@ -463,22 +538,136 @@ function desenharArco(svg, anguloInicio, anguloSweep, cor) {
 
 function preencherTabelaVencimentos(vencimentos) {
   const tbody = document.getElementById('tabela-vencimentos');
-  tbody.innerHTML = vencimentos.map(v => `
+  const ordenados = [...vencimentos].sort((a, b) => b.valor - a.valor);
+  const soma = vencimentos.reduce((sum, v) => sum + v.valor, 0);
+  tbody.innerHTML = ordenados.map(v => `
     <tr>
       <td>${v.descricao}</td>
       <td>${formatarMoeda(v.valor)}</td>
     </tr>
-  `).join('');
+  `).join('') + linhaSomatorio(soma);
 }
 
 function preencherTabelaDescontos(descontos) {
   const tbody = document.getElementById('tabela-descontos-detalhe');
-  tbody.innerHTML = descontos.map(d => `
+  const ordenados = [...descontos].sort((a, b) => b.valor - a.valor);
+  const soma = descontos.reduce((sum, d) => sum + d.valor, 0);
+  tbody.innerHTML = ordenados.map(d => `
     <tr>
       <td>${d.descricao}</td>
       <td>${formatarMoeda(d.valor)}</td>
     </tr>
-  `).join('');
+  `).join('') + linhaSomatorio(soma);
+}
+
+function linhaSomatorio(soma) {
+  return `
+    <tr style="font-weight: bold; border-top: 2px solid var(--cor-borda);">
+      <td>Soma</td>
+      <td>${formatarMoeda(soma)}</td>
+    </tr>
+  `;
+}
+
+// --- Edição manual dos valores extraídos ---
+
+function entrarModoEdicao() {
+  if (!contrachequeAtual) return;
+
+  document.getElementById('btn-editar-valores').setAttribute('hidden', '');
+  document.getElementById('btn-salvar-edicao').removeAttribute('hidden');
+  document.getElementById('btn-cancelar-edicao').removeAttribute('hidden');
+  document.getElementById('btn-add-vencimento').removeAttribute('hidden');
+  document.getElementById('btn-add-desconto').removeAttribute('hidden');
+  document.getElementById('th-acoes-vencimentos').removeAttribute('hidden');
+  document.getElementById('th-acoes-descontos').removeAttribute('hidden');
+
+  renderizarTabelaEdicao('tabela-vencimentos', contrachequeAtual.vencimentos);
+  renderizarTabelaEdicao('tabela-descontos-detalhe', contrachequeAtual.descontos);
+
+  const inputFgts = document.getElementById('input-fgts');
+  inputFgts.value = (contrachequeAtual.fgts || 0).toFixed(2).replace('.', ',');
+  document.getElementById('valor-fgts').setAttribute('hidden', '');
+  inputFgts.removeAttribute('hidden');
+}
+
+function renderizarTabelaEdicao(idTabela, itens) {
+  const tbody = document.getElementById(idTabela);
+  const soma = itens.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
+  tbody.innerHTML = itens.map((item, idx) => `
+    <tr>
+      <td><input type="text" class="input-edicao input-edicao-descricao" data-campo="descricao" data-idx="${idx}" value="${item.descricao}"></td>
+      <td><input type="text" class="input-edicao" data-campo="valor" data-idx="${idx}" value="${item.valor.toFixed(2).replace('.', ',')}"></td>
+      <td><button type="button" class="btn-remover-item" onclick="removerItemEdicao('${idTabela}', ${idx})">Remover</button></td>
+    </tr>
+  `).join('') + `
+    <tr style="font-weight: bold; border-top: 2px solid var(--cor-borda);">
+      <td>Soma</td>
+      <td>${formatarMoeda(soma)}</td>
+      <td></td>
+    </tr>
+  `;
+}
+
+function adicionarItem(tipo) {
+  const idTabela = tipo === 'vencimentos' ? 'tabela-vencimentos' : 'tabela-descontos-detalhe';
+  const itens = lerItensEdicao(idTabela);
+  itens.push({ descricao: '', valor: 0 });
+  renderizarTabelaEdicao(idTabela, itens);
+}
+
+function removerItemEdicao(idTabela, idx) {
+  const itens = lerItensEdicao(idTabela);
+  itens.splice(idx, 1);
+  renderizarTabelaEdicao(idTabela, itens);
+}
+
+function lerItensEdicao(idTabela) {
+  const tbody = document.getElementById(idTabela);
+  const linhas = [...tbody.querySelectorAll('tr')].filter(tr => tr.querySelector('[data-campo="descricao"]'));
+  return linhas.map(tr => {
+    const descricao = tr.querySelector('[data-campo="descricao"]').value.trim();
+    const valor = normalizarValor(tr.querySelector('[data-campo="valor"]').value) || 0;
+    return { descricao, valor };
+  });
+}
+
+function salvarEdicao() {
+  if (!contrachequeAtual) return;
+
+  const vencimentos = lerItensEdicao('tabela-vencimentos').filter(v => v.descricao && v.valor > 0);
+  const descontos = lerItensEdicao('tabela-descontos-detalhe').filter(d => d.descricao && d.valor > 0);
+  const fgts = normalizarValor(document.getElementById('input-fgts').value) || 0;
+
+  contrachequeAtual.vencimentos = vencimentos;
+  contrachequeAtual.descontos = descontos;
+  contrachequeAtual.fgts = fgts;
+  contrachequeAtual.totalBruto = vencimentos.reduce((sum, v) => sum + v.valor, 0);
+  contrachequeAtual.totalDescontos = descontos.reduce((sum, d) => sum + d.valor, 0);
+  contrachequeAtual.salarioLiquido = contrachequeAtual.totalBruto - contrachequeAtual.totalDescontos;
+
+  salvarNoHistorico(contrachequeAtual);
+  sairModoEdicao();
+  exibirDados(contrachequeAtual);
+  carregarHistorico();
+  mostrarMensagem('Valores atualizados com sucesso!', 'sucesso');
+}
+
+function cancelarEdicao() {
+  sairModoEdicao();
+  if (contrachequeAtual) exibirDados(contrachequeAtual);
+}
+
+function sairModoEdicao() {
+  document.getElementById('btn-editar-valores').removeAttribute('hidden');
+  document.getElementById('btn-salvar-edicao').setAttribute('hidden', '');
+  document.getElementById('btn-cancelar-edicao').setAttribute('hidden', '');
+  document.getElementById('btn-add-vencimento').setAttribute('hidden', '');
+  document.getElementById('btn-add-desconto').setAttribute('hidden', '');
+  document.getElementById('th-acoes-vencimentos').setAttribute('hidden', '');
+  document.getElementById('th-acoes-descontos').setAttribute('hidden', '');
+  document.getElementById('valor-fgts').removeAttribute('hidden');
+  document.getElementById('input-fgts').setAttribute('hidden', '');
 }
 
 function salvarNoHistorico(dados) {
@@ -522,13 +711,23 @@ function carregarHistorico() {
 
   const tbody = document.getElementById('tabela-historico');
   tbody.innerHTML = historico.map(contrato => `
-    <tr>
+    <tr class="linha-historico" style="cursor: pointer;" onclick="verDetalheHistorico('${contrato.competencia}')" title="Clique para ver o detalhamento">
       <td>${contrato.competencia || 'Desconhecida'}</td>
       <td>${formatarMoeda(contrato.totalBruto || 0)}</td>
       <td>${formatarMoeda(contrato.totalDescontos || 0)}</td>
       <td><strong>${formatarMoeda(contrato.salarioLiquido || 0)}</strong></td>
     </tr>
   `).join('');
+}
+
+function verDetalheHistorico(competencia) {
+  const historico = obterHistorico();
+  const contrato = historico.find(c => c.competencia === competencia);
+  if (!contrato) return;
+
+  contrachequeAtual = contrato;
+  exibirDados(contrato);
+  document.getElementById('secao-dados').scrollIntoView({ behavior: 'smooth' });
 }
 
 function confirmarLimparHistorico() {
