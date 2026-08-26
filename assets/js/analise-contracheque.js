@@ -4,6 +4,21 @@ const CHAVE_CONTRACHEQUES = 'contracheques_historico';
 
 let contrachequeAtual = null;
 
+// Função auxiliar para normalizar valores
+function normalizarValor(str) {
+  // Aceita: "R$ 8.858,08", "8.858,08", "8858,08" ou "8858.08"
+  if (!str) return 0;
+  str = str.replace(/R\$\s?/g, '').trim();
+
+  if (str.includes(',')) {
+    // Formato brasileiro: 1.234,56 ou 1234,56
+    return parseFloat(str.replace(/\./g, '').replace(',', '.'));
+  } else {
+    // Formato internacional: 1234.56
+    return parseFloat(str);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   setupUpload();
   carregarHistorico();
