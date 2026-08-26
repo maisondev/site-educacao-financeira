@@ -269,21 +269,34 @@ function atualizarVisualizacao() {
   const container = document.getElementById('lista-cartoes');
 
   // Calcular resumo de saldos abertos (mes atual ou geral)
-  const cartoesComSaldo = cartoes.filter(c => {
+  const cartoesComSaldo = cartoes.map(c => {
     const saldoMes = obterSaldoMesAtual(c);
-    return saldoMes > 0 || (c.saldoAberto && c.saldoAberto > 0);
-  });
-  const totalSaldosAbertos = cartoesComSaldo.reduce((sum, c) => {
-    const saldoMes = obterSaldoMesAtual(c);
-    return sum + (saldoMes || c.saldoAberto || 0);
-  }, 0);
+    const saldo = saldoMes || c.saldoAberto;
+    return {
+      ...c,
+      saldoVisivel: saldo,
+      temSaldo: saldo && saldo > 0
+    };
+  }).filter(c => c.temSaldo);
+
+  const totalSaldosAbertos = cartoesComSaldo.reduce((sum, c) => sum + (c.saldoVisivel || 0), 0);
 
   // Mostrar/esconder resumo
   const resumoDiv = document.getElementById('resumo-saldos');
   if (cartoesComSaldo.length > 0) {
     resumoDiv.style.display = 'block';
+
+    // Preencher lista de cartões com saldo
+    const listaDiv = document.getElementById('lista-saldos-por-cartao');
+    listaDiv.innerHTML = cartoesComSaldo.map(c => `
+      <div style="background: rgba(255,255,255,0.7); padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid #856404;">
+        <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 14px; color: #333;">${c.nome}</p>
+        <p style="margin: 0; font-size: 18px; font-weight: bold; color: #856404;">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
+        <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">●●●● ${c.ultimos}</p>
+      </div>
+    `).join('');
+
     document.getElementById('total-saldos-abertos').textContent = formatarMoedaBrasileira(totalSaldosAbertos);
-    document.getElementById('quantidade-cartoes-saldo').textContent = cartoesComSaldo.length;
   } else {
     resumoDiv.style.display = 'none';
   }

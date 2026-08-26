@@ -224,16 +224,13 @@
     </div>
 
     <div id="resumo-saldos" style="display: none; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-lg);">
-      <h3 style="margin: 0 0 var(--espacamento-sm) 0; color: #856404;">Resumo de Faturas Abertas</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--espacamento-md);">
-        <div>
-          <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: #666;">Total devido</p>
-          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #856404;" id="total-saldos-abertos">R$ 0,00</p>
-        </div>
-        <div>
-          <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: #666;">Cartões com saldo</p>
-          <p style="margin: 0; font-size: 24px; font-weight: bold; color: #856404;" id="quantidade-cartoes-saldo">0</p>
-        </div>
+      <h3 style="margin: 0 0 var(--espacamento-md) 0; color: #856404;">Faturas Abertas por Cartão</h3>
+      <div id="lista-saldos-por-cartao" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--espacamento-md);">
+        <!-- Preenchido por JavaScript -->
+      </div>
+      <div style="margin-top: var(--espacamento-md); padding-top: var(--espacamento-md); border-top: 1px solid rgba(255, 193, 7, 0.3);">
+        <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: #666;">Total devido</p>
+        <p style="margin: 0; font-size: 20px; font-weight: bold; color: #856404;" id="total-saldos-abertos">R$ 0,00</p>
       </div>
     </div>
 
