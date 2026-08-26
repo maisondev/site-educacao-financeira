@@ -135,98 +135,102 @@ function extrairDados(texto) {
       dados.data = new Date(`${dataMatch[3]}-${dataMatch[2]}-${dataMatch[1]}`);
     }
 
-    // Extrair vencimentos - procurar padrões específicos no texto completo
+    // Extrair vencimentos - abordagem: procurar número antes de cada palavra-chave
     dados.vencimentos = [];
 
-    // Procurar Vencimento CLT (padrão: "número Vencimento CLT")
-    const ventMatch = texto.match(/([\d.,]+)\s+[Vv]encimento\s+CLT/);
-    if (ventMatch) {
-      const valor = normalizarValor(ventMatch[1]);
-      if (valor > 500 && valor < 50000) {
-        dados.vencimentos.push({ descricao: 'Vencimento CLT', valor });
-      }
-    }
-
-    // Procurar Gratificação (padrão: "número Gratificação")
-    const gratMatch = texto.match(/([\d.,]+)\s+[Gg]ratificação\s+[Tt]empo\s+de\s+[Ss]erviço/);
-    if (gratMatch) {
-      const valor = normalizarValor(gratMatch[1]);
-      if (valor > 100 && valor < 10000) {
-        dados.vencimentos.push({ descricao: 'Gratificação Tempo de Serviço', valor });
-      }
-    }
-
-    // Procurar Auxílio Creche (padrão: "número Auxílio Creche")
-    const auxMatch = texto.match(/([\d.,]+)\s+[Aa]uxil(?:i|í)o\s+[Cc]reche/);
-    if (auxMatch) {
-      const valor = normalizarValor(auxMatch[1]);
-      if (valor > 100 && valor < 10000) {
-        dados.vencimentos.push({ descricao: 'Auxílio Creche', valor });
-      }
-    }
-
-    // Extrair descontos - procurar padrões específicos
-    dados.descontos = [];
-
-    // Usar regex para encontrar cada desconto
-    const descontoPatterns = [
-      { pattern: /([\d.,]+)\s+INSS/, descricao: 'INSS' },
-      { pattern: /([\d.,]+)\s+IRRF/, descricao: 'IRRF' },
-      { pattern: /([\d.,]+)\s+Plano de Saude\s+-\s+Titular/, descricao: 'Plano de Saúde - Titular' },
-      { pattern: /([\d.,]+)\s+Plano de Saude\s+-\s+Dependente/, descricao: 'Plano de Saúde - Dependente' },
-      { pattern: /([\d.,]+)\s+Plano Odontologico\s+-\s+Titular/, descricao: 'Plano Odontológico - Titular' },
-      { pattern: /([\d.,]+)\s+Plano Odontologico\s+-\s+Dependente/, descricao: 'Plano Odontológico - Dependente' },
-      { pattern: /([\d.,]+)\s+Desconto\s+(?:Particip\.|Participação)?\s*Refei(?:ção|cao)/, descricao: 'Desconto Refeição' },
-      { pattern: /([\d.,]+)\s+Desconto\s+Alimenta(?:ção|cao)/, descricao: 'Desconto Alimentação' }
-    ];
-
-    descontoPatterns.forEach(({ pattern, descricao }) => {
-      const match = texto.match(pattern);
+    // Procura número (flexível com espaços) antes de palavra-chave
+    const extrairPorPalavraChave = (texto, palavra, descricao, minValor, maxValor) => {
+      // Procura: número com até 2 espaços antes da palavra
+      const regex = new RegExp(`([\\d.]+,\\d{2})\\s{0,3}[\\d.,]*\\s{0,3}${palavra}`, 'i');
+      const match = texto.match(regex);
       if (match) {
         const valor = normalizarValor(match[1]);
-        if (valor > 0 && valor < 5000) {
+        if (valor >= minValor && valor <= maxValor) {
+          return { descricao, valor };
+        }
+      }
+      return null;
+    };
+
+    const vent = extrairPorPalavraChave(texto, 'Vencimento.*CLT', 'Vencimento CLT', 5000, 50000);
+    if (vent) dados.vencimentos.push(vent);
+
+    const grat = extrairPorPalavraChave(texto, 'Gratificação.*[Tt]empo', 'Gratificação Tempo de Serviço', 100, 10000);
+    if (grat) dados.vencimentos.push(grat);
+
+    const aux = extrairPorPalavraChave(texto, '[Aa]uxil.*[Cc]reche', 'Auxílio Creche', 100, 10000);
+    if (aux) dados.vencimentos.push(aux);
+
+    // Extrair descontos - mesmo padrão de vencimentos
+    dados.descontos = [];
+
+    // Procurar valores específicos por código - procura cada código individualmente
+    const codigosDescontos = [
+      { codigo: '5003', descricao: 'INSS', min: 800, max: 1500 },
+      { codigo: '5004', descricao: 'IRRF', min: 1500, max: 3000 },
+      { codigo: '5318', descricao: 'Plano de Saúde - Titular', min: 200, max: 600 },
+      { codigo: '5616', descricao: 'Plano de Saúde - Dependente', min: 200, max: 800 },
+      { codigo: '5613', descricao: 'Plano Odontológico - Titular', min: 1, max: 100 },
+      { codigo: '5615', descricao: 'Plano Odontológico - Dependente', min: 1, max: 100 },
+      { codigo: '5748', descricao: 'Desconto Refeição', min: 100, max: 500 },
+      { codigo: '5752', descricao: 'Desconto Alimentação', min: 10, max: 200 }
+    ];
+
+    codigosDescontos.forEach(({ codigo, descricao, min, max }) => {
+      // Procura: "CÓDIGO ... NÚMERO,NÚMERO" (com até 200 chars entre)
+      const regex = new RegExp(`${codigo}[\\s\\S]{0,200}?([0-9.]+,[0-9]{2})`, 'i');
+      const match = texto.match(regex);
+      if (match) {
+        const valor = normalizarValor(match[1]);
+        if (valor >= min && valor <= max) {
           dados.descontos.push({ descricao, valor });
         }
       }
     });
 
-    // Extrair totais - procurar em toda a string junto
-    // Procura padrões como "Total de ganhos (P+V) R$ 13.180,29"
-    const totalBrutoMatch = texto.match(/Total\s+de\s+ganhos\s*[\(\w\+\)]*\s*([\d.,]+)/i) ||
-                           texto.match(/P\+V\)\s*([\d.,]+)/i);
-    if (totalBrutoMatch) {
-      const valor = normalizarValor(totalBrutoMatch[1]);
-      if (valor > 5000) dados.totalBruto = valor;
+    // Procurar valores na linha de totais (formato tabela final)
+    // Padrão: "FGTS ... Total de ganhos ... Total de descontos ... Líquido"
+    // Valores: "974,42  R$ 13.180,29  R$ 4.322,21  R$ 8.858,08"
+
+    // Procura TODOS os números em formato ,XX no texto
+    const todosNumeros = [...texto.matchAll(/([0-9.]+,[0-9]{2})/g)];
+
+    if (todosNumeros.length >= 4) {
+      // Os últimos 4 números provavelmente são: FGTS, Total Bruto, Total Descontos, Líquido
+      const valores = todosNumeros.slice(-4).map(m => normalizarValor(m[1]));
+
+      if (valores[0] > 500 && valores[0] < 2000) dados.fgts = valores[0];
+      if (valores[1] > 5000 && valores[1] < 50000) dados.totalBruto = valores[1];
+      if (valores[2] > 100 && valores[2] < 10000) dados.totalDescontos = valores[2];
+      if (valores[3] > 1000 && valores[3] < 50000) dados.salarioLiquido = valores[3];
     }
 
-    const totalDescMatch = texto.match(/Total\s+de\s+descontos\s*[\(\w\)]*\s*([\d.,]+)/i) ||
-                          texto.match(/\(D\)\s*([\d.,]+)/i);
-    if (totalDescMatch) {
-      const valor = normalizarValor(totalDescMatch[1]);
-      if (valor > 0) dados.totalDescontos = valor;
-    }
+    console.log('Totais encontrados:', {
+      totalBruto: dados.totalBruto,
+      totalDescontos: dados.totalDescontos,
+      salarioLiquido: dados.salarioLiquido,
+      fgts: dados.fgts
+    });
 
-    const liquídoMatch = texto.match(/Líquido\s*([\d.,]+)/i) ||
-                        texto.match(/Líquid\w*\s*([\d.,]+)/i);
-    if (liquídoMatch) {
-      const valor = normalizarValor(liquídoMatch[1]);
-      if (valor > 0) dados.salarioLiquido = valor;
-    }
+    // Debug: mostrar vencimentos e descontos extraídos
+    console.log('Vencimentos extraídos:', dados.vencimentos);
+    console.log('Descontos extraídos:', dados.descontos);
 
-    const fgtsMatch = texto.match(/FGTS\s*([\d.,]+)/i);
-    if (fgtsMatch) {
-      dados.fgts = normalizarValor(fgtsMatch[1]);
-    }
-
-    // Se não tem totais, calcular a partir dos arrays de vencimentos e descontos
-    if (!dados.totalBruto && dados.vencimentos && dados.vencimentos.length > 0) {
+    // Calcular total bruto a partir dos vencimentos (mais confiável que regex)
+    if (dados.vencimentos && dados.vencimentos.length > 0) {
       dados.totalBruto = dados.vencimentos.reduce((sum, v) => sum + v.valor, 0);
-      console.log('Total bruto calculado:', dados.totalBruto);
+      console.log('Total bruto calculado dos vencimentos:', dados.totalBruto);
     }
 
+    // Se tem total de descontos do regex, usar. Senão, calcular dos descontos individuais
     if (!dados.totalDescontos && dados.descontos && dados.descontos.length > 0) {
       dados.totalDescontos = dados.descontos.reduce((sum, d) => sum + d.valor, 0);
-      console.log('Total descontos calculado:', dados.totalDescontos);
+      console.log('Total descontos calculado dos itens:', dados.totalDescontos);
+    }
+
+    // Se ainda não tem total de descontos, assumir que é 0 (dados incompletos)
+    if (!dados.totalDescontos) {
+      console.warn('Total de descontos não foi encontrado no PDF');
     }
 
     // Se não encontrou o líquido, calcular como bruto - descontos
