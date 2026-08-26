@@ -32,6 +32,7 @@ const MENU_ITEMS = [
     label: 'Análise',
     href: './relatorios.html',
     submenu: [
+      { label: 'Contracheque', href: './analise-contracheque.html' },
       { label: 'Relatórios', href: './relatorios.html' },
       { label: 'Balanço Patrimonial', href: './balanco-patrimonial.html' }
     ]
