@@ -24,13 +24,27 @@ function parseValorBrasileiro(valor) {
     limpo = limpo.replace(/\./g, '').replace(',', '.');
   } else if (limpo.includes('.')) {
     // Contém ponto mas não vírgula: determina se é separador de milhares ou decimal
-    // Se tem exatamente 3 dígitos após o ponto, é provavelmente separador de milhares
     const partes = limpo.split('.');
-    if (partes[partes.length - 1].length === 3) {
-      // Formato brasileiro com separador: 1.234.567 (sem vírgula) → remove os pontos
+    const digitsAposPonto = partes[partes.length - 1].length;
+
+    // Se tem múltiplos pontos, assume: separadores de milhares + decimal (último ponto)
+    // Se tem 1 ponto e 2-3 dígitos após: pode ser decimal (1234.56) ou separador (1.234)
+    // Se tem 1 ponto e 4+ dígitos após: é separador de milhares (6.033.76 exportado como 6.03376)
+    if (partes.length > 2 || digitsAposPonto > 3) {
+      // Múltiplos pontos ou muitos dígitos após: assume separador de milhares
       limpo = limpo.replace(/\./g, '');
+    } else if (partes.length === 2 && digitsAposPonto === 2) {
+      // 1 ponto com 2 dígitos após: é decimal (1234.56)
+      // Mantém como está
+    } else if (partes.length === 2 && digitsAposPonto === 3) {
+      // 1 ponto com 3 dígitos: ambíguo
+      // Heurística: se primeira parte tem >3 chars, é separador de milhares; senão, é decimal
+      if (partes[0].length > 3) {
+        // Tipo 1.234 (separador) → remove ponto
+        limpo = limpo.replace(/\./g, '');
+      }
+      // Senão mantém (tipo 12.345 como decimal, que é raro mas possível)
     }
-    // Senão, usa como está (formato internacional: 1234.56)
   }
 
   const numero = parseFloat(limpo);
