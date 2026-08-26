@@ -6,6 +6,7 @@ const ROTULOS_TIPO_RECEITA = {
   ferias: 'Férias',
   decimo: '13º Salário',
   bonus: 'Bônus/PLR',
+  diferenca_salarial: 'Diferença Salarial / ACT',
   restituicao: 'Restituição IR',
   venda: 'Venda',
   outro: 'Outro'
