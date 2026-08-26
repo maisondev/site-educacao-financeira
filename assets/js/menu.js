@@ -41,7 +41,8 @@ const MENU_ITEMS = [
     href: './glossario.html',
     submenu: [
       { label: 'Glossário', href: './glossario.html' },
-      { label: 'Grandes Máximas', href: './maximas.html' }
+      { label: 'Grandes Máximas', href: './maximas.html' },
+      { label: 'Grandes Nomes', href: './pensadores.html' }
     ]
   },
   {
