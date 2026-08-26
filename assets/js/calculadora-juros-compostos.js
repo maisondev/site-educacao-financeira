@@ -5,6 +5,20 @@ document.addEventListener('DOMContentLoaded', function () {
   // Carregar renda salva e pré-preencher aporte mensal
   carregarRendaSalva();
 
+  // Atualizar taxa mensal equivalente quando taxa anual muda
+  const inputTaxaAnual = document.getElementById('taxa-anual');
+  if (inputTaxaAnual) {
+    inputTaxaAnual.addEventListener('input', atualizarTaxaMensalEquivalente);
+    atualizarTaxaMensalEquivalente();
+  }
+
+  // Atualizar período em meses quando anos muda
+  const inputPeriodoAnos = document.getElementById('periodo-anos');
+  if (inputPeriodoAnos) {
+    inputPeriodoAnos.addEventListener('input', atualizarPeriodoEmMeses);
+    atualizarPeriodoEmMeses();
+  }
+
   form.addEventListener('submit', function (evento) {
     evento.preventDefault();
 
@@ -17,8 +31,13 @@ document.addEventListener('DOMContentLoaded', function () {
       aporteMensal = (rendaSalva * 0.20);
     }
 
-    const taxaMensal = (parseFloat(document.getElementById('taxa-mensal').value) || 0) / 100;
-    const meses = parseInt(document.getElementById('periodo-meses').value, 10) || 0;
+    // Converter taxa anual para mensal
+    const taxaAnual = (parseFloat(document.getElementById('taxa-anual').value) || 0) / 100;
+    const taxaMensal = Math.pow(1 + taxaAnual, 1/12) - 1;
+
+    // Converter anos para meses
+    const anos = parseFloat(document.getElementById('periodo-anos').value) || 0;
+    const meses = Math.round(anos * 12);
 
     if (meses <= 0) {
       alert('Por favor, insira um período válido (maiores que 0)');
@@ -53,6 +72,27 @@ document.addEventListener('DOMContentLoaded', function () {
     if (rendaSalva > 0) {
       const aportePadrao = (rendaSalva * 0.20).toFixed(2);
       inputAporte.placeholder = `Sugestão: R$ ${parseFloat(aportePadrao).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+    }
+  }
+
+  function atualizarTaxaMensalEquivalente() {
+    const taxaAnual = (parseFloat(document.getElementById('taxa-anual').value) || 0) / 100;
+    const taxaMensal = Math.pow(1 + taxaAnual, 1/12) - 1;
+    const taxaMensalPercentual = (taxaMensal * 100).toFixed(2);
+
+    const elementoExibicao = document.getElementById('taxa-mensal-equivalente');
+    if (elementoExibicao) {
+      elementoExibicao.textContent = taxaMensalPercentual + '%';
+    }
+  }
+
+  function atualizarPeriodoEmMeses() {
+    const anos = parseFloat(document.getElementById('periodo-anos').value) || 0;
+    const meses = Math.round(anos * 12);
+
+    const elementoExibicao = document.getElementById('periodo-meses-equivalente');
+    if (elementoExibicao) {
+      elementoExibicao.textContent = meses + ' meses';
     }
   }
 });
