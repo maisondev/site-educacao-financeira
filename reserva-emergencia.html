@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reserva de Emergência | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .configurar-reserva {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .configurar-reserva h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .botoes-config {
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .btn-primario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-primario:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-secundario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-secundario:hover {
+      background-color: #e8e8e8;
+    }
+
+    .resumo-reserva {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-info {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-info p {
+      margin: 0 0 var(--espacamento-sm) 0;
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .card-info .valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 0;
+    }
+
+    .card-info.alerta .valor {
+      color: var(--cor-amarelo);
+    }
+
+    .card-info.sucesso .valor {
+      color: var(--cor-verde);
+    }
+
+    .progresso-reserva {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .progresso-titulo {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .progresso-titulo h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .progresso-percentual {
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .barra-progresso {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 8px;
+      height: 24px;
+      overflow: hidden;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .barra-progresso-fill {
+      background-color: var(--cor-primaria);
+      height: 100%;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .barra-progresso-fill.alerta {
+      background-color: var(--cor-amarelo);
+    }
+
+    .barra-progresso-fill.sucesso {
+      background-color: var(--cor-verde);
+    }
+
+    .info-progresso {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+    }
+
+    .info-progresso strong {
+      color: var(--cor-texto);
+    }
+
+    .secao-aportes {
+      margin-top: var(--espacamento-xl);
+    }
+
+    .btn-adicionar {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .btn-adicionar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .lista-aportes {
+      display: grid;
+      gap: var(--espacamento-md);
+    }
+
+    .aporte-item {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid var(--cor-primaria);
+    }
+
+    .aporte-info h4 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      color: var(--cor-texto);
+    }
+
+    .aporte-data {
+      margin: 0;
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+    }
+
+    .aporte-valor {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-right: var(--espacamento-lg);
+    }
+
+    .btn-remover {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-remover:hover {
+      color: #c53030;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+    }
+
+    .lista-vazia p {
+      margin: 0;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body {
+      padding: var(--espacamento-lg);
+    }
+
+    .modal-body .form-group {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-salvar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-cancelar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    .btn-cancelar:hover {
+      background-color: #e8e8e8;
+    }
+
+    .alerta {
+      background-color: #fff5e6;
+      border: 1px solid var(--cor-amarelo);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+      color: #c88c00;
+    }
+
+    .alerta p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .resumo-reserva {
+        grid-template-columns: 1fr;
+      }
+
+      .botoes-config {
+        flex-direction: column;
+      }
+
+      .aporte-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .aporte-valor {
+        margin-right: 0;
+        margin-top: var(--espacamento-md);
+      }
+
+      .btn-remover {
+        position: absolute;
+        right: var(--espacamento-lg);
+        top: var(--espacamento-lg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li>
+            <a href="./index.html">Início</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./temas/index.html">Aprender</a>
+            <ul class="submenu">
+              <li><a href="./temas/orcamento-pessoal/index.html">Orçamento Pessoal</a></li>
+              <li><a href="./temas/reserva-de-emergencia/index.html">Reserva de Emergência</a></li>
+              <li><a href="./temas/juros-e-investimentos/index.html">Juros e Investimentos</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="./metas.html">Metas</a>
+          </li>
+          <li>
+            <a href="./renda-extra.html">Renda</a>
+          </li>
+          <li>
+            <a href="./envelopes.html">Envelopes</a>
+          </li>
+          <li>
+            <a href="./maximas.html">Máximas</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./ferramentas/calculadora-juros-compostos.html">Ferramentas</a>
+            <ul class="submenu">
+              <li><a href="./ferramentas/calculadora-juros-compostos.html">Calculadora de Juros</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Reserva de Emergência</p>
+
+    <h1>Acompanhador de Reserva de Emergência</h1>
+
+    <p>
+      Defina seu salário e quantos meses deseja ter guardados como reserva de emergência.
+      Acompanhe seu progresso mês a mês e visualize quando atingirá sua meta.
+    </p>
+
+    <section class="configurar-reserva">
+      <h2>Configuração</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="input-salario">Salário Mensal (R$) *</label>
+          <input type="number" id="input-salario" placeholder="Ex: 3000" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="select-meses">Meses de Reserva Desejados *</label>
+          <select id="select-meses" required>
+            <option value="">Selecione</option>
+            <option value="3">3 meses</option>
+            <option value="6">6 meses</option>
+            <option value="12">12 meses</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="botoes-config">
+        <button class="btn-primario" onclick="atualizarConfiguracao()">Atualizar Configuração</button>
+        <button class="btn-secundario" onclick="limparDados()">Limpar Dados</button>
+      </div>
+    </section>
+
+    <section id="resumo-container" hidden>
+      <div class="resumo-reserva">
+        <div class="card-info">
+          <p>Meta de Reserva</p>
+          <p class="valor" id="valor-meta">R$ 0,00</p>
+        </div>
+        <div class="card-info">
+          <p>Valor Atual</p>
+          <p class="valor" id="valor-atual">R$ 0,00</p>
+        </div>
+        <div class="card-info" id="card-faltante">
+          <p>Faltam</p>
+          <p class="valor" id="valor-faltante">R$ 0,00</p>
+        </div>
+      </div>
+
+      <div class="progresso-reserva">
+        <div class="progresso-titulo">
+          <h3>Progresso da Reserva</h3>
+          <span class="progresso-percentual" id="percentual-progresso">0%</span>
+        </div>
+        <div class="barra-progresso">
+          <div class="barra-progresso-fill" id="barra-fill" style="width: 0%">
+            <span id="texto-barra"></span>
+          </div>
+        </div>
+        <div class="info-progresso">
+          <span>Meses de economia necessários: <strong id="meses-faltantes">-</strong></span>
+          <span>Data estimada: <strong id="data-estimada">-</strong></span>
+        </div>
+      </div>
+
+      <div id="alerta-container"></div>
+
+      <section class="secao-aportes">
+        <h2>Aportes e Depósitos</h2>
+        <button class="btn-adicionar" onclick="abrirModalAporte()">Adicionar Aporte</button>
+
+        <div id="lista-aportes" class="lista-aportes">
+          <div class="lista-vazia">
+            <p>Nenhum aporte registrado. Comece adicionando seu primeiro depósito!</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Dicas para construir sua reserva</h2>
+      <ul>
+        <li>Comece pequeno — R$ 100 por mês é melhor que nada</li>
+        <li>Automatize — configure um aporte automático da sua conta para uma conta poupança</li>
+        <li>3 a 6 meses é o ideal — escolha conforme sua estabilidade profissional</li>
+        <li>Não toque! — reserve a emergência apenas para verdadeiras emergências</li>
+        <li><a href="./temas/reserva-de-emergencia/o-que-e-reserva-de-emergencia.html">Saiba mais sobre reserva de emergência</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Modal para adicionar aporte -->
+  <div id="modal-aporte" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Aporte</h2>
+        <button class="btn-fechar" onclick="fecharModalAporte()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-aporte-valor">Valor do Aporte (R$) *</label>
+          <input type="number" id="input-aporte-valor" placeholder="Ex: 500" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="input-aporte-data">Data do Aporte *</label>
+          <input type="date" id="input-aporte-data" required>
+        </div>
+        <div class="form-group">
+          <label for="input-aporte-descricao">Descrição (opcional)</label>
+          <input type="text" id="input-aporte-descricao" placeholder="Ex: Décimo terceiro">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" onclick="salvarAporte()">Adicionar</button>
+        <button class="btn-cancelar" onclick="fecharModalAporte()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/reserva-emergencia.js"></script>
+</body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartão | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .cartoes-container {
+      display: grid;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-credito {
+      background: linear-gradient(135deg, var(--cor-primaria), #1a5f2c);
+      color: white;
+      border-radius: 12px;
+      padding: var(--espacamento-lg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .card-nome {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .card-acoes {
+      display: flex;
+      gap: var(--espacamento-sm);
+    }
+
+    .btn-editar-card,
+    .btn-deletar-card {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+
+    .btn-editar-card:hover,
+    .btn-deletar-card:hover {
+      opacity: 1;
+    }
+
+    .card-info {
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .card-numero {
+      font-size: 14px;
+      letter-spacing: 2px;
+      margin-bottom: var(--espacamento-sm);
+      opacity: 0.9;
+    }
+
+    .card-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+      padding-top: var(--espacamento-lg);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .card-stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-stat-label {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .card-stat-valor {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .formulario-card {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .formulario-card h2 {
+      margin-top: 0;
+    }
+
+    .formulario-card label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      margin-top: var(--espacamento-md);
+      color: var(--cor-texto);
+    }
+
+    .formulario-card label:first-of-type {
+      margin-top: 0;
+    }
+
+    .formulario-card input,
+    .formulario-card select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .formulario-card input:focus,
+    .formulario-card select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(45, 126, 60, 0.1);
+    }
+
+    .botoes-formulario {
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .btn-primario,
+    .btn-secundario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-primario {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-primario:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-secundario {
+      background-color: var(--cor-borda);
+      color: var(--cor-texto);
+    }
+
+    .btn-secundario:hover {
+      background-color: #ccc;
+    }
+
+    .lista-gastos {
+      margin-top: var(--espacamento-lg);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .gasto-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+      font-size: 14px;
+    }
+
+    .gasto-item:last-child {
+      border-bottom: none;
+    }
+
+    .gasto-descricao {
+      flex: 1;
+    }
+
+    .gasto-data {
+      color: var(--cor-texto-leve);
+      font-size: 12px;
+    }
+
+    .gasto-valor {
+      font-weight: bold;
+      margin-left: var(--espacamento-md);
+    }
+
+    .btn-remover-gasto {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #c53030;
+      font-size: 18px;
+      padding: 0;
+      margin-left: var(--espacamento-md);
+      width: 24px;
+      height: 24px;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar-modal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body {
+      padding: var(--espacamento-lg);
+    }
+
+    .form-group {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(45, 126, 60, 0.1);
+    }
+
+    .form-acoes {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .form-acoes button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-salvar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-cancelar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    .btn-cancelar:hover {
+      background-color: #e8e8e8;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      margin-top: var(--espacamento-lg);
+    }
+
+    @media (max-width: 640px) {
+      .card-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .botoes-formulario {
+        flex-direction: column;
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li>
+            <a href="./index.html">Início</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./temas/index.html">Aprender</a>
+            <ul class="submenu">
+              <li><a href="./temas/orcamento-pessoal/index.html">Orçamento Pessoal</a></li>
+              <li><a href="./temas/reserva-de-emergencia/index.html">Reserva de Emergência</a></li>
+              <li><a href="./temas/juros-e-investimentos/index.html">Juros e Investimentos</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="./metas.html">Metas</a>
+          </li>
+          <li>
+            <a href="./renda-extra.html">Renda</a>
+          </li>
+          <li>
+            <a href="./cartao.html">Cartão</a>
+          </li>
+          <li>
+            <a href="./envelopes.html">Envelopes</a>
+          </li>
+          <li>
+            <a href="./maximas.html">Máximas</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./ferramentas/calculadora-juros-compostos.html">Ferramentas</a>
+            <ul class="submenu">
+              <li><a href="./ferramentas/calculadora-juros-compostos.html">Calculadora de Juros</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Cartão</p>
+
+    <h1>Cartões de Crédito</h1>
+
+    <p>
+      Registre seus cartões de crédito e acompanhe seus gastos. Organize suas despesas
+      e visualize o saldo disponível em tempo real.
+    </p>
+
+    <section class="formulario-card">
+      <h2>Adicionar Novo Cartão</h2>
+
+      <label for="card-nome">Nome do Cartão *</label>
+      <input type="text" id="card-nome" placeholder="Ex: Nubank" required>
+
+      <label for="card-bandeira">Bandeira *</label>
+      <select id="card-bandeira" required>
+        <option value="">Selecione a bandeira</option>
+        <option value="visa">Visa</option>
+        <option value="mastercard">Mastercard</option>
+        <option value="elo">Elo</option>
+        <option value="amex">American Express</option>
+        <option value="outro">Outro</option>
+      </select>
+
+      <label for="card-limite">Limite (R$) *</label>
+      <input type="number" id="card-limite" min="0" step="0.01" placeholder="Ex: 5000" required>
+
+      <label for="card-vencimento">Dia do Vencimento *</label>
+      <input type="number" id="card-vencimento" min="1" max="31" placeholder="Ex: 15" required>
+
+      <div class="botoes-formulario">
+        <button type="button" class="btn-primario" onclick="adicionarCartao()">Adicionar Cartão</button>
+        <button type="button" class="btn-secundario" onclick="limparFormularioCard()">Limpar</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Seus Cartões</h2>
+      <div id="lista-cartoes" class="cartoes-container">
+        <div class="lista-vazia">
+          <p>Nenhum cartão adicionado ainda. Crie seu primeiro cartão acima!</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal de gasto -->
+  <div id="modal-gasto" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Gasto</h2>
+        <button class="btn-fechar-modal" onclick="fecharModalGasto()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="gasto-descricao">Descrição *</label>
+          <input type="text" id="gasto-descricao" placeholder="Ex: Supermercado" required>
+        </div>
+        <div class="form-group">
+          <label for="gasto-valor">Valor (R$) *</label>
+          <input type="number" id="gasto-valor" min="0" step="0.01" placeholder="Ex: 150.50" required>
+        </div>
+        <div class="form-group">
+          <label for="gasto-data">Data *</label>
+          <input type="date" id="gasto-data" required>
+        </div>
+        <div class="form-acoes">
+          <button class="btn-salvar" onclick="salvarGasto()">Adicionar</button>
+          <button class="btn-cancelar" onclick="fecharModalGasto()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de edição de cartão -->
+  <div id="modal-edicao-cartao" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar Cartão</h2>
+        <button class="btn-fechar-modal" onclick="fecharModalEdicaoCartao()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="edit-card-nome">Nome do Cartão *</label>
+          <input type="text" id="edit-card-nome" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-card-bandeira">Bandeira *</label>
+          <select id="edit-card-bandeira" required>
+            <option value="">Selecione a bandeira</option>
+            <option value="visa">Visa</option>
+            <option value="mastercard">Mastercard</option>
+            <option value="elo">Elo</option>
+            <option value="amex">American Express</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-card-limite">Limite (R$) *</label>
+          <input type="number" id="edit-card-limite" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-card-vencimento">Dia do Vencimento *</label>
+          <input type="number" id="edit-card-vencimento" min="1" max="31" required>
+        </div>
+        <div class="form-acoes">
+          <button class="btn-salvar" onclick="salvarEdicaoCartao()">Salvar</button>
+          <button class="btn-cancelar" onclick="fecharModalEdicaoCartao()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/cartao.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Juros Compostos | Educação Financeira</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="../index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li>
+            <a href="../index.html">Início</a>
+          </li>
+          <li class="has-submenu">
+            <a href="../temas/index.html">Aprender</a>
+            <ul class="submenu">
+              <li><a href="../temas/orcamento-pessoal/index.html">Orçamento Pessoal</a></li>
+              <li><a href="../temas/reserva-de-emergencia/index.html">Reserva de Emergência</a></li>
+              <li><a href="../temas/juros-e-investimentos/index.html">Juros e Investimentos</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="../metas.html">Metas</a>
+          </li>
+          <li>
+            <a href="../renda-extra.html">Renda</a>
+          </li>
+          <li>
+            <a href="../cartao.html">Cartão</a>
+          </li>
+          <li>
+            <a href="../envelopes.html">Envelopes</a>
+          </li>
+          <li>
+            <a href="../maximas.html">Máximas</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./calculadora-juros-compostos.html">Ferramentas</a>
+            <ul class="submenu">
+              <li><a href="./calculadora-juros-compostos.html">Calculadora de Juros</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="conteudo-nota">
+    <p class="breadcrumb"><a href="../index.html">Início</a> / <a href="../temas/index.html">Temas</a> / <a href="../temas/juros-e-investimentos/index.html">Juros e Investimentos</a> / Calculadora</p>
+
+    <h1>Calculadora de Juros Compostos</h1>
+
+    <p>
+      Simule quanto seu dinheiro pode render ao longo do tempo com aportes mensais regulares.
+      Digite seus valores e veja o resultado!
+    </p>
+
+    <section class="caixa-ferramenta">
+      <h2>Simulador de Crescimento</h2>
+
+      <form id="form-juros-compostos" class="formulario-calculadora">
+        <label for="valor-inicial">Valor inicial (R$)</label>
+        <input type="number" id="valor-inicial" min="0" step="0.01" value="1000" required>
+        <small style="color: #666;">Quanto você tem para começar</small>
+
+        <label for="aporte-mensal">Aporte mensal (R$)</label>
+        <input type="number" id="aporte-mensal" min="0" step="0.01" value="200" required>
+        <small style="color: #666;">Quanto você vai adicionar todo mês</small>
+
+        <label for="taxa-mensal">Taxa de juros mensal (%)</label>
+        <input type="number" id="taxa-mensal" min="0" step="0.01" value="0.8" required>
+        <small style="color: #666;">0.8% = ~10% ao ano. Varie conforme seu investimento</small>
+
+        <label for="periodo-meses">Período (meses)</label>
+        <input type="number" id="periodo-meses" min="1" step="1" value="120" required>
+        <small style="color: #666;">120 meses = 10 anos</small>
+
+        <button type="submit">Calcular</button>
+      </form>
+
+      <div id="resultado-calculadora" hidden>
+        <h3>Resultado da Simulação</h3>
+
+        <div style="display: grid; gap: 16px; margin-top: 20px;">
+          <div style="background-color: #fff; padding: 16px; border-radius: 4px; border-left: 4px solid #2d7e3c;">
+            <p style="color: #666; margin-bottom: 4px;">Valor final (montante total)</p>
+            <p style="font-size: 24px; font-weight: bold; color: #2d7e3c; margin: 0;" id="resultado-montante">-</p>
+          </div>
+
+          <div style="background-color: #fff; padding: 16px; border-radius: 4px; border-left: 4px solid #666;">
+            <p style="color: #666; margin-bottom: 4px;">Total que você aportou (seu dinheiro)</p>
+            <p style="font-size: 24px; font-weight: bold; color: #333; margin: 0;" id="resultado-aportado">-</p>
+          </div>
+
+          <div style="background-color: #fff; padding: 16px; border-radius: 4px; border-left: 4px solid #ffa500;">
+            <p style="color: #666; margin-bottom: 4px;">Ganho com juros (lucro)</p>
+            <p style="font-size: 24px; font-weight: bold; color: #ffa500; margin: 0;" id="resultado-juros">-</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <h2>Exemplos para testar</h2>
+
+    <p>Experimente estes cenários:</p>
+
+    <ul>
+      <li>
+        <strong>Cenário conservador:</strong> R$ 1.000 inicial + R$ 100/mês à 0.5% = 60 meses
+      </li>
+      <li>
+        <strong>Cenário moderado:</strong> R$ 2.000 inicial + R$ 300/mês à 0.8% = 120 meses (10 anos)
+      </li>
+      <li>
+        <strong>Cenário agressivo:</strong> R$ 5.000 inicial + R$ 500/mês à 1.2% = 240 meses (20 anos)
+      </li>
+    </ul>
+
+    <h2>Dicas de interpretação</h2>
+
+    <ul>
+      <li>
+        <strong>Valor final</strong> — é o total que você terá ao final do período
+      </li>
+      <li>
+        <strong>Total aportado</strong> — é todo o dinheiro que você mesmo colocou (valor inicial + aportes mensais)
+      </li>
+      <li>
+        <strong>Ganho com juros</strong> — é o dinheiro que o mercado rendeu para você
+        (é o lucro livre, você não trabalhou para conseguir)
+      </li>
+    </ul>
+
+    <p>
+      Quanto maior o período e a taxa de juros, mais exponencial é o crescimento!
+      Este é o poder dos juros compostos.
+    </p>
+
+    <section class="proximos-passos">
+      <h2>Saiba mais</h2>
+      <ul>
+        <li><a href="../temas/juros-e-investimentos/juros-compostos-na-pratica.html">Leia o artigo sobre Juros Compostos</a></li>
+        <li><a href="../temas/orcamento-pessoal/metodo-50-30-20.html">Saiba como alocar seus 20% para investir</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script src="../assets/js/calculadora-juros-compostos.js"></script>
+</body>
+</html>

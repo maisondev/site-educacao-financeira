@@ -1,0 +1,30 @@
+# Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node modules (se usado no futuro)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Sistema de arquivos
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# IDE
+*.iml
+*.iws
+*.ipr
+
+# Local env files
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envelopes | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .configurar-renda {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .configurar-renda h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .input-grupo {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .input-grupo input {
+      flex: 1;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .input-grupo button {
+      padding: var(--espacamento-sm) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .input-grupo button:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .renda-info {
+      background-color: white;
+      border: 2px solid var(--cor-primaria);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .renda-info p {
+      margin: 0 0 var(--espacamento-sm) 0;
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .renda-info .valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 0;
+    }
+
+    .grid-envelopes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--espacamento-lg);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .envelope {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .envelope-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .envelope-nome h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+    }
+
+    .envelope-percentual {
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      margin: 0;
+    }
+
+    .envelope-valores {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .valor-linha {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--espacamento-sm);
+      font-size: 14px;
+    }
+
+    .valor-linha:last-child {
+      margin-bottom: 0;
+    }
+
+    .valor-linha strong {
+      color: var(--cor-primaria);
+    }
+
+    .valor-usado {
+      color: #c53030;
+    }
+
+    .envelope-progresso {
+      background-color: var(--cor-borda);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .envelope-progresso-barra {
+      background-color: var(--cor-primaria);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .envelope-progresso-barra.alerta {
+      background-color: #f59e0b;
+    }
+
+    .envelope-progresso-barra.erro {
+      background-color: #c53030;
+    }
+
+    .envelope-acoes {
+      display: grid;
+      gap: var(--espacamento-sm);
+    }
+
+    .btn-adicionar {
+      padding: 10px var(--espacamento-md);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-adicionar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-limpar {
+      padding: 10px var(--espacamento-md);
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-limpar:hover {
+      background-color: #e8e8e8;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body {
+      padding: var(--espacamento-lg);
+    }
+
+    .form-group {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(45, 126, 60, 0.1);
+    }
+
+    .form-acoes {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .form-acoes button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-salvar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-cancelar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    .btn-cancelar:hover {
+      background-color: #e8e8e8;
+    }
+
+    .lista-despesas {
+      margin-top: var(--espacamento-md);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .despesa-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border-left: 4px solid var(--cor-borda);
+      border-bottom: 1px solid var(--cor-borda);
+      font-size: 14px;
+    }
+
+    .despesa-item:last-child {
+      border-bottom: none;
+    }
+
+    .despesa-item.tipo-fixa {
+      border-left-color: #c53030;
+    }
+
+    .despesa-item.tipo-variavel {
+      border-left-color: #f59e0b;
+    }
+
+    .despesa-item.tipo-investimento {
+      border-left-color: var(--cor-primaria);
+    }
+
+    .despesa-descricao {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .despesa-tipo {
+      font-size: 12px;
+      color: var(--cor-texto-leve);
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .despesa-valor {
+      font-weight: bold;
+      margin-right: var(--espacamento-md);
+    }
+
+    .despesa-item.tipo-fixa .despesa-valor {
+      color: #c53030;
+    }
+
+    .despesa-item.tipo-variavel .despesa-valor {
+      color: #f59e0b;
+    }
+
+    .despesa-item.tipo-investimento .despesa-valor {
+      color: var(--cor-primaria);
+    }
+
+    .btn-remover-despesa {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+    }
+
+    .despesa-item.tipo-fixa .btn-remover-despesa {
+      color: #c53030;
+    }
+
+    .despesa-item.tipo-variavel .btn-remover-despesa {
+      color: #f59e0b;
+    }
+
+    .despesa-item.tipo-investimento .btn-remover-despesa {
+      color: var(--cor-primaria);
+    }
+
+    @media (max-width: 640px) {
+      .input-grupo {
+        flex-direction: column;
+      }
+
+      .grid-envelopes {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li>
+            <a href="./index.html">Início</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./temas/index.html">Aprender</a>
+            <ul class="submenu">
+              <li><a href="./temas/orcamento-pessoal/index.html">Orçamento Pessoal</a></li>
+              <li><a href="./temas/reserva-de-emergencia/index.html">Reserva de Emergência</a></li>
+              <li><a href="./temas/juros-e-investimentos/index.html">Juros e Investimentos</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="./metas.html">Metas</a>
+          </li>
+          <li>
+            <a href="./renda-extra.html">Renda</a>
+          </li>
+          <li>
+            <a href="./envelopes.html">Envelopes</a>
+          </li>
+          <li>
+            <a href="./maximas.html">Máximas</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./ferramentas/calculadora-juros-compostos.html">Ferramentas</a>
+            <ul class="submenu">
+              <li><a href="./ferramentas/calculadora-juros-compostos.html">Calculadora de Juros</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Envelopes</p>
+
+    <h1>Envelopes Financeiros</h1>
+
+    <p>
+      Organize sua renda em envelopes temáticos. Defina seu salário/renda mensal e aloque
+      automaticamente em cada categoria. Acompanhe despesas e investimentos em tempo real.
+    </p>
+
+    <section class="configurar-renda">
+      <h2>Sua Renda Mensal</h2>
+      <div class="input-grupo">
+        <input type="number" id="input-renda" placeholder="Ex: 3000" min="0" step="0.01">
+        <button onclick="definirRenda()">Definir Renda</button>
+      </div>
+      <div id="renda-info" class="renda-info" hidden>
+        <p>Renda Total Mensal</p>
+        <p class="valor" id="valor-renda">R$ 0,00</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Seus Envelopes</h2>
+      <div id="grid-envelopes" class="grid-envelopes"></div>
+    </section>
+  </main>
+
+  <!-- Modal para adicionar despesa -->
+  <div id="modal-despesa" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-titulo">Adicionar Despesa</h2>
+        <button class="btn-fechar" onclick="fecharModalDespesa()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="registro-tipo">Tipo *</label>
+          <select id="registro-tipo" required>
+            <option value="">Selecione o tipo</option>
+            <option value="fixa">Despesa Fixa</option>
+            <option value="variavel">Despesa Variável</option>
+            <option value="investimento">Investimento</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="registro-descricao">Descrição</label>
+          <input type="text" id="registro-descricao" placeholder="Ex: Supermercado">
+        </div>
+        <div class="form-group">
+          <label for="registro-valor">Valor (R$)</label>
+          <input type="number" id="registro-valor" min="0" step="0.01" placeholder="Ex: 150.50">
+        </div>
+        <div class="form-acoes">
+          <button class="btn-salvar" onclick="salvarRegistro()">Adicionar</button>
+          <button class="btn-cancelar" onclick="fecharModalDespesa()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/envelopes.js"></script>
+</body>
+</html>

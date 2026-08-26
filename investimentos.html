@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acompanhador de Investimentos | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .formulario-investimento {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .formulario-investimento h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .botoes-formulario {
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .btn-primario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-primario:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-secundario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-secundario:hover {
+      background-color: #e8e8e8;
+    }
+
+    .resumo-investimentos {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-info {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-info p {
+      margin: 0 0 var(--espacamento-sm) 0;
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .card-info .valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 0;
+    }
+
+    .card-info.positivo .valor {
+      color: var(--cor-verde);
+    }
+
+    .card-info.negativo .valor {
+      color: var(--cor-vermelho);
+    }
+
+    .lista-investimentos {
+      display: grid;
+      gap: var(--espacamento-lg);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .investimento-card {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      border-left: 4px solid var(--cor-primaria);
+    }
+
+    .investimento-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .investimento-titulo h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+    }
+
+    .investimento-tipo {
+      margin: 0;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+    }
+
+    .badge-tipo {
+      display: inline-block;
+      padding: var(--espacamento-xs) var(--espacamento-sm);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      background-color: #f0e6ff;
+      color: var(--cor-primaria);
+    }
+
+    .investimento-valores {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .valor-linha {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--espacamento-sm);
+      font-size: 14px;
+    }
+
+    .valor-linha:last-child {
+      margin-bottom: 0;
+      border-top: 1px solid var(--cor-borda);
+      padding-top: var(--espacamento-sm);
+      margin-top: var(--espacamento-sm);
+      font-weight: bold;
+    }
+
+    .valor-linha strong {
+      color: var(--cor-texto);
+    }
+
+    .rentabilidade {
+      font-weight: bold;
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      text-align: center;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .rentabilidade.positiva {
+      background-color: #e6ffe6;
+      color: var(--cor-verde);
+    }
+
+    .rentabilidade.negativa {
+      background-color: #ffe6e6;
+      color: var(--cor-vermelho);
+    }
+
+    .rentabilidade.neutra {
+      background-color: #f5f5f5;
+      color: var(--cor-texto-leve);
+    }
+
+    .investimento-acoes {
+      display: flex;
+      gap: var(--espacamento-sm);
+    }
+
+    .btn-adicionar-aporte,
+    .btn-deletar {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-adicionar-aporte {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-adicionar-aporte:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-deletar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-vermelho);
+      border: 1px solid var(--cor-vermelho);
+    }
+
+    .btn-deletar:hover {
+      background-color: var(--cor-vermelho);
+      color: white;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      margin-top: var(--espacamento-lg);
+    }
+
+    .lista-vazia p {
+      margin: 0;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body {
+      padding: var(--espacamento-lg);
+    }
+
+    .modal-body .form-group {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-salvar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-cancelar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    .btn-cancelar:hover {
+      background-color: #e8e8e8;
+    }
+
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .resumo-investimentos {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .botoes-formulario,
+      .investimento-acoes {
+        flex-direction: column;
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+
+      .investimento-header {
+        flex-direction: column;
+      }
+
+      .badge-tipo {
+        margin-top: var(--espacamento-md);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li>
+            <a href="./index.html">Início</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./temas/index.html">Aprender</a>
+            <ul class="submenu">
+              <li><a href="./temas/orcamento-pessoal/index.html">Orçamento Pessoal</a></li>
+              <li><a href="./temas/reserva-de-emergencia/index.html">Reserva de Emergência</a></li>
+              <li><a href="./temas/juros-e-investimentos/index.html">Juros e Investimentos</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="./metas.html">Metas</a>
+          </li>
+          <li>
+            <a href="./renda-extra.html">Renda</a>
+          </li>
+          <li>
+            <a href="./dividas.html">Dívidas</a>
+          </li>
+          <li>
+            <a href="./investimentos.html">Investimentos</a>
+          </li>
+          <li>
+            <a href="./envelopes.html">Envelopes</a>
+          </li>
+          <li>
+            <a href="./maximas.html">Máximas</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./ferramentas/calculadora-juros-compostos.html">Ferramentas</a>
+            <ul class="submenu">
+              <li><a href="./ferramentas/calculadora-juros-compostos.html">Calculadora de Juros</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Investimentos</p>
+
+    <h1>Acompanhador de Investimentos</h1>
+
+    <p>
+      Registre seus investimentos e acompanhe a rentabilidade. Visualize quanto está investido,
+      quanto ganhou ou perdeu, e calcule sua taxa de retorno em cada aplicação.
+    </p>
+
+    <section class="formulario-investimento">
+      <h2>Registrar Novo Investimento</h2>
+
+      <div class="form-group">
+        <label for="input-nome">Nome do Investimento (Ex: Fundo Imobiliário ABC, Ações Banco XYZ) *</label>
+        <input type="text" id="input-nome" placeholder="Ex: Fundo XYZ" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="select-tipo">Tipo de Investimento *</label>
+          <select id="select-tipo" required>
+            <option value="">Selecione</option>
+            <option value="acoes">Ações</option>
+            <option value="fundo">Fundo de Investimento</option>
+            <option value="tesouro">Tesouro Direto</option>
+            <option value="cdb">CDB / Renda Fixa</option>
+            <option value="crypto">Criptomoedas</option>
+            <option value="imagem">Imóvel</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-data">Data do Investimento *</label>
+          <input type="date" id="input-data" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="input-valor-investido">Valor Investido (R$) *</label>
+          <input type="number" id="input-valor-investido" min="0" step="0.01" placeholder="Ex: 1000" required>
+        </div>
+        <div class="form-group">
+          <label for="input-valor-atual">Valor Atual (R$) *</label>
+          <input type="number" id="input-valor-atual" min="0" step="0.01" placeholder="Ex: 1100" required>
+        </div>
+      </div>
+
+      <div class="botoes-formulario">
+        <button class="btn-primario" onclick="adicionarInvestimento()">Adicionar Investimento</button>
+        <button class="btn-secundario" onclick="limparFormulario()">Limpar</button>
+      </div>
+    </section>
+
+    <section id="resumo-container" hidden>
+      <div class="resumo-investimentos">
+        <div class="card-info">
+          <p>Total Investido</p>
+          <p class="valor" id="valor-investido">R$ 0,00</p>
+        </div>
+        <div class="card-info">
+          <p>Valor Atual</p>
+          <p class="valor" id="valor-atual">R$ 0,00</p>
+        </div>
+        <div class="card-info">
+          <p>Ganho/Perda</p>
+          <p class="valor" id="valor-ganho">R$ 0,00</p>
+        </div>
+        <div class="card-info">
+          <p>Rentabilidade</p>
+          <p class="valor" id="rentabilidade-percentual">0%</p>
+        </div>
+      </div>
+
+      <section>
+        <h2>Seus Investimentos</h2>
+        <div id="lista-investimentos" class="lista-investimentos">
+          <div class="lista-vazia">
+            <p>Nenhum investimento registrado. Comece adicionando acima!</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Dicas para investir</h2>
+      <ul>
+        <li>Comece pequeno - até R$ 50 ou R$ 100 já funciona para aprender como funciona</li>
+        <li>Defina seus objetivos antes de investir - curto, médio ou longo prazo</li>
+        <li>Diversifique seus investimentos - não coloque tudo em um único tipo</li>
+        <li>Entenda o risco - quanto maior o potencial de ganho, maior o risco</li>
+        <li>Invista regularmente - aporte mensal pequeno é melhor que esperar uma grande quantia</li>
+        <li>Não se emocione com flutuações - mercado sobe e desce, o importante é o longo prazo</li>
+        <li>Estude sobre investimentos - conhecimento reduz riscos</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Modal para adicionar aporte -->
+  <div id="modal-aporte" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Adicionar Aporte</h2>
+        <button class="btn-fechar" onclick="fecharModalAporte()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-aporte-valor">Valor do Aporte (R$) *</label>
+          <input type="number" id="input-aporte-valor" min="0" step="0.01" placeholder="Ex: 500" required>
+        </div>
+        <div class="form-group">
+          <label for="input-aporte-data">Data do Aporte *</label>
+          <input type="date" id="input-aporte-data" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" onclick="salvarAporte()">Adicionar Aporte</button>
+        <button class="btn-cancelar" onclick="fecharModalAporte()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/investimentos.js"></script>
+</body>
+</html>

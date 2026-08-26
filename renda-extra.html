@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renda | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .formulario-renda {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .formulario-renda label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      margin-top: var(--espacamento-md);
+      color: var(--cor-texto);
+    }
+
+    .formulario-renda label:first-child {
+      margin-top: 0;
+    }
+
+    .formulario-renda input,
+    .formulario-renda textarea,
+    .formulario-renda select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .formulario-renda textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .formulario-renda input:focus,
+    .formulario-renda textarea:focus,
+    .formulario-renda select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(45, 126, 60, 0.1);
+    }
+
+    .botoes-formulario {
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .btn-primario,
+    .btn-secundario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-primario {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-primario:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-secundario {
+      background-color: var(--cor-borda);
+      color: var(--cor-texto);
+    }
+
+    .btn-secundario:hover {
+      background-color: #ccc;
+    }
+
+    .resumo-rendas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .card-resumo {
+      background-color: white;
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-resumo h3 {
+      margin: 0 0 var(--espacamento-sm) 0;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      text-transform: uppercase;
+    }
+
+    .card-resumo .valor {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .lista-rendas {
+      display: grid;
+      gap: var(--espacamento-lg);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .card-renda {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--espacamento-lg);
+      align-items: start;
+    }
+
+    .renda-info h3 {
+      margin-top: 0;
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .renda-descricao {
+      color: var(--cor-texto-leve);
+      margin-bottom: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .renda-categoria {
+      display: inline-block;
+      padding: var(--espacamento-xs) var(--espacamento-sm);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .categoria-alto {
+      background-color: #dbeae5;
+      color: #2d7e3c;
+    }
+
+    .categoria-medio {
+      background-color: #fff5e6;
+      color: #c88c00;
+    }
+
+    .categoria-baixo {
+      background-color: #f5e6e6;
+      color: #a63030;
+    }
+
+    .renda-valores {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--espacamento-md);
+      font-size: 14px;
+      margin-bottom: var(--espacamento-md);
+      color: var(--cor-texto-leve);
+    }
+
+    .renda-valores strong {
+      color: var(--cor-texto);
+      font-size: 16px;
+    }
+
+    .renda-acoes {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-sm);
+    }
+
+    .btn-editar,
+    .btn-deletar {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-editar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-primaria);
+      border: 1px solid var(--cor-primaria);
+    }
+
+    .btn-editar:hover {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-deletar {
+      background-color: var(--cor-cinza-leve);
+      color: #c53030;
+      border: 1px solid #c53030;
+    }
+
+    .btn-deletar:hover {
+      background-color: #c53030;
+      color: white;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      margin-top: var(--espacamento-lg);
+    }
+
+    .lista-vazia p {
+      margin: 0;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar-modal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-fechar-modal:hover {
+      color: var(--cor-texto);
+    }
+
+    #formulario-edicao {
+      padding: var(--espacamento-lg);
+      background-color: white;
+      margin: 0;
+    }
+
+    .historico-rendas {
+      margin-top: var(--espacamento-xl);
+    }
+
+    .tabela-historico {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--espacamento-lg);
+      font-size: 14px;
+    }
+
+    .tabela-historico th {
+      background-color: var(--cor-cinza-leve);
+      padding: var(--espacamento-md);
+      text-align: left;
+      font-weight: bold;
+      color: var(--cor-texto);
+      border-bottom: 2px solid var(--cor-borda);
+    }
+
+    .tabela-historico td {
+      padding: var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .tabela-historico tr:hover {
+      background-color: var(--cor-cinza-leve);
+    }
+
+    @media (max-width: 640px) {
+      .card-renda {
+        grid-template-columns: 1fr;
+      }
+
+      .renda-acoes {
+        flex-direction: row;
+      }
+
+      .botoes-formulario {
+        flex-direction: column;
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+
+      .resumo-rendas {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li>
+            <a href="./index.html">Início</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./temas/index.html">Aprender</a>
+            <ul class="submenu">
+              <li><a href="./temas/orcamento-pessoal/index.html">Orçamento Pessoal</a></li>
+              <li><a href="./temas/reserva-de-emergencia/index.html">Reserva de Emergência</a></li>
+              <li><a href="./temas/juros-e-investimentos/index.html">Juros e Investimentos</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="./metas.html">Metas</a>
+          </li>
+          <li>
+            <a href="./renda-extra.html">Renda</a>
+          </li>
+          <li>
+            <a href="./cartao.html">Cartão</a>
+          </li>
+          <li>
+            <a href="./envelopes.html">Envelopes</a>
+          </li>
+          <li>
+            <a href="./maximas.html">Máximas</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./ferramentas/calculadora-juros-compostos.html">Ferramentas</a>
+            <ul class="submenu">
+              <li><a href="./ferramentas/calculadora-juros-compostos.html">Calculadora de Juros</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Renda</p>
+
+    <h1>Rendas Extras</h1>
+
+    <p>
+      Acompanhe as diferentes fontes de renda extra que você experimentou. Registre o rendimento mensal e anual
+      para entender quais estratégias funcionam melhor para você e ajudar na tomada de decisão.
+    </p>
+
+    <section class="formulario-renda">
+      <h2>Adicionar Nova Renda Extra</h2>
+
+      <label for="renda-nome">Nome da Renda Extra *</label>
+      <input type="text" id="renda-nome" placeholder="Ex: Freelance de Design, Uber, Vendas Online" required>
+
+      <label for="renda-descricao">Descrição (opcional)</label>
+      <textarea id="renda-descricao" placeholder="Detalhes sobre essa fonte de renda, como começou, etc."></textarea>
+
+      <label for="renda-categoria">Categoria de Rendimento *</label>
+      <select id="renda-categoria" required>
+        <option value="">Selecione uma categoria</option>
+        <option value="alto">Alto rendimento (muito lucrativa)</option>
+        <option value="medio">Médio rendimento (rentável)</option>
+        <option value="baixo">Baixo rendimento (pouco lucrativa)</option>
+      </select>
+
+      <label for="renda-mensal">Rendimento mensal médio (R$) *</label>
+      <input type="number" id="renda-mensal" min="0" step="0.01" placeholder="Ex: 500" required>
+
+      <label for="renda-data-inicio">Quando começou? *</label>
+      <input type="date" id="renda-data-inicio" required>
+
+      <label for="renda-status">Status *</label>
+      <select id="renda-status" required>
+        <option value="">Selecione um status</option>
+        <option value="ativa">Ativa (fazendo agora)</option>
+        <option value="pausada">Pausada (temporariamente parada)</option>
+        <option value="encerrada">Encerrada (não faço mais)</option>
+      </select>
+
+      <div class="botoes-formulario">
+        <button type="button" class="btn-primario" onclick="adicionarRenda()">Adicionar Renda</button>
+        <button type="button" class="btn-secundario" onclick="limparFormulario()">Limpar</button>
+      </div>
+    </section>
+
+    <section id="secao-resumo" style="display: none;">
+      <h2>Resumo de Rendas</h2>
+      <div class="resumo-rendas">
+        <div class="card-resumo">
+          <h3>Total Mensal (Ativas)</h3>
+          <div class="valor" id="total-mensal">R$ 0,00</div>
+        </div>
+        <div class="card-resumo">
+          <h3>Total Anual (Ativas)</h3>
+          <div class="valor" id="total-anual">R$ 0,00</div>
+        </div>
+        <div class="card-resumo">
+          <h3>Fontes Ativas</h3>
+          <div class="valor" id="total-ativas">0</div>
+        </div>
+        <div class="card-resumo">
+          <h3>Fontes Testadas</h3>
+          <div class="valor" id="total-testadas">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Suas Rendas Extras</h2>
+      <div id="lista-rendas" class="lista-rendas">
+        <div class="lista-vazia">
+          <p>Nenhuma renda extra adicionada ainda. Comece a registrar acima!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal de edição -->
+    <div id="modal-edicao" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Editar Renda Extra</h2>
+          <button class="btn-fechar-modal" onclick="fecharModalEdicao()">&times;</button>
+        </div>
+
+        <form id="formulario-edicao" class="formulario-renda">
+          <input type="hidden" id="edit-renda-id">
+
+          <label for="edit-nome">Nome da Renda Extra *</label>
+          <input type="text" id="edit-nome" required>
+
+          <label for="edit-descricao">Descrição (opcional)</label>
+          <textarea id="edit-descricao"></textarea>
+
+          <label for="edit-categoria">Categoria de Rendimento *</label>
+          <select id="edit-categoria" required>
+            <option value="">Selecione uma categoria</option>
+            <option value="alto">Alto rendimento (muito lucrativa)</option>
+            <option value="medio">Médio rendimento (rentável)</option>
+            <option value="baixo">Baixo rendimento (pouco lucrativa)</option>
+          </select>
+
+          <label for="edit-mensal">Rendimento mensal médio (R$) *</label>
+          <input type="number" id="edit-mensal" min="0" step="0.01" required>
+
+          <label for="edit-data-inicio">Quando começou? *</label>
+          <input type="date" id="edit-data-inicio" required>
+
+          <label for="edit-status">Status *</label>
+          <select id="edit-status" required>
+            <option value="">Selecione um status</option>
+            <option value="ativa">Ativa (fazendo agora)</option>
+            <option value="pausada">Pausada (temporariamente parada)</option>
+            <option value="encerrada">Encerrada (não faço mais)</option>
+          </select>
+
+          <div class="botoes-formulario">
+            <button type="submit" class="btn-primario">Salvar Alterações</button>
+            <button type="button" class="btn-secundario" onclick="fecharModalEdicao()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Dicas para gerenciar suas rendas extras</h2>
+      <ul>
+        <li>Registre todas as fontes — até as pequenas rendas extras somam ao longo do tempo</li>
+        <li>Categorize por rentabilidade — isso ajuda a identificar quais valem mais a pena</li>
+        <li>Acompanhe o histórico — compare qual renda foi melhor em cada mês</li>
+        <li>Reinvista seus ganhos — use a renda extra para acelerar suas metas financeiras</li>
+        <li>Diversifique — não dependa de uma única fonte de renda</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/renda-extra.js"></script>
+</body>
+</html>

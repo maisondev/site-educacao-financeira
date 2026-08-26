@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metas | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .formulario-meta {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .formulario-meta label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      margin-top: var(--espacamento-md);
+      color: var(--cor-texto);
+    }
+
+    .formulario-meta label:first-child {
+      margin-top: 0;
+    }
+
+    .formulario-meta input,
+    .formulario-meta textarea,
+    .formulario-meta select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .formulario-meta textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .formulario-meta input:focus,
+    .formulario-meta textarea:focus,
+    .formulario-meta select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(45, 126, 60, 0.1);
+    }
+
+    .botoes-formulario {
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .btn-primario,
+    .btn-secundario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .btn-primario {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-primario:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-secundario {
+      background-color: var(--cor-borda);
+      color: var(--cor-texto);
+    }
+
+    .btn-secundario:hover {
+      background-color: #ccc;
+    }
+
+    .lista-metas {
+      display: grid;
+      gap: var(--espacamento-lg);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .card-meta {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--espacamento-lg);
+      align-items: start;
+    }
+
+    .meta-info h3 {
+      margin-top: 0;
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .meta-descricao {
+      color: var(--cor-texto-leve);
+      margin-bottom: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .meta-progresso {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .meta-progresso-barra {
+      background-color: var(--cor-primaria);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .meta-status {
+      display: flex;
+      gap: var(--espacamento-md);
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .meta-status strong {
+      color: var(--cor-texto);
+    }
+
+    .meta-nivel {
+      display: inline-block;
+      padding: var(--espacamento-xs) var(--espacamento-sm);
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .nivel-curto {
+      background-color: #dbeae5;
+      color: #2d7e3c;
+    }
+
+    .nivel-medio {
+      background-color: #fff5e6;
+      color: #c88c00;
+    }
+
+    .nivel-longo {
+      background-color: #f5e6e6;
+      color: #a63030;
+    }
+
+    .meta-acoes {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-sm);
+    }
+
+    .btn-editar,
+    .btn-deletar {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-editar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-primaria);
+      border: 1px solid var(--cor-primaria);
+    }
+
+    .btn-editar:hover {
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-deletar {
+      background-color: var(--cor-cinza-leve);
+      color: #c53030;
+      border: 1px solid #c53030;
+    }
+
+    .btn-deletar:hover {
+      background-color: #c53030;
+      color: white;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      margin-top: var(--espacamento-lg);
+    }
+
+    .lista-vazia p {
+      margin: 0;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar-modal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-fechar-modal:hover {
+      color: var(--cor-texto);
+    }
+
+    #formulario-edicao {
+      padding: var(--espacamento-lg);
+      background-color: white;
+      margin: 0;
+    }
+
+    @media (max-width: 640px) {
+      .card-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .meta-acoes {
+        flex-direction: row;
+      }
+
+      .botoes-formulario {
+        flex-direction: column;
+      }
+
+      .modal-content {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li>
+            <a href="./index.html">Início</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./temas/index.html">Aprender</a>
+            <ul class="submenu">
+              <li><a href="./temas/orcamento-pessoal/index.html">Orçamento Pessoal</a></li>
+              <li><a href="./temas/reserva-de-emergencia/index.html">Reserva de Emergência</a></li>
+              <li><a href="./temas/juros-e-investimentos/index.html">Juros e Investimentos</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="./metas.html">Metas</a>
+          </li>
+          <li>
+            <a href="./renda-extra.html">Renda</a>
+          </li>
+          <li>
+            <a href="./envelopes.html">Envelopes</a>
+          </li>
+          <li>
+            <a href="./maximas.html">Máximas</a>
+          </li>
+          <li class="has-submenu">
+            <a href="./ferramentas/calculadora-juros-compostos.html">Ferramentas</a>
+            <ul class="submenu">
+              <li><a href="./ferramentas/calculadora-juros-compostos.html">Calculadora de Juros</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Metas</p>
+
+    <h1>Metas Financeiras</h1>
+
+    <p>
+      Defina suas metas financeiras e acompanhe seu progresso. Suas metas são salvas automaticamente,
+      então você pode voltar sempre para visualizar e atualizar.
+    </p>
+
+    <section class="formulario-meta">
+      <h2>Adicionar Nova Meta</h2>
+
+      <label for="meta-titulo">Título da Meta *</label>
+      <input type="text" id="meta-titulo" placeholder="Ex: Juntar R$ 1.000 para emergência" required>
+
+      <label for="meta-descricao">Descrição (opcional)</label>
+      <textarea id="meta-descricao" placeholder="Por que essa meta é importante?"></textarea>
+
+      <label for="meta-valor-alvo">Valor alvo (R$) *</label>
+      <input type="number" id="meta-valor-alvo" min="0" step="0.01" placeholder="Ex: 1000" required>
+
+      <label for="meta-valor-atual">Valor atual (R$)</label>
+      <input type="number" id="meta-valor-atual" min="0" step="0.01" value="0" placeholder="0">
+
+      <label for="meta-prazo">Prazo *</label>
+      <select id="meta-prazo" required>
+        <option value="">Selecione um prazo</option>
+        <option value="curto">Curto prazo (até 1 ano)</option>
+        <option value="medio">Médio prazo (1-3 anos)</option>
+        <option value="longo">Longo prazo (mais de 3 anos)</option>
+      </select>
+
+      <label for="meta-data">Data limite (opcional)</label>
+      <input type="date" id="meta-data">
+
+      <div class="botoes-formulario">
+        <button type="button" class="btn-primario" onclick="adicionarMeta()">Adicionar Meta</button>
+        <button type="button" class="btn-secundario" onclick="limparFormulario()">Limpar</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Suas Metas</h2>
+      <div id="lista-metas" class="lista-metas">
+        <div class="lista-vazia">
+          <p>Nenhuma meta adicionada ainda. Crie sua primeira meta acima!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal de edição -->
+    <div id="modal-edicao" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Editar Meta</h2>
+          <button class="btn-fechar-modal" onclick="fecharModalEdicao()">&times;</button>
+        </div>
+
+        <form id="formulario-edicao" class="formulario-meta">
+          <input type="hidden" id="edit-meta-id">
+
+          <label for="edit-titulo">Título da Meta *</label>
+          <input type="text" id="edit-titulo" required>
+
+          <label for="edit-descricao">Descrição (opcional)</label>
+          <textarea id="edit-descricao"></textarea>
+
+          <label for="edit-valor-alvo">Valor alvo (R$) *</label>
+          <input type="number" id="edit-valor-alvo" min="0" step="0.01" required>
+
+          <label for="edit-valor-atual">Valor atual (R$)</label>
+          <input type="number" id="edit-valor-atual" min="0" step="0.01" required>
+
+          <label for="edit-prazo">Prazo *</label>
+          <select id="edit-prazo" required>
+            <option value="">Selecione um prazo</option>
+            <option value="curto">Curto prazo (até 1 ano)</option>
+            <option value="medio">Médio prazo (1-3 anos)</option>
+            <option value="longo">Longo prazo (mais de 3 anos)</option>
+          </select>
+
+          <label for="edit-data">Data limite (opcional)</label>
+          <input type="date" id="edit-data">
+
+          <div class="botoes-formulario">
+            <button type="submit" class="btn-primario">Salvar Alterações</button>
+            <button type="button" class="btn-secundario" onclick="fecharModalEdicao()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Dicas para alcançar suas metas</h2>
+      <ul>
+        <li>Comece pequeno — uma meta de R$ 500 é melhor que uma de R$ 50.000 que você não vai conseguir</li>
+        <li>Seja específico — "juntar R$ 1.000" é melhor que "poupar dinheiro"</li>
+        <li>Acompanhe o progresso — atualizar o valor atual regularmente te motiva</li>
+        <li><a href="./temas/orcamento-pessoal/metodo-50-30-20.html">Use 20% do seu orçamento</a> para alcançar suas metas</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/metas.js"></script>
+</body>
+</html>
