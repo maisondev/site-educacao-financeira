@@ -28,7 +28,7 @@ function salvarDados(dados) {
 }
 
 function atualizarConfiguracao() {
-  let salario = parseFloat(document.getElementById('input-salario').value);
+  let salario = parseValorBrasileiro(document.getElementById('input-salario').value);
   const meses = parseInt(document.getElementById('select-meses').value);
 
   if (!salario || isNaN(salario) || salario <= 0) {
