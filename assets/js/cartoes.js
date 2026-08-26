@@ -74,12 +74,21 @@ function abrirModalDatasMes() {
   const dataAtual = datas.find(d => d.mes === mesAtual);
 
   if (dataAtual) {
-    document.getElementById('input-fechamento-mes').value = dataAtual.fechamento || '';
-    document.getElementById('input-vencimento-mes').value = dataAtual.vencimento || '';
+    // Suportar formato legado (apenas dia) e novo formato (dia/mês)
+    const fechamento = dataAtual.fechamento ? dataAtual.fechamento.toString().split('/') : [];
+    document.getElementById('input-fechamento-dia').value = fechamento[0] || '';
+    document.getElementById('input-fechamento-mes-select').value = fechamento[1] || '';
+
+    const vencimento = dataAtual.vencimento ? dataAtual.vencimento.toString().split('/') : [];
+    document.getElementById('input-vencimento-dia').value = vencimento[0] || '';
+    document.getElementById('input-vencimento-mes-select').value = vencimento[1] || '';
+
     document.getElementById('input-saldo-mes').value = dataAtual.saldo ? formatarMoedaBrasileira(dataAtual.saldo) : '';
   } else {
-    document.getElementById('input-fechamento-mes').value = '';
-    document.getElementById('input-vencimento-mes').value = '';
+    document.getElementById('input-fechamento-dia').value = '';
+    document.getElementById('input-fechamento-mes-select').value = '';
+    document.getElementById('input-vencimento-dia').value = '';
+    document.getElementById('input-vencimento-mes-select').value = '';
     document.getElementById('input-saldo-mes').value = '';
   }
 
@@ -110,7 +119,7 @@ function renderizarHistoricoDatas() {
     const [ano, mes] = d.mes.split('-');
     const nomeMes = new Date(ano, parseInt(mes) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
     return `<div style="padding: 6px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; font-size: 12px;">
-      <strong>${nomeMes}:</strong> fecha ${d.fechamento} / vence ${d.vencimento}${d.saldo ? ` / gasto ${formatarMoedaBrasileira(d.saldo)}` : ''}
+      <strong>${nomeMes}:</strong> ${formatarDiaOuDiaMes(d.fechamento)} → ${formatarDiaOuDiaMes(d.vencimento)}${d.saldo ? ` / saldo ${formatarMoedaBrasileira(d.saldo)}` : ''}
     </div>`;
   }).join('');
 }
@@ -119,8 +128,10 @@ function salvarDatasMes() {
   if (!cartaoEmEdicaoId) return;
 
   const mes = document.getElementById('select-mes-data').value;
-  const fechamento = document.getElementById('input-fechamento-mes').value;
-  const vencimento = document.getElementById('input-vencimento-mes').value;
+  const fechamentoDia = document.getElementById('input-fechamento-dia').value;
+  const fechamentoMes = document.getElementById('input-fechamento-mes-select').value;
+  const vencimentoDia = document.getElementById('input-vencimento-dia').value;
+  const vencimentoMes = document.getElementById('input-vencimento-mes-select').value;
   let saldo = parseValorBrasileiro(document.getElementById('input-saldo-mes').value);
 
   if (!mes) {
@@ -128,10 +139,14 @@ function salvarDatasMes() {
     return;
   }
 
-  if (!fechamento || !vencimento) {
+  if (!fechamentoDia || !vencimentoDia) {
     alert('Por favor, preencha os dias de fechamento e vencimento');
     return;
   }
+
+  // Formatar como "dia/mês" (mês vazio = mesmo mês)
+  const fechamento = fechamentoMes ? `${fechamentoDia}/${fechamentoMes}` : fechamentoDia;
+  const vencimento = vencimentoMes ? `${vencimentoDia}/${vencimentoMes}` : vencimentoDia;
 
   saldo = saldo ? Math.round(saldo * 100) / 100 : null;
 
@@ -327,6 +342,20 @@ function atualizarVisualizacao() {
   `).join('');
 }
 
+function formatarDiaOuDiaMes(valor) {
+  if (!valor) return '—';
+  const partes = valor.toString().split('/');
+  const dia = partes[0];
+  const mes = parseInt(partes[1]);
+
+  if (!mes) {
+    return dia;
+  }
+
+  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  return `${dia} de ${meses[mes - 1]}`;
+}
+
 function obterNomeBandeira(bandeira) {
   const nomes = {
     'visa': 'Visa',
@@ -358,13 +387,15 @@ function gerarTextoCiclo(cartao) {
   }
 
   if (fechamento && vencimento) {
-    return `fecha ${fechamento} / paga ${vencimento}`;
+    const textoFechamento = formatarDiaOuDiaMes(fechamento);
+    const textoVencimento = formatarDiaOuDiaMes(vencimento);
+    return `${textoFechamento} → ${textoVencimento}`;
   }
   if (fechamento) {
-    return `fecha ${fechamento}`;
+    return `fecha ${formatarDiaOuDiaMes(fechamento)}`;
   }
   if (vencimento) {
-    return `paga ${vencimento}`;
+    return `paga ${formatarDiaOuDiaMes(vencimento)}`;
   }
   return '—';
 }

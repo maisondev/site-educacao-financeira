@@ -329,12 +329,58 @@
           <input type="month" id="select-mes-data">
         </div>
         <div class="form-group">
-          <label for="input-fechamento-mes">Dia de Fechamento</label>
-          <input type="number" id="input-fechamento-mes" min="1" max="31" placeholder="27">
+          <label for="input-fechamento-mes">Fechamento (Dia/Mês)</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--espacamento-md);">
+            <div>
+              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Dia</label>
+              <input type="number" id="input-fechamento-dia" min="1" max="31" placeholder="27">
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Mês</label>
+              <select id="input-fechamento-mes-select" style="width: 100%; padding: var(--espacamento-sm) var(--espacamento-md); border: 1px solid var(--cor-borda); border-radius: 4px; font-size: 16px;">
+                <option value="">Mesmo mês</option>
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="form-group">
-          <label for="input-vencimento-mes">Dia de Vencimento</label>
-          <input type="number" id="input-vencimento-mes" min="1" max="31" placeholder="10">
+          <label for="input-vencimento-mes">Vencimento (Dia/Mês)</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--espacamento-md);">
+            <div>
+              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Dia</label>
+              <input type="number" id="input-vencimento-dia" min="1" max="31" placeholder="05">
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Mês</label>
+              <select id="input-vencimento-mes-select" style="width: 100%; padding: var(--espacamento-sm) var(--espacamento-md); border: 1px solid var(--cor-borda); border-radius: 4px; font-size: 16px;">
+                <option value="">Mesmo mês</option>
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label for="input-saldo-mes">Saldo da Fatura Aberta (R$) - Opcional</label>
