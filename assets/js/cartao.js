@@ -50,19 +50,34 @@ function carregarCartoes() {
         </div>
       </div>
 
-      <button onclick="abrirModalGasto('${cartao.id}')" style="
-        margin-top: var(--espacamento-lg);
-        padding: var(--espacamento-md);
-        background-color: rgba(255,255,255,0.2);
-        border: 1px solid rgba(255,255,255,0.3);
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.2s;
-      " onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'">
-        + Adicionar Gasto
-      </button>
+      <div style="display: flex; gap: var(--espacamento-md); margin-top: var(--espacamento-lg);">
+        <button onclick="abrirModalGasto('${cartao.id}')" style="
+          flex: 1;
+          padding: var(--espacamento-md);
+          background-color: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          color: white;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.2s;
+        " onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'">
+          + Adicionar Gasto
+        </button>
+        <button onclick="exportarCartaoParaCalendario('${cartao.id}')" style="
+          flex: 1;
+          padding: var(--espacamento-md);
+          background-color: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.3);
+          color: white;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.2s;
+        " onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'" title="Exportar para Google Calendar ou Outlook">
+          📅 Exportar
+        </button>
+      </div>
     `;
 
     listaCartoes.appendChild(cardElement);
@@ -257,6 +272,81 @@ function formatarMoeda(valor) {
     style: 'currency',
     currency: 'BRL'
   });
+}
+
+function exportarCartaoParaCalendario(cartaoId) {
+  const cartoes = JSON.parse(localStorage.getItem('cartoes_financeiros') || '[]');
+  const cartao = cartoes.find(c => c.id === cartaoId);
+
+  if (!cartao) {
+    alert('Cartão não encontrado');
+    return;
+  }
+
+  const ano = new Date().getFullYear();
+  const mes = String(new Date().getMonth() + 1).padStart(2, '0');
+
+  // Datas para os eventos (primeiro evento de cada tipo neste mês)
+  const dataFechamento = `${ano}${mes}${String(cartao.vencimento).padStart(2, '0')}`;
+  const dataVencimento = `${ano}${mes}${String(cartao.vencimento + 1).padStart(2, '0')}`;
+
+  // Timestamp atual em formato iCalendar
+  const agora = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  // Gera IDs únicos para os eventos
+  const idFechamento = `fechamento-${cartaoId}@educacao-financeira`;
+  const idVencimento = `vencimento-${cartaoId}@educacao-financeira`;
+
+  // Estrutura do arquivo iCalendar
+  const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Educação Financeira//
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Cartão - ${cartao.nome}
+X-WR-TIMEZONE:America/Sao_Paulo
+X-WR-CALDESC:Lembretes de fechamento e vencimento do cartão ${cartao.nome}
+
+BEGIN:VEVENT
+UID:${idFechamento}
+DTSTAMP:${agora}
+DTSTART:${dataFechamento}T090000
+DTEND:${dataFechamento}T100000
+RRULE:FREQ=MONTHLY;BYMONTHDAY=${cartao.vencimento}
+SUMMARY:Fechamento - ${cartao.nome}
+DESCRIPTION:Dia de fechamento do cartão ${cartao.nome}. Até este dia você pode adicionar despesas à próxima fatura.
+LOCATION:
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+UID:${idVencimento}
+DTSTAMP:${agora}
+DTSTART:${dataVencimento}T180000
+DTEND:${dataVencimento}T190000
+RRULE:FREQ=MONTHLY;BYMONTHDAY=${cartao.vencimento + 1}
+SUMMARY:Vencimento - ${cartao.nome}
+DESCRIPTION:Dia de vencimento da fatura do cartão ${cartao.nome}. Faça o pagamento até este dia.
+LOCATION:
+STATUS:CONFIRMED
+END:VEVENT
+
+END:VCALENDAR`;
+
+  // Cria e faz download do arquivo
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+
+  link.setAttribute('href', url);
+  link.setAttribute('download', `cartao-${cartao.nome.toLowerCase().replace(/\s+/g, '-')}.ics`);
+  link.style.visibility = 'hidden';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  alert(`Arquivo de calendário gerado! 📅\n\nImporte "${cartao.nome}.ics" no seu:\n• Google Calendar\n• Outlook\n• Apple Calendar\n\nA Alexa lerá seus lembretes!`);
 }
 
 document.addEventListener('DOMContentLoaded', carregarCartoes);

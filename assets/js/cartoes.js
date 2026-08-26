@@ -131,6 +131,7 @@ function atualizarVisualizacao() {
   container.innerHTML = cartoes.map(cartao => `
     <div class="card-cartao">
       <div class="card-cartao-botoes">
+        <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário">📅</button>
         <button class="btn-acao-cartao" onclick="abrirModalCartaoEdicao(${cartao.id})" title="Editar cartão">✎</button>
         <button class="btn-acao-cartao" onclick="removerCartao(${cartao.id})" title="Remover cartão">×</button>
       </div>
@@ -179,6 +180,86 @@ function gerarTextoCiclo(fechamento, vencimento) {
     return `paga ${vencimento}`;
   }
   return '—';
+}
+
+function exportarCartaoParaCalendario(cartaoId) {
+  const cartoes = obterCartoes();
+  const cartao = cartoes.find(c => c.id === cartaoId);
+
+  if (!cartao) {
+    alert('Cartão não encontrado');
+    return;
+  }
+
+  if (!cartao.fechamento || !cartao.vencimento) {
+    alert('Por favor, preencha os dias de fechamento e vencimento do cartão antes de exportar');
+    return;
+  }
+
+  const ano = new Date().getFullYear();
+  const mes = String(new Date().getMonth() + 1).padStart(2, '0');
+
+  // Datas para os eventos
+  const dataFechamento = `${ano}${mes}${String(cartao.fechamento).padStart(2, '0')}`;
+  const dataVencimento = `${ano}${mes}${String(cartao.vencimento).padStart(2, '0')}`;
+
+  // Timestamp atual em formato iCalendar
+  const agora = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  // Gera IDs únicos para os eventos
+  const idFechamento = `fechamento-${cartaoId}@educacao-financeira`;
+  const idVencimento = `vencimento-${cartaoId}@educacao-financeira`;
+
+  // Estrutura do arquivo iCalendar
+  const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Educação Financeira//
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Cartão - ${cartao.nome}
+X-WR-TIMEZONE:America/Sao_Paulo
+X-WR-CALDESC:Lembretes de fechamento e vencimento do cartão ${cartao.nome}
+
+BEGIN:VEVENT
+UID:${idFechamento}
+DTSTAMP:${agora}
+DTSTART:${dataFechamento}T090000
+DTEND:${dataFechamento}T100000
+RRULE:FREQ=MONTHLY;BYMONTHDAY=${cartao.fechamento}
+SUMMARY:Fechamento - ${cartao.nome}
+DESCRIPTION:Dia de fechamento do cartão ${cartao.nome}. Até este dia você pode adicionar despesas à próxima fatura.
+LOCATION:
+STATUS:CONFIRMED
+END:VEVENT
+
+BEGIN:VEVENT
+UID:${idVencimento}
+DTSTAMP:${agora}
+DTSTART:${dataVencimento}T180000
+DTEND:${dataVencimento}T190000
+RRULE:FREQ=MONTHLY;BYMONTHDAY=${cartao.vencimento}
+SUMMARY:Vencimento - ${cartao.nome}
+DESCRIPTION:Dia de vencimento da fatura do cartão ${cartao.nome}. Faça o pagamento até este dia.
+LOCATION:
+STATUS:CONFIRMED
+END:VEVENT
+
+END:VCALENDAR`;
+
+  // Cria e faz download do arquivo
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+
+  link.setAttribute('href', url);
+  link.setAttribute('download', `cartao-${cartao.nome.toLowerCase().replace(/\s+/g, '-')}.ics`);
+  link.style.visibility = 'hidden';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  alert(`Arquivo de calendário gerado! 📅\n\nImporte "${cartao.nome}.ics" no seu:\n• Google Calendar\n• Outlook\n• Apple Calendar\n\nA Alexa lerá seus lembretes!`);
 }
 
 // Fechar modal ao clicar fora
