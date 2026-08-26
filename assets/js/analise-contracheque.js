@@ -135,91 +135,60 @@ function extrairDados(texto) {
       dados.data = new Date(`${dataMatch[3]}-${dataMatch[2]}-${dataMatch[1]}`);
     }
 
-    // Extrair vencimentos - sem depender de códigos específicos
+    // Extrair vencimentos - procurar padrões específicos no texto completo
     dados.vencimentos = [];
 
-    for (let i = 0; i < linhas.length; i++) {
-      const linha = linhas[i];
-
-      // Vencimento CLT
-      if ((linha.includes('Vencimento') && linha.includes('CLT')) || linha.includes('0002')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.vencimentos.push({ descricao: 'Vencimento CLT', valor });
-        }
-      }
-
-      // Gratificação
-      if ((linha.includes('Gratificação') || linha.includes('gratificacao')) && linha.includes('0028')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.vencimentos.push({ descricao: 'Gratificação Tempo de Serviço', valor });
-        }
-      }
-
-      // Auxílio Creche
-      if ((linha.includes('Auxil') || linha.includes('auxil')) && (linha.includes('Creche') || linha.includes('creche')) && linha.includes('1012')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.vencimentos.push({ descricao: 'Auxílio Creche', valor });
-        }
+    // Procurar Vencimento CLT (padrão: "número Vencimento CLT")
+    const ventMatch = texto.match(/([\d.,]+)\s+[Vv]encimento\s+CLT/);
+    if (ventMatch) {
+      const valor = normalizarValor(ventMatch[1]);
+      if (valor > 500 && valor < 50000) {
+        dados.vencimentos.push({ descricao: 'Vencimento CLT', valor });
       }
     }
 
-    // Extrair descontos
+    // Procurar Gratificação (padrão: "número Gratificação")
+    const gratMatch = texto.match(/([\d.,]+)\s+[Gg]ratificação\s+[Tt]empo\s+de\s+[Ss]erviço/);
+    if (gratMatch) {
+      const valor = normalizarValor(gratMatch[1]);
+      if (valor > 100 && valor < 10000) {
+        dados.vencimentos.push({ descricao: 'Gratificação Tempo de Serviço', valor });
+      }
+    }
+
+    // Procurar Auxílio Creche (padrão: "número Auxílio Creche")
+    const auxMatch = texto.match(/([\d.,]+)\s+[Aa]uxil(?:i|í)o\s+[Cc]reche/);
+    if (auxMatch) {
+      const valor = normalizarValor(auxMatch[1]);
+      if (valor > 100 && valor < 10000) {
+        dados.vencimentos.push({ descricao: 'Auxílio Creche', valor });
+      }
+    }
+
+    // Extrair descontos - procurar padrões específicos
     dados.descontos = [];
-    for (let i = 0; i < linhas.length; i++) {
-      const linha = linhas[i];
 
-      if (linha.includes('INSS') && linha.includes('5003')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'INSS', valor });
+    // Usar regex para encontrar cada desconto
+    const descontoPatterns = [
+      { pattern: /([\d.,]+)\s+INSS/, descricao: 'INSS' },
+      { pattern: /([\d.,]+)\s+IRRF/, descricao: 'IRRF' },
+      { pattern: /([\d.,]+)\s+Plano de Saude\s+-\s+Titular/, descricao: 'Plano de Saúde - Titular' },
+      { pattern: /([\d.,]+)\s+Plano de Saude\s+-\s+Dependente/, descricao: 'Plano de Saúde - Dependente' },
+      { pattern: /([\d.,]+)\s+Plano Odontologico\s+-\s+Titular/, descricao: 'Plano Odontológico - Titular' },
+      { pattern: /([\d.,]+)\s+Plano Odontologico\s+-\s+Dependente/, descricao: 'Plano Odontológico - Dependente' },
+      { pattern: /([\d.,]+)\s+Desconto\s+(?:Particip\.|Participação)?\s*Refei(?:ção|cao)/, descricao: 'Desconto Refeição' },
+      { pattern: /([\d.,]+)\s+Desconto\s+Alimenta(?:ção|cao)/, descricao: 'Desconto Alimentação' }
+    ];
+
+    descontoPatterns.forEach(({ pattern, descricao }) => {
+      const match = texto.match(pattern);
+      if (match) {
+        const valor = normalizarValor(match[1]);
+        if (valor > 0 && valor < 5000) {
+          dados.descontos.push({ descricao, valor });
         }
       }
-      if (linha.includes('IRRF') && linha.includes('5004')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'IRRF', valor });
-        }
-      }
-      if ((linha.includes('Plano') && linha.includes('Saude')) && linha.includes('5318')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'Plano de Saúde - Titular', valor });
-        }
-      }
-      if ((linha.includes('Plano') && linha.includes('Saude')) && linha.includes('5616')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'Plano de Saúde - Dependente', valor });
-        }
-      }
-      if ((linha.includes('Plano') && linha.includes('Odonto')) && linha.includes('5613')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'Plano Odontológico - Titular', valor });
-        }
-      }
-      if ((linha.includes('Plano') && linha.includes('Odonto')) && linha.includes('5615')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'Plano Odontológico - Dependente', valor });
-        }
-      }
-      if ((linha.includes('Refeição') || linha.includes('refeicao')) && linha.includes('5748')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'Desconto Refeição', valor });
-        }
-      }
-      if ((linha.includes('Alimentação') || linha.includes('alimentacao')) && linha.includes('5752')) {
-        const valor = extrairValor(linha);
-        if (valor && valor > 0) {
-          dados.descontos.push({ descricao: 'Desconto Alimentação', valor });
-        }
-      }
-    }
+    });
 
     // Extrair totais - procurar em toda a string junto
     // Procura padrões como "Total de ganhos (P+V) R$ 13.180,29"
