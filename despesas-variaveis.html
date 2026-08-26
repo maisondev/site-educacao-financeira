@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Despesas Variáveis | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .container-variaveis {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .resumo-variaveis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-resumo {
+      background: white;
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-resumo h3 {
+      margin: 0 0 var(--espacamento-sm) 0;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      text-transform: uppercase;
+    }
+
+    .card-resumo .valor {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 0;
+    }
+
+    .secao-variaveis {
+      background: var(--cor-fundo-card);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .formulario-variavel {
+      background: var(--cor-cinza-leve);
+      padding: var(--espacamento-lg);
+      border-radius: 8px;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .formulario-variavel label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      margin-top: var(--espacamento-md);
+      color: var(--cor-texto);
+    }
+
+    .formulario-variavel label:first-child {
+      margin-top: 0;
+    }
+
+    .formulario-variavel input,
+    .formulario-variavel select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .formulario-variavel button {
+      background-color: var(--cor-primaria);
+      color: white;
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+    }
+
+    .formulario-variavel button:hover {
+      opacity: 0.9;
+    }
+
+    .historico-variaveis {
+      display: grid;
+      gap: var(--espacamento-lg);
+    }
+
+    .categoria-grupo {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--cor-borda);
+    }
+
+    .categoria-titulo {
+      background: var(--cor-fundo-hover);
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      font-weight: bold;
+      color: var(--cor-primaria);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .categoria-titulo:hover {
+      background: var(--cor-primaria);
+      color: white;
+    }
+
+    .categoria-media {
+      font-size: 14px;
+      font-weight: normal;
+      color: var(--cor-texto-leve);
+    }
+
+    .categoria-titulo:hover .categoria-media {
+      color: rgba(255,255,255,0.8);
+    }
+
+    .registros-categoria {
+      padding: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .registro-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+      background: white;
+    }
+
+    .registro-item:last-child {
+      border-bottom: none;
+    }
+
+    .registro-info {
+      flex: 1;
+    }
+
+    .registro-data {
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      margin-top: 4px;
+    }
+
+    .registro-valor {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-right: var(--espacamento-lg);
+      min-width: 120px;
+      text-align: right;
+    }
+
+    .btn-remover {
+      background: none;
+      border: none;
+      color: #c0392b;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background: var(--cor-cinza-leve);
+      border-radius: 4px;
+    }
+
+    @media (max-width: 640px) {
+      .registro-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .registro-valor {
+        margin: var(--espacamento-md) 0 0 0;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main class="container-variaveis">
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Despesas Variáveis</p>
+    <h1>Despesas Variáveis</h1>
+    <p>Registre despesas que mudam a cada mês: água, luz, gás, internet, telefone. Acompanhe o consumo e identifique padrões.</p>
+
+    <div class="resumo-variaveis">
+      <div class="card-resumo">
+        <h3>Este Mês</h3>
+        <p class="valor" id="total-mes-atual">R$ 0,00</p>
+      </div>
+      <div class="card-resumo">
+        <h3>Média dos Últimos 3 Meses</h3>
+        <p class="valor" id="media-3-meses">R$ 0,00</p>
+      </div>
+      <div class="card-resumo">
+        <h3>Total Registrado</h3>
+        <p class="valor" id="total-geral">R$ 0,00</p>
+      </div>
+    </div>
+
+    <div class="secao-variaveis">
+      <h2>Registrar Despesa Variável</h2>
+
+      <div class="formulario-variavel">
+        <label for="var-categoria">Categoria *</label>
+        <select id="var-categoria" required>
+          <option value="">Selecione uma categoria</option>
+          <option value="agua">Água</option>
+          <option value="luz">Luz / Energia Elétrica</option>
+          <option value="gas">Gás</option>
+          <option value="internet">Internet</option>
+          <option value="telefone">Telefone / Celular</option>
+          <option value="streaming">Streaming / Assinaturas</option>
+          <option value="combustivel">Combustível</option>
+          <option value="manutencao">Manutenção / Consertos</option>
+          <option value="outro">Outro</option>
+        </select>
+
+        <label for="var-descricao">Descrição (opcional)</label>
+        <input type="text" id="var-descricao" placeholder="Ex: Conta de água - agosto">
+
+        <label for="var-valor">Valor (R$) *</label>
+        <input type="text" id="var-valor" data-moeda placeholder="Ex: 150,00" required>
+
+        <label for="var-data">Data do Pagamento *</label>
+        <input type="date" id="var-data" required>
+
+        <button type="button" onclick="adicionarDespesaVariavel()">Registrar Despesa</button>
+      </div>
+    </div>
+
+    <div class="secao-variaveis">
+      <h2>Histórico</h2>
+      <div id="historico-container" class="historico-variaveis">
+        <div class="lista-vazia"><p>Nenhuma despesa variável registrada ainda.</p></div>
+      </div>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Dicas</h2>
+      <ul>
+        <li>Registre o valor real da conta quando receber, não estime</li>
+        <li>Contas recorrentes (água, luz) aparecem agrupadas por categoria</li>
+        <li>Compare mês a mês para identificar consumo excessivo</li>
+        <li>A média dos últimos 3 meses ajuda no planejamento de orçamento</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/despesas-variaveis.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderizarMenu();
+      configurarTodosCamposMoeda();
+      carregarDespesasVariaveis();
+    });
+  </script>
+</body>
+</html>

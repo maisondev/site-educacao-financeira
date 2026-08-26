@@ -19,10 +19,12 @@ const MENU_ITEMS = [
     href: './metas.html',
     submenu: [
       { label: 'Metas', href: './metas.html' },
+      { label: 'Receitas', href: './receitas.html' },
       { label: 'Reserva de Emergência', href: './reserva-emergencia.html' },
       { label: 'Dívidas', href: './dividas.html' },
       { label: 'Investimentos', href: './investimentos.html' },
       { label: 'Despesas Fixas', href: './despesas-fixas.html' },
+      { label: 'Despesas Variáveis', href: './despesas-variaveis.html' },
       { label: 'Renda Extra', href: './renda-extra.html' },
       { label: 'Cartões', href: './cartoes.html' },
       { label: 'Envelopes', href: './envelopes.html' }
@@ -44,7 +46,8 @@ const MENU_ITEMS = [
       { label: 'Glossário', href: './glossario.html' },
       { label: 'Grandes Máximas', href: './maximas.html' },
       { label: 'Grandes Nomes', href: './pensadores.html' },
-      { label: 'Grandes Livros', href: './livros.html' }
+      { label: 'Grandes Livros', href: './livros.html' },
+      { label: 'Meus Cursos', href: './cursos.html' }
     ]
   },
   {
