@@ -372,6 +372,14 @@
     <!-- Histórico -->
     <div class="secao-analise" id="secao-historico" hidden>
       <h2>Histórico de Contracheques</h2>
+
+      <div class="grafico-container" style="margin-bottom: 2rem;">
+        <h3>Evolução Mensal</h3>
+        <svg class="grafico-svg" id="grafico-evolucao" viewBox="0 0 600 260" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="legenda" id="legenda-evolucao"></div>
+      </div>
+
+      <p style="font-size: 0.9rem; color: var(--cor-texto-leve);">Clique em uma linha para ver o detalhamento completo daquele mês.</p>
       <table class="tabela-historico">
         <thead>
           <tr>

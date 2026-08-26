@@ -168,14 +168,35 @@ function extrairDados(texto) {
       dados.data = new Date(`${dataMatch[3]}-${dataMatch[2]}-${dataMatch[1]}`);
     }
 
-    // O pdf.js extrai cada linha da tabela invertida: "VALOR REF DESCRIÇÃO CÓDIGO"
-    // (o valor vem antes do código do evento, não depois). Por isso ancoramos
-    // a busca no código do evento, que é estável mesmo se a descrição mudar de acentuação.
-    const extrairPorCodigo = (codigo, minValor, maxValor) => {
-      // O trecho entre a descrição e o código pode ter dígitos soltos (ex: "Hora Extra 50%"),
-      // mas não pode atravessar outro número decimal "N,NN" — isso indicaria que pulou
-      // para a linha seguinte da tabela e pegaria o valor errado.
-      const regex = new RegExp(`([\\d.]+,\\d{2})\\s{0,3}[\\d.,]*\\s{0,3}(?:(?!\\d+,\\d{2})[\\s\\S]){0,120}?(?<!\\d)${codigo}(?!\\d)`, 'i');
+    // A ordem que o pdf.js entrega o texto varia conforme o PDF: às vezes
+    // "VALOR REF DESCRIÇÃO CÓDIGO" (valor antes), às vezes "REF CÓDIGO DESCRIÇÃO VALOR"
+    // (valor depois) — mas é sempre a MESMA ordem em todas as linhas de um mesmo PDF.
+    // Tentar as duas direções por código individualmente é perigoso: no formato "depois",
+    // a direção "antes" pode casar por acidente com o valor da linha ANTERIOR (que também
+    // é um número decimal válido), empurrando valores errados de uma linha pra outra em cascata.
+    // Por isso detectamos o formato UMA VEZ (usando o código 0002, cuja faixa de valor
+    // 5000-50000 é grande o bastante pra não ter ambiguidade) e aplicamos só essa direção
+    // pra todos os códigos do documento.
+    const SEM_CRUZAR_DECIMAL = `(?:(?!\\d+,\\d{2})[\\s\\S]){0,120}?`;
+    const construirRegexAntes = codigo => new RegExp(`([\\d.]+,\\d{2})\\s{0,3}[\\d.,]*\\s{0,3}${SEM_CRUZAR_DECIMAL}(?<!\\d)${codigo}(?!\\d)`, 'i');
+    const construirRegexDepois = codigo => new RegExp(`(?<!\\d)${codigo}(?!\\d)${SEM_CRUZAR_DECIMAL}([\\d.]+,\\d{2})`, 'i');
+
+    // Vencimentos e Descontos são colunas separadas da mesma tabela, e o pdf.js pode
+    // extrair cada coluna com uma ordem diferente — por isso a detecção de formato é
+    // feita uma vez para cada seção, não uma vez só pro documento inteiro.
+    const detectarFormatoDepois = (codigoAncora, minAncora, maxAncora) => {
+      const matchAntes = texto.match(construirRegexAntes(codigoAncora));
+      const valorAntes = matchAntes ? normalizarValor(matchAntes[1]) : null;
+      return !(valorAntes >= minAncora && valorAntes <= maxAncora);
+    };
+
+    // Vencimento CLT tem faixa bem larga e exclusiva (5000-50000) — âncora confiável.
+    const formatoVencimentosDepois = detectarFormatoDepois('0002', 5000, 50000);
+    // INSS costuma estar perto do teto de contribuição — faixa estreita como âncora.
+    const formatoDescontosDepois = detectarFormatoDepois('5003', 800, 1200);
+
+    const extrairPorCodigo = (codigo, minValor, maxValor, valorDepois) => {
+      const regex = valorDepois ? construirRegexDepois(codigo) : construirRegexAntes(codigo);
       const match = texto.match(regex);
       if (match) {
         const valor = normalizarValor(match[1]);
@@ -196,7 +217,7 @@ function extrairDados(texto) {
       { codigo: '1124', descricao: 'DSR Horas Extras', min: 10, max: 10000 }
     ];
     eventosVencimentos.forEach(({ codigo, descricao, min, max }) => {
-      const valor = extrairPorCodigo(codigo, min, max);
+      const valor = extrairPorCodigo(codigo, min, max, formatoVencimentosDepois);
       if (valor !== null) dados.vencimentos.push({ descricao, valor });
     });
 
@@ -212,7 +233,7 @@ function extrairDados(texto) {
       { codigo: '5752', descricao: 'Desconto Alimentação Extra', min: 1, max: 500 }
     ];
     eventosDescontos.forEach(({ codigo, descricao, min, max }) => {
-      const valor = extrairPorCodigo(codigo, min, max);
+      const valor = extrairPorCodigo(codigo, min, max, formatoDescontosDepois);
       if (valor !== null) dados.descontos.push({ descricao, valor });
     });
 
@@ -717,6 +738,110 @@ function carregarHistorico() {
       <td>${formatarMoeda(contrato.totalDescontos || 0)}</td>
       <td><strong>${formatarMoeda(contrato.salarioLiquido || 0)}</strong></td>
     </tr>
+  `).join('');
+
+  desenharGraficoEvolucao(historico);
+}
+
+function desenharGraficoEvolucao(historico) {
+  const svg = document.getElementById('grafico-evolucao');
+  const legenda = document.getElementById('legenda-evolucao');
+  svg.innerHTML = '';
+  legenda.innerHTML = '';
+
+  // Ordem cronológica (mais antigo primeiro) para ler a evolução da esquerda pra direita
+  const ordenado = [...historico].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+
+  const series = [
+    { chave: 'totalBruto', nome: 'Bruto', cor: '#1264a3' },
+    { chave: 'totalDescontos', nome: 'Descontos', cor: '#dc2626' },
+    { chave: 'salarioLiquido', nome: 'Líquido', cor: '#059669' }
+  ];
+
+  const maxValor = Math.max(1, ...ordenado.map(c => Math.max(
+    c.totalBruto || 0, c.totalDescontos || 0, c.salarioLiquido || 0
+  )));
+
+  const margemEsquerda = 55, margemInferior = 30, margemSuperior = 15, margemDireita = 15;
+  const largura = 600, altura = 260;
+  const areaLargura = largura - margemEsquerda - margemDireita;
+  const areaAltura = altura - margemInferior - margemSuperior;
+
+  // Ponto X de cada mês: centralizado se só há 1 mês, senão distribuído ao longo do eixo
+  const posX = idx => ordenado.length === 1
+    ? margemEsquerda + areaLargura / 2
+    : margemEsquerda + (idx / (ordenado.length - 1)) * areaLargura;
+  const posY = valor => margemSuperior + areaAltura - (valor / maxValor) * areaAltura;
+
+  // Linhas guia do eixo Y (0%, 50%, 100% do máximo)
+  [0, 0.5, 1].forEach(frac => {
+    const y = margemSuperior + areaAltura * (1 - frac);
+    const linha = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    linha.setAttribute('x1', margemEsquerda);
+    linha.setAttribute('x2', largura - margemDireita);
+    linha.setAttribute('y1', y);
+    linha.setAttribute('y2', y);
+    linha.setAttribute('stroke', 'var(--cor-borda)');
+    linha.setAttribute('stroke-width', 1);
+    svg.appendChild(linha);
+
+    const texto = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    texto.setAttribute('x', margemEsquerda - 8);
+    texto.setAttribute('y', y + 4);
+    texto.setAttribute('text-anchor', 'end');
+    texto.setAttribute('font-size', '9');
+    texto.setAttribute('fill', 'var(--cor-texto-leve)');
+    texto.textContent = formatarMoeda(maxValor * frac).replace(',00', '');
+    svg.appendChild(texto);
+  });
+
+  // Rótulos dos meses no eixo X
+  ordenado.forEach((contrato, idx) => {
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', posX(idx));
+    label.setAttribute('y', altura - margemInferior + 14);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('font-size', '10');
+    label.setAttribute('fill', 'var(--cor-texto-leve)');
+    label.textContent = contrato.competencia || '';
+    svg.appendChild(label);
+  });
+
+  // Uma linha (polyline) por série, com uma bolinha em cada mês
+  series.forEach(serie => {
+    const pontos = ordenado.map((contrato, idx) => `${posX(idx)},${posY(contrato[serie.chave] || 0)}`).join(' ');
+
+    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    polyline.setAttribute('points', pontos);
+    polyline.setAttribute('fill', 'none');
+    polyline.setAttribute('stroke', serie.cor);
+    polyline.setAttribute('stroke-width', 2);
+    polyline.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(polyline);
+
+    ordenado.forEach((contrato, idx) => {
+      const valor = contrato[serie.chave] || 0;
+      const circulo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circulo.setAttribute('cx', posX(idx));
+      circulo.setAttribute('cy', posY(valor));
+      circulo.setAttribute('r', 4);
+      circulo.setAttribute('fill', serie.cor);
+      circulo.setAttribute('stroke', 'var(--cor-fundo-card)');
+      circulo.setAttribute('stroke-width', 1.5);
+
+      const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+      title.textContent = `${serie.nome} — ${contrato.competencia}: ${formatarMoeda(valor)}`;
+      circulo.appendChild(title);
+
+      svg.appendChild(circulo);
+    });
+  });
+
+  legenda.innerHTML = series.map(s => `
+    <div class="legenda-item">
+      <div class="legenda-cor" style="background: ${s.cor}"></div>
+      <span>${s.nome}</span>
+    </div>
   `).join('');
 }
 
