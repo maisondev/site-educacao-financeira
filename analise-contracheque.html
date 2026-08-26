@@ -251,8 +251,15 @@
 </head>
 <body>
   <header class="site-header">
-    <a href="./index.html" class="logo">Educação Financeira</a>
-    <nav><a href="./temas/index.html">Temas</a></nav>
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
   </header>
 
   <main class="analise-container">
@@ -419,6 +426,9 @@
     }
   </script>
 
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
   <script src="./assets/js/analise-contracheque.js"></script>
+  <script src="./assets/js/menu.js"></script>
 </body>
 </html>

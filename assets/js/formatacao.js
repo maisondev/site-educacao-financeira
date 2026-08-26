@@ -2,6 +2,7 @@
 
 // Converter string em formato brasileiro para número
 // "1.234,56" → 1234.56
+// Aceita múltiplos formatos: "R$ 1.234,56", "1.234,56", "1234,56", "1234.56"
 function parseValorBrasileiro(valor) {
   if (!valor) return 0;
 
@@ -9,18 +10,28 @@ function parseValorBrasileiro(valor) {
     return valor;
   }
 
-  const stringValor = valor.toString().trim();
+  let limpo = valor.toString().trim();
 
   // Remover espaços
-  let limpo = stringValor.replace(/\s/g, '');
+  limpo = limpo.replace(/\s/g, '');
 
   // Se começa com R$, remover
   limpo = limpo.replace(/^R\$\s*/, '');
 
-  // Converter formato brasileiro para javascript
-  // "1.234,56" → "1234.56"
-  limpo = limpo.replace(/\./g, ''); // Remove separadores de milhares
-  limpo = limpo.replace(',', '.'); // Converte vírgula para ponto
+  // Se contém vírgula, assume formato brasileiro (a vírgula é a casa decimal)
+  if (limpo.includes(',')) {
+    // Formato brasileiro: 1.234,56 ou 1234,56
+    limpo = limpo.replace(/\./g, '').replace(',', '.');
+  } else if (limpo.includes('.')) {
+    // Contém ponto mas não vírgula: determina se é separador de milhares ou decimal
+    // Se tem exatamente 3 dígitos após o ponto, é provavelmente separador de milhares
+    const partes = limpo.split('.');
+    if (partes[partes.length - 1].length === 3) {
+      // Formato brasileiro com separador: 1.234.567 (sem vírgula) → remove os pontos
+      limpo = limpo.replace(/\./g, '');
+    }
+    // Senão, usa como está (formato internacional: 1234.56)
+  }
 
   const numero = parseFloat(limpo);
   return isNaN(numero) ? 0 : numero;

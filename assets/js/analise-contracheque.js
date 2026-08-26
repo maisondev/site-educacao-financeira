@@ -37,25 +37,31 @@ function calcularINSSEsperado(baseCalculo) {
   return Math.max(0, baseCalculo * faixa.aliquota - faixa.deduzir);
 }
 
-// Função auxiliar para normalizar valores
-function normalizarValor(str) {
-  // Aceita: "R$ 8.858,08", "8.858,08", "8858,08" ou "8858.08"
-  if (!str) return 0;
-  str = str.replace(/R\$\s?/g, '').trim();
-
-  if (str.includes(',')) {
-    // Formato brasileiro: 1.234,56 ou 1234,56
-    return parseFloat(str.replace(/\./g, '').replace(',', '.'));
-  } else {
-    // Formato internacional: 1234.56
-    return parseFloat(str);
-  }
-}
+// Use parseValorBrasileiro from formatacao.js instead
+// It handles multiple formats: "R$ 1.234,56", "1.234,56", "1234,56", "1234.56"
 
 document.addEventListener('DOMContentLoaded', function() {
   setupUpload();
   carregarHistorico();
+  configurarInputsMoeda();
 });
+
+// Configurar inputs de moeda para aceitar múltiplos formatos
+function configurarInputsMoeda() {
+  document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('input-edicao') && !e.target.classList.contains('input-edicao-descricao')) {
+      const valor = parseValorBrasileiro(e.target.value);
+      e.target.value = valor.toFixed(2).replace('.', ',');
+    }
+  }, true);
+
+  document.addEventListener('blur', function(e) {
+    if (e.target.classList.contains('input-edicao') && !e.target.classList.contains('input-edicao-descricao')) {
+      const valor = parseValorBrasileiro(e.target.value);
+      e.target.value = valor.toFixed(2).replace('.', ',');
+    }
+  }, true);
+}
 
 function setupUpload() {
   const uploadArea = document.getElementById('upload-area');
@@ -186,7 +192,7 @@ function extrairDados(texto) {
     // feita uma vez para cada seção, não uma vez só pro documento inteiro.
     const detectarFormatoDepois = (codigoAncora, minAncora, maxAncora) => {
       const matchAntes = texto.match(construirRegexAntes(codigoAncora));
-      const valorAntes = matchAntes ? normalizarValor(matchAntes[1]) : null;
+      const valorAntes = matchAntes ? parseValorBrasileiro(matchAntes[1]) : null;
       return !(valorAntes >= minAncora && valorAntes <= maxAncora);
     };
 
@@ -199,7 +205,7 @@ function extrairDados(texto) {
       const regex = valorDepois ? construirRegexDepois(codigo) : construirRegexAntes(codigo);
       const match = texto.match(regex);
       if (match) {
-        const valor = normalizarValor(match[1]);
+        const valor = parseValorBrasileiro(match[1]);
         if (valor >= minValor && valor <= maxValor) {
           return valor;
         }
@@ -245,15 +251,15 @@ function extrairDados(texto) {
     const matchRodape = texto.match(regexRodape);
 
     if (matchRodape) {
-      dados.salarioLiquido = normalizarValor(matchRodape[1]);
-      dados.totalDescontos = normalizarValor(matchRodape[2]);
-      dados.totalBruto = normalizarValor(matchRodape[3]);
-      dados.fgts = normalizarValor(matchRodape[4]);
+      dados.salarioLiquido = parseValorBrasileiro(matchRodape[1]);
+      dados.totalDescontos = parseValorBrasileiro(matchRodape[2]);
+      dados.totalBruto = parseValorBrasileiro(matchRodape[3]);
+      dados.fgts = parseValorBrasileiro(matchRodape[4]);
     } else {
       // Fallback: pelo menos tenta achar o FGTS isolado (não depende dos outros 3)
       const regexFgts = /([\d.]+,\d{2})\s{0,3}FGTS/i;
       const matchFgts = texto.match(regexFgts);
-      dados.fgts = matchFgts ? normalizarValor(matchFgts[1]) : null;
+      dados.fgts = matchFgts ? parseValorBrasileiro(matchFgts[1]) : null;
     }
 
     console.log('Totais encontrados:', {
@@ -320,7 +326,7 @@ function extrairValor(texto) {
   // Filtra números que parecem valores monetários (maiores que 100)
   const valoresCandidatos = matches
     .map(m => {
-      const valor = normalizarValor(m);
+      const valor = parseValorBrasileiro(m);
       return valor;
     })
     .filter(v => v >= 100); // Valores monetários costumam ser >= 100
@@ -648,7 +654,7 @@ function lerItensEdicao(idTabela) {
   const linhas = [...tbody.querySelectorAll('tr')].filter(tr => tr.querySelector('[data-campo="descricao"]'));
   return linhas.map(tr => {
     const descricao = tr.querySelector('[data-campo="descricao"]').value.trim();
-    const valor = normalizarValor(tr.querySelector('[data-campo="valor"]').value) || 0;
+    const valor = parseValorBrasileiro(tr.querySelector('[data-campo="valor"]').value) || 0;
     return { descricao, valor };
   });
 }
@@ -658,7 +664,7 @@ function salvarEdicao() {
 
   const vencimentos = lerItensEdicao('tabela-vencimentos').filter(v => v.descricao && v.valor > 0);
   const descontos = lerItensEdicao('tabela-descontos-detalhe').filter(d => d.descricao && d.valor > 0);
-  const fgts = normalizarValor(document.getElementById('input-fgts').value) || 0;
+  const fgts = parseValorBrasileiro(document.getElementById('input-fgts').value) || 0;
 
   contrachequeAtual.vencimentos = vencimentos;
   contrachequeAtual.descontos = descontos;
@@ -707,6 +713,14 @@ function salvarNoHistorico(dados) {
     localStorage.setItem(CHAVE_CONTRACHEQUES, JSON.stringify(historico));
   } catch (erro) {
     console.error('Erro ao salvar histórico:', erro);
+  }
+
+  // O contracheque mais recente do histórico (por data) é quem define a renda
+  // mensal centralizada usada em Despesas Fixas, Envelopes, etc.
+  const maisRecente = historico[0];
+  if (maisRecente && maisRecente.competencia === dados.competencia && dados.salarioLiquido > 0
+      && typeof atualizarRendaMensal === 'function') {
+    atualizarRendaMensal(dados.salarioLiquido, dados.competencia);
   }
 }
 

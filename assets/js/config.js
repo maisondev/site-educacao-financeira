@@ -14,10 +14,24 @@ function definirRendaMensal(valor) {
   return false;
 }
 
-function atualizarRendaMensal(valor) {
+// Mês/ano de referência do valor de renda atual (ex: competência do contracheque que o originou)
+function obterRendaMensalCompetencia() {
+  return localStorage.getItem('renda_mensal_competencia') || null;
+}
+
+function definirRendaMensalCompetencia(competencia) {
+  if (competencia) {
+    localStorage.setItem('renda_mensal_competencia', competencia);
+  } else {
+    localStorage.removeItem('renda_mensal_competencia');
+  }
+}
+
+function atualizarRendaMensal(valor, competencia) {
   definirRendaMensal(valor);
+  definirRendaMensalCompetencia(competencia || null);
   // Disparar evento para que outras páginas sejam notificadas
-  window.dispatchEvent(new CustomEvent('rendaMensalAtualizada', { detail: { renda: valor } }));
+  window.dispatchEvent(new CustomEvent('rendaMensalAtualizada', { detail: { renda: valor, competencia: competencia || null } }));
 }
 
 function exibirConfiguradorRenda(callback) {
@@ -49,13 +63,13 @@ function exibirConfiguradorRenda(callback) {
   const btnCancelar = document.getElementById('temp-cancelar-renda');
 
   btnSalvar.addEventListener('click', () => {
-    const valor = parseFloat(inputRenda.value);
+    const valor = parseValorBrasileiro(inputRenda.value);
     if (valor && valor > 0) {
       atualizarRendaMensal(valor);
       container.remove();
       if (callback) callback(valor);
     } else {
-      alert('Por favor, insira uma renda válida');
+      alert('Por favor, insira uma renda válida (ex: 3000,00 ou 3000.00)');
     }
   });
 
