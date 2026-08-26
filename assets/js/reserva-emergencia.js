@@ -2,21 +2,19 @@ function inicializarReserva() {
   const dados = obterDados();
   const rendaCentralizada = obterRendaMensal();
 
-  // Pré-preencher com renda centralizada se disponível
-  if (rendaCentralizada && !dados.salario) {
+  // Preferir renda centralizada (de Envelopes) como padrão
+  if (rendaCentralizada) {
     document.getElementById('input-salario').value = rendaCentralizada;
-  } else if (dados.salario) {
+    adicionarBotaoUsarRendaDefinida(rendaCentralizada);
+  } else if (dados.salario && dados.salario > 0) {
+    // Usar renda anterior apenas se não houver renda centralizada
     document.getElementById('input-salario').value = dados.salario;
   }
 
-  if (dados.salario && dados.meses) {
+  // Mostrar resumo apenas se tiver configuração válida salva
+  if (dados.salario && dados.salario > 0 && dados.meses && dados.meses > 0) {
     document.getElementById('resumo-container').removeAttribute('hidden');
     atualizarVisualizacao();
-  }
-
-  // Adicionar botão para usar renda definida em Envelopes
-  if (rendaCentralizada) {
-    adicionarBotaoUsarRendaDefinida(rendaCentralizada);
   }
 }
 
@@ -30,17 +28,25 @@ function salvarDados(dados) {
 }
 
 function atualizarConfiguracao() {
-  const salario = parseFloat(document.getElementById('input-salario').value);
+  let salario = parseFloat(document.getElementById('input-salario').value);
   const meses = parseInt(document.getElementById('select-meses').value);
 
-  if (!salario || salario <= 0) {
-    alert('Por favor, insira um salário válido');
+  if (!salario || isNaN(salario) || salario <= 0) {
+    alert('Por favor, insira um salário válido (maior que 0)');
     return;
   }
 
   if (!meses || meses <= 0) {
     alert('Por favor, selecione uma quantidade de meses');
     return;
+  }
+
+  // Arredondar salário para 2 casas decimais
+  salario = Math.round(salario * 100) / 100;
+
+  // Atualizar renda centralizada também
+  if (typeof atualizarRendaMensal === 'function') {
+    atualizarRendaMensal(salario);
   }
 
   const dados = obterDados();
