@@ -2,7 +2,8 @@ const PENSADORES = [
   {
     nome: 'Warren Buffett',
     periodo: '1930 - Presente',
-    avatar: '🦅',
+    iniciais: 'WB',
+    corAvatar: '#E74C3C',
     area: 'Value Investing',
     descricao: 'Um dos investidores mais bem-sucedidos de todos os tempos. Criou a Berkshire Hathaway e é conhecido por sua filosofia de comprar ações de empresas com fundamentais sólidos por preços abaixo do valor real.',
     principios: [
@@ -20,7 +21,8 @@ const PENSADORES = [
   {
     nome: 'Benjamin Graham',
     periodo: '1894 - 1976',
-    avatar: '📚',
+    iniciais: 'BG',
+    corAvatar: '#8B4513',
     area: 'Análise Fundamentalista',
     descricao: 'Criador da análise fundamentalista e mentor de Warren Buffett. Escreveu "O Investidor Inteligente", considerado a bíblia do investimento. Revolucionou a forma como as pessoas pensam sobre mercado de ações.',
     principios: [
@@ -38,7 +40,8 @@ const PENSADORES = [
   {
     nome: 'Charlie Munger',
     periodo: '1924 - Presente',
-    avatar: '🧠',
+    iniciais: 'CM',
+    corAvatar: '#9B59B6',
     area: 'Pensamento Multidisciplinar',
     descricao: 'Vice-presidente da Berkshire Hathaway e parceiro de Warren Buffett. Conhecido por seu pensamento ético e abordagem multidisciplinar que combina psicologia, história e economia.',
     principios: [
@@ -56,7 +59,8 @@ const PENSADORES = [
   {
     nome: 'Ray Dalio',
     periodo: '1949 - Presente',
-    avatar: '⚙️',
+    iniciais: 'RD',
+    corAvatar: '#3498DB',
     area: 'Princípios & Sistemas',
     descricao: 'Fundador do Bridgewater Associates. Criador da filosofia dos "Princípios" que aplicam conceitos científicos e racionais aos negócios e vida pessoal. Autor do livro "Principles".',
     principios: [
@@ -74,7 +78,8 @@ const PENSADORES = [
   {
     nome: 'George Soros',
     periodo: '1930 - Presente',
-    avatar: '💰',
+    iniciais: 'GS',
+    corAvatar: '#2ECC71',
     area: 'Trading & Reflexividade',
     descricao: 'Investidor e especulador de sucesso conhecido pela estratégia de "reflexividade" - compreender como os participantes do mercado influenciam os preços. Filantropo dedicado.',
     principios: [
@@ -92,7 +97,8 @@ const PENSADORES = [
   {
     nome: 'Peter Lynch',
     periodo: '1944 - Presente',
-    avatar: '📈',
+    iniciais: 'PL',
+    corAvatar: '#F39C12',
     area: 'Gestão de Fundos',
     descricao: 'Gerenciou o Fundo Magellan e obteve retornos extraordinários. Defende que investidores comuns podem ter sucesso investigando empresas locais que conhecem.',
     principios: [
@@ -110,7 +116,8 @@ const PENSADORES = [
   {
     nome: 'Robert Kiyosaki',
     periodo: '1956 - Presente',
-    avatar: '🏠',
+    iniciais: 'RK',
+    corAvatar: '#E67E22',
     area: 'Educação Financeira',
     descricao: 'Autor de "Pai Rico, Pai Pobre". Promove a importância da educação financeira e investimento imobiliário como caminho para liberdade financeira.',
     principios: [
@@ -128,7 +135,8 @@ const PENSADORES = [
   {
     nome: 'Naval Ravikant',
     periodo: '1974 - Presente',
-    avatar: '🧭',
+    iniciais: 'NR',
+    corAvatar: '#1ABC9C',
     area: 'Riqueza & Filosofia',
     descricao: 'Empreendedor e investidor. Criador do conceito "Como Ficar Rico Sem Sorte". Defende riqueza como resultado de longo prazo e sabedoria pessoal.',
     principios: [
@@ -155,7 +163,9 @@ function mostrarPensadores(pensadores) {
   container.innerHTML = pensadores.map(pensador => `
     <div class="card-pensador">
       <div class="pensador-header">
-        <div class="pensador-avatar">${pensador.avatar}</div>
+        <div class="pensador-avatar" style="background-color: ${pensador.corAvatar};">
+          ${pensador.iniciais}
+        </div>
         <h2 class="pensador-nome">${pensador.nome}</h2>
         <p class="pensador-periodo">${pensador.periodo}</p>
       </div>
