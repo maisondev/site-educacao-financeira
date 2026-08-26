@@ -37,9 +37,23 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+function normalizarValor(str) {
+  // Aceita: "R$ 8.858,08", "8.858,08", "8858,08" ou "8858.08"
+  if (!str) return 0;
+  str = str.replace(/R\$\s?/g, '').trim();
+
+  if (str.includes(',')) {
+    // Formato brasileiro: 1.234,56 ou 1234,56
+    return parseFloat(str.replace(/\./g, '').replace(',', '.'));
+  } else {
+    // Formato internacional: 1234.56
+    return parseFloat(str);
+  }
+}
+
 function definirRenda() {
   const input = document.getElementById('input-renda');
-  const renda = parseFloat(input.value);
+  const renda = normalizarValor(input.value);
 
   if (!renda || renda <= 0) {
     alert('Por favor, insira um valor de renda válido');
@@ -194,7 +208,7 @@ function salvarRegistro() {
 
   const tipo = document.getElementById('registro-tipo').value;
   const descricao = document.getElementById('registro-descricao').value.trim();
-  const valor = parseFloat(document.getElementById('registro-valor').value);
+  const valor = normalizarValor(document.getElementById('registro-valor').value);
 
   if (!tipo) {
     alert('Por favor, selecione um tipo');

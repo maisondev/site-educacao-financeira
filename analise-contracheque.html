@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análise de Contracheque | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .analise-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .secao-analise {
+      background: var(--cor-fundo-card);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--cor-primaria);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .upload-area:hover {
+      background: var(--cor-fundo-hover);
+    }
+
+    .upload-area.dragover {
+      background: var(--cor-primaria);
+      opacity: 0.1;
+    }
+
+    #arquivo-pdf {
+      display: none;
+    }
+
+    .grid-dados {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .card-dado {
+      background: var(--cor-fundo-hover);
+      border-left: 4px solid var(--cor-primaria);
+      padding: 1rem;
+      border-radius: 4px;
+    }
+
+    .card-dado-label {
+      font-size: 0.85rem;
+      color: var(--cor-texto-leve);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .card-dado-valor {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-top: 0.5rem;
+    }
+
+    .grid-graficos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .grafico-container {
+      background: var(--cor-fundo-hover);
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .grafico-container h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+    }
+
+    .grafico-svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .legenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      justify-content: center;
+    }
+
+    .legenda-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legenda-cor {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    .tabela-historico {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .tabela-historico th {
+      background: var(--cor-fundo-hover);
+      padding: 0.75rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--cor-borda);
+    }
+
+    .tabela-historico td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--cor-borda);
+      text-align: right;
+    }
+
+    .tabela-historico td:first-child {
+      text-align: left;
+    }
+
+    .btn-limpar-historico {
+      margin-top: 1rem;
+      background: var(--cor-erro);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-limpar-historico:hover {
+      opacity: 0.9;
+    }
+
+    .mensagem-info {
+      background: var(--cor-info, #e3f2fd);
+      border-left: 4px solid var(--cor-info, #1976d2);
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      color: var(--cor-texto);
+    }
+
+    .em-breve {
+      background: var(--cor-fundo-hover);
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+      color: var(--cor-texto-leve);
+    }
+
+    @media (max-width: 640px) {
+      .grid-graficos {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-dados {
+        grid-template-columns: 1fr;
+      }
+
+      .secao-analise {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="./index.html" class="logo">Educação Financeira</a>
+    <nav><a href="./temas/index.html">Temas</a></nav>
+  </header>
+
+  <main class="analise-container">
+    <p class="breadcrumb"><a href="./index.html">Home</a> > Análise de Contracheque</p>
+    <h1>Análise de Contracheque</h1>
+    <p class="texto-descricao">Faça upload de seus contracheques para visualizar sua composição de renda, descontos e evolução mensal.</p>
+
+    <!-- Upload -->
+    <div class="secao-analise">
+      <h2>Upload do Contracheque</h2>
+      <div class="upload-area" id="upload-area">
+        <p>Clique aqui ou arraste um PDF de contracheque</p>
+        <p style="font-size: 0.9rem; color: var(--cor-texto-leve);">Formatos suportados: PDF</p>
+      </div>
+      <input type="file" id="arquivo-pdf" accept=".pdf">
+      <div id="mensagem-upload" style="margin-top: 1rem;"></div>
+    </div>
+
+    <!-- Dados Extraídos -->
+    <div class="secao-analise" id="secao-dados" hidden>
+      <h2>Dados do Contracheque</h2>
+      <div class="mensagem-info">
+        <strong>Competência:</strong> <span id="info-competencia"></span>
+      </div>
+
+      <div class="grid-dados">
+        <div class="card-dado">
+          <div class="card-dado-label">Salário Base</div>
+          <div class="card-dado-valor" id="valor-salario">-</div>
+        </div>
+        <div class="card-dado">
+          <div class="card-dado-label">Benefícios</div>
+          <div class="card-dado-valor" id="valor-beneficios">-</div>
+        </div>
+        <div class="card-dado">
+          <div class="card-dado-label">Total Bruto</div>
+          <div class="card-dado-valor" id="valor-bruto">-</div>
+        </div>
+        <div class="card-dado" style="border-left-color: var(--cor-erro);">
+          <div class="card-dado-label">Total Descontos</div>
+          <div class="card-dado-valor" style="color: var(--cor-erro);" id="valor-descontos">-</div>
+        </div>
+        <div class="card-dado" style="border-left-color: var(--cor-sucesso);">
+          <div class="card-dado-label">Salário Líquido</div>
+          <div class="card-dado-valor" style="color: var(--cor-sucesso);" id="valor-liquido">-</div>
+        </div>
+        <div class="card-dado">
+          <div class="card-dado-label">FGTS</div>
+          <div class="card-dado-valor" id="valor-fgts">-</div>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="grid-graficos">
+        <div class="grafico-container">
+          <h3>Composição da Renda</h3>
+          <svg class="grafico-svg" id="grafico-renda" viewBox="0 0 200 200"></svg>
+          <div class="legenda" id="legenda-renda"></div>
+        </div>
+
+        <div class="grafico-container">
+          <h3>Descontos</h3>
+          <svg class="grafico-svg" id="grafico-descontos" viewBox="0 0 200 200"></svg>
+          <div class="legenda" id="legenda-descontos"></div>
+        </div>
+      </div>
+
+      <!-- Tabelas Detalhadas -->
+      <div style="margin-top: 2rem;">
+        <h3>Detalhamento de Vencimentos</h3>
+        <table class="tabela-historico">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-vencimentos"></tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <h3>Detalhamento de Descontos</h3>
+        <table class="tabela-historico">
+          <thead>
+            <tr>
+              <th>Descrição</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-descontos-detalhe"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="secao-analise" id="secao-historico" hidden>
+      <h2>Histórico de Contracheques</h2>
+      <table class="tabela-historico">
+        <thead>
+          <tr>
+            <th>Competência</th>
+            <th>Bruto</th>
+            <th>Descontos</th>
+            <th>Líquido</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-historico"></tbody>
+      </table>
+      <button class="btn-limpar-historico" onclick="confirmarLimparHistorico()">Limpar Histórico</button>
+    </div>
+
+    <!-- Próximos passos -->
+    <div class="secao-analise">
+      <h2>Próximos Passos</h2>
+      <ul>
+        <li><a href="./envelopes.html">Use a renda extraída para criar seus Envelopes</a></li>
+        <li><a href="./metas.html">Defina metas baseado nos descontos e benefícios</a></li>
+        <li><a href="./temas/index.html">Leia sobre educação financeira</a></li>
+      </ul>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Análise segura de contracheques — seus dados ficam apenas no seu navegador.</p>
+  </footer>
+
+  <!-- PDF.js (opcional, para melhor extração de PDF) -->
+  <script async src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <script>
+    // Configurar worker do PDF.js se disponível
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+
+  <script src="./assets/js/analise-contracheque.js"></script>
+</body>
+</html>
