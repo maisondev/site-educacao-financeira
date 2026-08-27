@@ -5,7 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Educação Financeira</title>
   <link rel="stylesheet" href="./assets/css/style.css">
-</head>guinte e
+  <style>
+    .fluxo-ideal {
+      list-style: none;
+      counter-reset: passo;
+      margin: 0 0 var(--espacamento-xl) 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-md);
+    }
+
+    .fluxo-ideal li {
+      counter-increment: passo;
+      position: relative;
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-md) var(--espacamento-lg) var(--espacamento-md) 56px;
+    }
+
+    .fluxo-ideal li::before {
+      content: counter(passo);
+      position: absolute;
+      left: var(--espacamento-md);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: var(--cor-primaria);
+      color: white;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .fluxo-ideal .fluxo-titulo {
+      font-weight: bold;
+      color: var(--cor-texto);
+    }
+
+    .fluxo-ideal .fluxo-titulo a {
+      color: var(--cor-primaria);
+    }
+
+    .fluxo-ideal .fluxo-descricao {
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      margin-top: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .fluxo-ideal li {
+        padding-left: 48px;
+      }
+    }
+  </style>
+</head>
 <body>
   <header class="site-header">
     <div class="header-container">
@@ -26,6 +85,47 @@
       Uma curadoria pessoal de estudos sobre educação financeira, organizada do básico ao avançado.
       Aprenda conceitos, veja exemplos práticos e acompanhe seus objetivos financeiros.
     </p>
+
+    <h2>Por onde começar: o fluxo ideal de preenchimento</h2>
+    <p>
+      As ferramentas conversam entre si (o salário que você define numa página aparece pré-preenchido nas outras).
+      Pra isso funcionar direito, preencha nesta ordem:
+    </p>
+
+    <ol class="fluxo-ideal">
+      <li>
+        <div class="fluxo-titulo"><a href="./cartoes.html">Cadastre seus cartões</a></div>
+        <div class="fluxo-descricao">Nome, limite, dia de fechamento e vencimento de cada um. É estrutural — as dívidas de cartão vão referenciar isso depois.</div>
+      </li>
+      <li>
+        <div class="fluxo-titulo"><a href="./analise-contracheque.html">Analise seu contracheque (ou informe seu salário líquido)</a></div>
+        <div class="fluxo-descricao">Define a renda mensal centralizada usada em Envelopes, Reserva e Despesas Fixas automaticamente.</div>
+      </li>
+      <li>
+        <div class="fluxo-titulo"><a href="./dividas.html">Registre suas dívidas</a></div>
+        <div class="fluxo-descricao">Cartão, empréstimos, financiamentos — conhecer o total devido vem antes de planejar o resto, senão o "disponível" das outras páginas fica mentiroso.</div>
+      </li>
+      <li>
+        <div class="fluxo-titulo"><a href="./despesas-fixas.html">Cadastre as despesas fixas</a></div>
+        <div class="fluxo-descricao">Aluguel, internet, escola — tudo que se repete todo mês. Mostra quanto do salário já está comprometido.</div>
+      </li>
+      <li>
+        <div class="fluxo-titulo"><a href="./reserva-emergencia.html">Defina a meta de Reserva de Emergência</a></div>
+        <div class="fluxo-descricao">Quantos meses de salário você quer guardado. É o colchão antes de investir em qualquer outra coisa.</div>
+      </li>
+      <li>
+        <div class="fluxo-titulo"><a href="./envelopes.html">Aloque o que sobra em Envelopes</a></div>
+        <div class="fluxo-descricao">Distribui o restante da renda em categorias com teto fixo (essenciais, metas, aposentadoria), evitando que o gasto se expanda até zerar tudo.</div>
+      </li>
+      <li>
+        <div class="fluxo-titulo"><a href="./metas.html">Cadastre suas metas maiores</a></div>
+        <div class="fluxo-descricao">Objetivos de médio/longo prazo (viagem, casa própria, zerar fatura) com valor alvo e prazo.</div>
+      </li>
+      <li>
+        <div class="fluxo-titulo"><a href="./receitas.html">Registre receitas extras conforme chegam</a></div>
+        <div class="fluxo-descricao">Férias, 13º, bônus — lance aqui assim que receber, pra decidir se vai pra dívida, reserva ou meta.</div>
+      </li>
+    </ol>
 
     <h2>Seções Principais</h2>
 
@@ -112,6 +212,24 @@
       </div>
 
       <div class="card-tema">
+        <h3>Hacks Nubank</h3>
+        <p>
+          Checklist mensal com os 20 maiores hacks e otimizações do Nubank.
+          Marque conforme completa e acompanhe economia potencial e progresso.
+        </p>
+        <a href="./hacks-nubank.html">Ver checklist</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Gerenciar Empréstimos</h3>
+        <p>
+          Registre empréstimos que você fez para amigos e familiares.
+          Acompanhe quem deve, quanto deve e marque como pago quando receber.
+        </p>
+        <a href="./emprestimos.html">Gerenciar empréstimos</a>
+      </div>
+
+      <div class="card-tema">
         <h3>Análise de Contracheque</h3>
         <p>
           Faça upload de seus contracheques e visualize sua composição de renda, descontos e histórico mensal.
@@ -190,6 +308,7 @@
   </footer>
 
   <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/lembretes.js"></script>
   <script src="./assets/js/menu.js"></script>
 </body>
 </html>
