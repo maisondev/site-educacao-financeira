@@ -112,7 +112,7 @@ function adicionarIconeNotificacoes(nav) {
       🔔
       <span class="badge-notificacoes" id="badge-notificacoes" style="display: none;">0</span>
     </button>
-    <div class="dropdown-notificacoes" id="dropdown-notificacoes" hidden style="max-height: 400px; overflow-y: auto;">
+    <div class="dropdown-notificacoes" id="dropdown-notificacoes" hidden>
       <div class="dropdown-header">Próximos Eventos</div>
       <div class="dropdown-content" id="conteudo-notificacoes">
         <!-- Preenchido por JavaScript -->

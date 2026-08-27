@@ -321,6 +321,8 @@ nav {
   max-width: 400px;
   margin-top: 8px;
   color: var(--cor-texto);
+  display: flex;
+  flex-direction: column;
 }
 
 .dropdown-notificacoes[hidden] {
