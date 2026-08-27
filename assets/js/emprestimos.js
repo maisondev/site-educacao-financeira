@@ -78,7 +78,8 @@ class GerenciadorEmprestimos {
     document.getElementById('form-emprestimo').reset();
     this.definirDataHoje();
 
-    alert(`Empréstimo de R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para ${nome} registrado!`);
+    // Mostrar mensagem de sucesso
+    console.log(`✓ Empréstimo de R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para ${nome} registrado!`);
   }
 
   renderizar() {
