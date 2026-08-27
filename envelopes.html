@@ -70,9 +70,15 @@
 
     .grid-envelopes {
       display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--espacamento-xl);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .grid-envelopes-grupo {
+      display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: var(--espacamento-lg);
-      margin-top: var(--espacamento-xl);
     }
 
     .envelope {
@@ -452,11 +458,18 @@
 
     <div class="maxima">
       <p>
-        <strong>Por que envelopes funcionam?</strong> A Lei de Parkinson diz que "o gasto se expande até
-        consumir toda a renda disponível" — ou seja, quanto mais dinheiro livre você enxerga na conta,
-        mais fácil é gastá-lo até zerar. Ao pré-alocar cada real num envelope com teto fixo, você limita
-        artificialmente o quanto pode ser gasto em cada categoria, então o gasto não tem espaço pra se
-        expandir além do que foi definido.
+        <strong>Lei de Parkinson & Alocação 50/30/20:</strong> Parkinson observou que "o gasto se expande até
+        consumir toda a renda disponível". A solução é pré-alocar cada real em categorias com tetos fixos,
+        impedindo que o dinheiro "sobre" pra ser gasto sem controle. Este sistema segue a regra clássica:
+      </p>
+      <ul style="margin-top: 12px; padding-left: 20px;">
+        <li><strong>50% Necessidades:</strong> Aluguel, contas, alimentação, transporte — o que é obrigatório</li>
+        <li><strong>30% Desejos:</strong> Lazer, diversão, educação pessoal — o que você gosta mas poderia viver sem</li>
+        <li><strong>20% Poupança:</strong> Aposentadoria, metas, investimentos — seu futuro</li>
+      </ul>
+      <p style="margin-top: 12px;">
+        Sem a categoria "desejos" (lazer), você se frustra e quebra o orçamento. Sem "poupança",
+        não constrói segurança. Sem "necessidades" bem definidas, elas incham.
       </p>
     </div>
 

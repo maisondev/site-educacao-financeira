@@ -4,13 +4,16 @@ const CHAVE_STORAGE = 'envelopes_financeiros';
 const CHAVE_RENDA = 'renda_mensal';
 
 const ENVELOPES_PADRAO = [
-  { id: 'essenciais', nome: 'Essenciais', percentual: 55, cor: '#2d7e3c' },
-  { id: 'educacao', nome: 'Educação', percentual: 5, cor: '#4f46e5' },
-  { id: 'aposentadoria', nome: 'Aposentadoria', percentual: 10, cor: '#f59e0b' },
-  { id: 'metas-1', nome: 'Metas Nível 1', percentual: 5, cor: '#8b5cf6' },
-  { id: 'metas-2', nome: 'Metas Nível 2', percentual: 5, cor: '#06b6d4' },
-  { id: 'metas-3', nome: 'Metas Nível 3', percentual: 5, cor: '#ec4899' },
-  { id: 'metas-4', nome: 'Metas Nível 4', percentual: 5, cor: '#14b8a6' }
+  // NECESSIDADES (50%) - Tudo que é obrigatório pra sobreviver
+  { id: 'essenciais', nome: 'Essenciais', percentual: 50, cor: '#c53030', categoria: 'necessidades' },
+
+  // DESEJOS (30%) - Tudo que você quer mas não precisa
+  { id: 'lazer', nome: 'Lazer & Diversão', percentual: 20, cor: '#7c2d12', categoria: 'desejos' },
+  { id: 'educacao', nome: 'Educação & Desenvolvimento', percentual: 10, cor: '#4f46e5', categoria: 'desejos' },
+
+  // POUPANÇA (20%) - Futuro & Segurança
+  { id: 'aposentadoria', nome: 'Aposentadoria', percentual: 10, cor: '#f59e0b', categoria: 'poupanca' },
+  { id: 'metas-investimentos', nome: 'Metas & Investimentos', percentual: 10, cor: '#14b8a6', categoria: 'poupanca' }
 ];
 
 let envelopeEmEdicao = null;
@@ -102,7 +105,35 @@ function renderizarEnvelopes() {
     return;
   }
 
-  container.innerHTML = envelopes.map(envelope => criarCardEnvelope(envelope, renda)).join('');
+  // Agrupar envelopes por categoria
+  const grupos = {
+    necessidades: { nome: '50% NECESSIDADES', envelopes: [] },
+    desejos: { nome: '30% DESEJOS', envelopes: [] },
+    poupanca: { nome: '20% POUPANÇA', envelopes: [] }
+  };
+
+  envelopes.forEach(e => {
+    const categoria = e.categoria || 'desejos';
+    grupos[categoria].envelopes.push(e);
+  });
+
+  let html = '';
+  Object.entries(grupos).forEach(([chave, grupo]) => {
+    if (grupo.envelopes.length > 0) {
+      html += `
+        <div class="secao-envelopes" style="grid-column: 1/-1;">
+          <h3 style="color: var(--cor-texto-leve); font-size: 14px; font-weight: bold; text-transform: uppercase; margin: var(--espacamento-lg) 0 var(--espacamento-md) 0; border-bottom: 2px solid var(--cor-borda); padding-bottom: var(--espacamento-sm);">
+            ${grupo.nome}
+          </h3>
+          <div class="grid-envelopes-grupo">
+            ${grupo.envelopes.map(envelope => criarCardEnvelope(envelope, renda)).join('')}
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  container.innerHTML = html;
 }
 
 function criarCardEnvelope(envelope, rendaTotal) {
