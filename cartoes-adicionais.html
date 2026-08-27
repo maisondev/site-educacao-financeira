@@ -6,12 +6,12 @@
   <title>Cartões Adicionais | Educação Financeira</title>
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>
-    .emprestimos-container {
+    .cartoes-adicionais-container {
       max-width: var(--max-width-conteudo);
       margin: 0 auto;
     }
 
-    .formulario-emprestimo {
+    .formulario-cartao {
       background-color: var(--cor-cinza-leve);
       border: 1px solid var(--cor-borda);
       border-radius: var(--border-radius-md);
@@ -386,36 +386,36 @@
     </div>
   </header>
 
-  <main class="emprestimos-container">
+  <main class="cartoes-adicionais-container">
     <p class="breadcrumb">
-      <a href="./index.html">Início</a> > Gerenciar Empréstimos
+      <a href="./index.html">Início</a> > Cartões Adicionais
     </p>
 
-    <h1>Gerenciar Empréstimos</h1>
+    <h1>Cartões Adicionais</h1>
 
     <p>
-      Registre empréstimos de dinheiro que você fez para amigos e familiares.
-      Acompanhe quem deve, quanto deve e marque como pago quando receber.
+      Registre cartões em nome de familiares que você gerencia.
+      Acompanhe o saldo de cada cartão, quem é o titular e marque como pago quando receber.
     </p>
 
-    <div class="formulario-emprestimo">
-      <h2>Novo Empréstimo</h2>
-      <form id="form-emprestimo">
+    <div class="formulario-cartao">
+      <h2>Novo Cartão Adicional</h2>
+      <form id="form-cartao">
         <div class="form-grupo-duplo">
           <div class="form-group">
-            <label for="nome-pessoa">Nome da pessoa</label>
+            <label for="nome-titular">Nome do titular</label>
             <input
               type="text"
-              id="nome-pessoa"
-              placeholder="Ex: João Silva"
+              id="nome-titular"
+              placeholder="Ex: Maria Silva (filha)"
               required
             >
           </div>
           <div class="form-group">
-            <label for="valor-emprestimo">Valor (R$)</label>
+            <label for="valor-saldo">Saldo Devedor (R$)</label>
             <input
               type="number"
-              id="valor-emprestimo"
+              id="valor-saldo"
               placeholder="0,00"
               step="0.01"
               min="0"
@@ -425,10 +425,10 @@
         </div>
 
         <div class="form-group">
-          <label for="data-emprestimo">Data do empréstimo</label>
+          <label for="data-cartao">Data de Criação</label>
           <input
             type="date"
-            id="data-emprestimo"
+            id="data-cartao"
             required
           >
         </div>
@@ -437,22 +437,22 @@
           <label for="observacao">Observação (opcional)</label>
           <textarea
             id="observacao"
-            placeholder="Ex: Empréstimo para compra de notebook, prazo até 30/11"
+            placeholder="Ex: Cartão adicional do meu cartão de crédito, limite R$ 5.000"
           ></textarea>
         </div>
 
-        <button type="submit" class="btn-submit">Registrar Empréstimo</button>
+        <button type="submit" class="btn-submit">Registrar Cartão</button>
       </form>
     </div>
 
     <div class="resumo-emprestimos">
       <div class="card-resumo">
         <div class="card-resumo-numero" id="total-emprestado">R$ 0</div>
-        <div class="card-resumo-label">Total emprestado</div>
+        <div class="card-resumo-label">Total em débito</div>
       </div>
       <div class="card-resumo">
         <div class="card-resumo-numero" id="total-pendente">R$ 0</div>
-        <div class="card-resumo-label">Pendente de receber</div>
+        <div class="card-resumo-label">Ainda a cobrar</div>
       </div>
       <div class="card-resumo">
         <div class="card-resumo-numero" id="total-recebido">R$ 0</div>
@@ -460,20 +460,20 @@
       </div>
       <div class="card-resumo">
         <div class="card-resumo-numero" id="quantidade-registros">0</div>
-        <div class="card-resumo-label">Registros</div>
+        <div class="card-resumo-label">Cartões</div>
       </div>
     </div>
 
-    <h2>Empréstimos Registrados</h2>
+    <h2>Cartões Adicionais Registrados</h2>
 
     <div class="filtros-status">
       <button class="btn-filtro ativo" data-filtro="todos">Todos</button>
       <button class="btn-filtro" data-filtro="ativo">Pendentes</button>
-      <button class="btn-filtro" data-filtro="pago">Recebidos</button>
+      <button class="btn-filtro" data-filtro="pago">Quitados</button>
     </div>
 
     <div class="lista-emprestimos" id="lista-emprestimos">
-      <div class="lista-vazia">Nenhum empréstimo registrado ainda.</div>
+      <div class="lista-vazia">Nenhum cartão adicional registrado ainda.</div>
     </div>
   </main>
 
@@ -486,7 +486,7 @@
     <div class="modal-conteudo">
       <div class="modal-titulo">Confirmar Pagamento</div>
       <div class="modal-info">
-        <strong id="modal-pessoa"></strong> pagou <strong id="modal-valor"></strong>?
+        <strong id="modal-pessoa"></strong> pagou o saldo de <strong id="modal-valor"></strong>?
       </div>
       <div class="modal-info" style="font-size: 12px;">
         Data de hoje: <strong id="modal-data"></strong>
@@ -500,6 +500,6 @@
 
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/menu.js"></script>
-  <script src="./assets/js/emprestimos.js"></script>
+  <script src="./assets/js/cartoes-adicionais.js"></script>
 </body>
 </html>

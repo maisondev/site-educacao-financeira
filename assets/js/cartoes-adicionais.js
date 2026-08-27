@@ -1,4 +1,4 @@
-class GerenciadorEmprestimos {
+class GerenciadorCartoesAdicionais {
   constructor() {
     this.inicializar();
   }
@@ -12,12 +12,12 @@ class GerenciadorEmprestimos {
   }
 
   carregarDados() {
-    const dadosSalvos = localStorage.getItem('emprestimos_dados');
-    this.emprestimos = dadosSalvos ? JSON.parse(dadosSalvos) : [];
+    const dadosSalvos = localStorage.getItem('cartoes_adicionais_dados');
+    this.cartoes = dadosSalvos ? JSON.parse(dadosSalvos) : [];
   }
 
   salvarDados() {
-    localStorage.setItem('emprestimos_dados', JSON.stringify(this.emprestimos));
+    localStorage.setItem('cartoes_adicionais_dados', JSON.stringify(this.cartoes));
   }
 
   definirDataHoje() {
@@ -29,12 +29,12 @@ class GerenciadorEmprestimos {
   }
 
   setupEventos() {
-    // Formulário de novo empréstimo
-    const form = document.getElementById('form-emprestimo');
+    // Formulário de novo cartão
+    const form = document.getElementById('form-cartao');
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        this.adicionarEmprestimo();
+        this.adicionarCartao();
       });
     }
 
@@ -48,18 +48,18 @@ class GerenciadorEmprestimos {
     });
   }
 
-  adicionarEmprestimo() {
-    const nome = document.getElementById('nome-pessoa').value.trim();
-    const valor = parseFloat(document.getElementById('valor-emprestimo').value);
-    const data = document.getElementById('data-emprestimo').value;
+  adicionarCartao() {
+    const nome = document.getElementById('nome-titular').value.trim();
+    const valor = parseFloat(document.getElementById('valor-saldo').value);
+    const data = document.getElementById('data-cartao').value;
     const observacao = document.getElementById('observacao').value.trim();
 
-    if (!nome || !valor || valor <= 0 || !data) {
+    if (!nome || !valor || valor < 0 || !data) {
       alert('Por favor, preencha todos os campos obrigatórios corretamente.');
       return;
     }
 
-    const emprestimo = {
+    const cartao = {
       id: Date.now(),
       pessoa: nome,
       valor: valor,
@@ -69,17 +69,17 @@ class GerenciadorEmprestimos {
       dataPagamento: null
     };
 
-    this.emprestimos.push(emprestimo);
+    this.cartoes.push(cartao);
     this.salvarDados();
     this.renderizar();
     this.atualizarResumo();
 
     // Limpar formulário
-    document.getElementById('form-emprestimo').reset();
+    document.getElementById('form-cartao').reset();
     this.definirDataHoje();
 
     // Mostrar mensagem de sucesso
-    console.log(`✓ Empréstimo de R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} para ${nome} registrado!`);
+    console.log(`✓ Cartão de ${nome} com saldo R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado!`);
   }
 
   renderizar() {
@@ -88,19 +88,20 @@ class GerenciadorEmprestimos {
 
     listaEmprestimos.innerHTML = '';
 
-    const emprestimosFiltrados = filtroAtivo === 'todos'
-      ? this.emprestimos
-      : this.emprestimos.filter(e => e.status === filtroAtivo);
+    const cartoesFiltrados = filtroAtivo === 'todos'
+      ? this.cartoes
+      : this.cartoes.filter(e => e.status === filtroAtivo);
 
-    if (emprestimosFiltrados.length === 0) {
-      listaEmprestimos.innerHTML = '<div class="lista-vazia">Nenhum empréstimo registrado com este filtro.</div>';
+    if (cartoesFiltrados.length === 0) {
+      listaEmprestimos.innerHTML = '<div class="lista-vazia">Nenhum cartão adicional registrado com este filtro.</div>';
       return;
     }
 
     // Ordenar por data (mais recente primeiro)
-    emprestimosFiltrados.sort((a, b) => new Date(b.data) - new Date(a.data));
+    cartoesFiltrados.sort((a, b) => new Date(b.data) - new Date(a.data));
 
-    emprestimosFiltrados.forEach(emprestimo => {
+    cartoesFiltrados.forEach(cartao => {
+      const emprestimo = cartao;
       const div = document.createElement('div');
       div.className = `emprestimo-item ${emprestimo.status === 'pago' ? 'pago' : ''}`;
 
@@ -161,11 +162,11 @@ class GerenciadorEmprestimos {
   }
 
   atualizarResumo() {
-    const totalEmprestado = this.emprestimos.reduce((sum, e) => sum + e.valor, 0);
-    const totalPendente = this.emprestimos
+    const totalEmprestado = this.cartoes.reduce((sum, e) => sum + e.valor, 0);
+    const totalPendente = this.cartoes
       .filter(e => e.status === 'ativo')
       .reduce((sum, e) => sum + e.valor, 0);
-    const totalRecebido = this.emprestimos
+    const totalRecebido = this.cartoes
       .filter(e => e.status === 'pago')
       .reduce((sum, e) => sum + e.valor, 0);
 
@@ -179,7 +180,7 @@ class GerenciadorEmprestimos {
     document.getElementById('total-emprestado').textContent = formatarMoeda(totalEmprestado);
     document.getElementById('total-pendente').textContent = formatarMoeda(totalPendente);
     document.getElementById('total-recebido').textContent = formatarMoeda(totalRecebido);
-    document.getElementById('quantidade-registros').textContent = this.emprestimos.length;
+    document.getElementById('quantidade-registros').textContent = this.cartoes.length;
   }
 
   formatarData(data) {
@@ -194,20 +195,20 @@ class GerenciadorEmprestimos {
   }
 
   marcarComoPago(id) {
-    const emprestimo = this.emprestimos.find(e => e.id === id);
-    if (emprestimo) {
-      emprestimo.status = 'pago';
-      emprestimo.dataPagamento = new Date().toISOString().split('T')[0];
+    const cartao = this.cartoes.find(e => e.id === id);
+    if (cartao) {
+      cartao.status = 'pago';
+      cartao.dataPagamento = new Date().toISOString().split('T')[0];
       this.salvarDados();
       this.renderizar();
       this.atualizarResumo();
     }
   }
 
-  deletarEmprestimo(id) {
-    const emprestimo = this.emprestimos.find(e => e.id === id);
-    if (emprestimo && confirm(`Deletar empréstimo de ${emprestimo.pessoa}?`)) {
-      this.emprestimos = this.emprestimos.filter(e => e.id !== id);
+  deletarCartao(id) {
+    const cartao = this.cartoes.find(e => e.id === id);
+    if (cartao && confirm(`Deletar cartão de ${cartao.pessoa}?`)) {
+      this.cartoes = this.cartoes.filter(e => e.id !== id);
       this.salvarDados();
       this.renderizar();
       this.atualizarResumo();
@@ -247,12 +248,12 @@ function fecharModal() {
 
 // Documento pronto
 document.addEventListener('DOMContentLoaded', () => {
-  window.gerenciadorEmprestimos = new GerenciadorEmprestimos();
+  window.gerenciadorCartoesAdicionais = new GerenciadorCartoesAdicionais();
 
   // Botão de confirmar pagamento no modal
   document.getElementById('btn-confirmar-pagamento').addEventListener('click', () => {
     if (idEmprestimoModal) {
-      window.gerenciadorEmprestimos.marcarComoPago(idEmprestimoModal);
+      window.gerenciadorCartoesAdicionais.marcarComoPago(idEmprestimoModal);
       fecharModal();
     }
   });
@@ -261,6 +262,6 @@ document.addEventListener('DOMContentLoaded', () => {
   window.abrirModalPagamento = abrirModalPagamento;
   window.fecharModal = fecharModal;
   window.deletarEmprestimo = (id) => {
-    window.gerenciadorEmprestimos.deletarEmprestimo(id);
+    window.gerenciadorCartoesAdicionais.deletarCartao(id);
   };
 });

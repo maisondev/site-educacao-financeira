@@ -27,7 +27,7 @@ const MENU_ITEMS = [
       { label: 'Despesas Fixas', href: './despesas-fixas.html' },
       { label: 'Despesas Variáveis', href: './despesas-variaveis.html' },
       { label: 'Dívidas', href: './dividas.html' },
-      { label: 'Empréstimos', href: './emprestimos.html' },
+      { label: 'Cartões Adicionais', href: './cartoes-adicionais.html' },
       { label: 'Envelopes', href: './envelopes.html' },
       { label: 'Investimentos', href: './investimentos.html' },
       { label: 'Metas', href: './metas.html' },
@@ -112,7 +112,7 @@ function adicionarIconeNotificacoes(nav) {
       🔔
       <span class="badge-notificacoes" id="badge-notificacoes" style="display: none;">0</span>
     </button>
-    <div class="dropdown-notificacoes" id="dropdown-notificacoes" hidden>
+    <div class="dropdown-notificacoes" id="dropdown-notificacoes" hidden style="max-height: 400px; overflow-y: auto;">
       <div class="dropdown-header">Próximos Eventos</div>
       <div class="dropdown-content" id="conteudo-notificacoes">
         <!-- Preenchido por JavaScript -->
@@ -145,14 +145,14 @@ function atualizarNotificacoes() {
 
   // Verificar se o cache de lembretes existe
   if (typeof obterLembretesCache === 'undefined') {
-    conteudo.innerHTML = '<p style="padding: var(--espacamento-md); color: #999; text-align: center;">Carregando...</p>';
+    conteudo.innerHTML = '<p style="padding: var(--espacamento-md); color: var(--cor-texto-leve); text-align: center;">Carregando...</p>';
     return;
   }
 
   let lembretes, badge, totalLembretes;
   try {
     const todosLembretes = obterLembretesCache();
-    lembretes = todosLembretes.slice(0, 3);
+    lembretes = todosLembretes.slice(0, 10);
     badge = document.getElementById('badge-notificacoes');
     totalLembretes = todosLembretes.length;
 
