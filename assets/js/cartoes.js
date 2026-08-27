@@ -2,6 +2,38 @@ let cartaoEmEdicaoId = null;
 
 function inicializarCartoes() {
   atualizarVisualizacao();
+  sincronizarFaturasExistentes();
+}
+
+function sincronizarFaturasExistentes() {
+  const cartoes = obterCartoes();
+  let houveMudancas = false;
+
+  cartoes.forEach(cartao => {
+    if (cartao.datasPorMes && Array.isArray(cartao.datasPorMes)) {
+      cartao.datasPorMes.forEach(fatura => {
+        if (fatura.saldo && fatura.saldo > 0 && !fatura.foiRegistradoComoDespesa) {
+          const [ano, mês] = fatura.mes.split('-');
+          const nomeMes = new Date(ano, parseInt(mês) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+          const descricao = `${cartao.nome} - Fatura ${nomeMes}`;
+
+          const vencimentoDia = fatura.vencimento.split('/')[0];
+          const vencimentoMêsStr = fatura.vencimento.split('/')[1];
+          const vencimentoMêsNum = vencimentoMêsStr ? parseInt(vencimentoMêsStr) : parseInt(mês);
+          const vencimentoAno = vencimentoMêsNum > parseInt(mês) ? parseInt(ano) : ano;
+          const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
+
+          adicionarDespesaDeCartao(descricao, fatura.saldo, dataVencimento);
+          fatura.foiRegistradoComoDespesa = true;
+          houveMudancas = true;
+        }
+      });
+    }
+  });
+
+  if (houveMudancas) {
+    salvarCartoes(cartoes);
+  }
 }
 
 function obterCartoes() {
@@ -19,6 +51,7 @@ function abrirModalCartao() {
   document.getElementById('input-cartao-nome').value = '';
   document.getElementById('input-cartao-ultimos').value = '';
   document.getElementById('select-cartao-bandeira').value = '';
+  document.getElementById('select-cartao-tipo').value = '';
   document.getElementById('input-cartao-limite').value = '';
   document.getElementById('input-cartao-fechamento').value = '';
   document.getElementById('input-cartao-vencimento').value = '';
@@ -40,6 +73,7 @@ function abrirModalCartaoEdicao(id) {
   document.getElementById('input-cartao-nome').value = cartao.nome;
   document.getElementById('input-cartao-ultimos').value = cartao.ultimos;
   document.getElementById('select-cartao-bandeira').value = cartao.bandeira || '';
+  document.getElementById('select-cartao-tipo').value = cartao.tipo || '';
   document.getElementById('input-cartao-limite').value = cartao.limite ? formatarMoedaBrasileira(cartao.limite) : '';
   document.getElementById('input-cartao-fechamento').value = cartao.fechamento || '';
   document.getElementById('input-cartao-vencimento').value = cartao.vencimento || '';
@@ -171,7 +205,22 @@ function salvarDatasMes() {
   salvarCartoes(cartoes);
   renderizarHistoricoDatas();
   atualizarVisualizacao();
-  alert('Datas e saldo salvo com sucesso!');
+
+  if (saldo && saldo > 0) {
+    const [ano, mês] = mes.split('-');
+    const nomeMes = new Date(ano, parseInt(mês) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const ultimosDígitos = cartao.ultimos ? ` ●●●● ${cartao.ultimos}` : '';
+    const descricao = `${cartao.nome}${ultimosDígitos} - Fatura ${nomeMes}`;
+
+    const vencimentoAno = vencimentoMes ? ano : ano;
+    const vencimentoMêsNum = vencimentoMes ? parseInt(vencimentoMes) : parseInt(mês);
+    const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
+
+    adicionarDespesaDeCartao(descricao, saldo, dataVencimento, cartao.ultimos);
+    alert(`Datas e saldo salvos! Despesa de ${formatarMoedaBrasileira(saldo)} adicionada em Despesas Variáveis.`);
+  } else {
+    alert('Datas e saldo salvo com sucesso!');
+  }
 }
 
 function salvarCartao() {
@@ -179,6 +228,7 @@ function salvarCartao() {
   const nome = document.getElementById('input-cartao-nome').value.trim();
   const ultimos = document.getElementById('input-cartao-ultimos').value.trim();
   const bandeira = document.getElementById('select-cartao-bandeira').value;
+  const tipo = document.getElementById('select-cartao-tipo').value;
   const fechamento = document.getElementById('input-cartao-fechamento').value.trim();
   const vencimento = document.getElementById('input-cartao-vencimento').value.trim();
   let limite = parseValorBrasileiro(document.getElementById('input-cartao-limite').value);
@@ -218,6 +268,7 @@ function salvarCartao() {
         nome,
         ultimos,
         bandeira,
+        tipo,
         limite,
         fechamento,
         vencimento,
@@ -231,6 +282,7 @@ function salvarCartao() {
       nome,
       ultimos,
       bandeira,
+      tipo,
       limite,
       fechamento,
       vencimento,
@@ -319,7 +371,10 @@ function atualizarVisualizacao() {
 
       <div class="card-cartao-header">
         <h3 class="card-cartao-titulo">${cartao.nome}</h3>
-        ${cartao.bandeira ? `<span class="card-cartao-bandeira">${obterNomeBandeira(cartao.bandeira)}</span>` : ''}
+        <div style="display: flex; gap: 8px; align-items: center;">
+          ${cartao.bandeira ? `<span class="card-cartao-bandeira">${obterNomeBandeira(cartao.bandeira)}</span>` : ''}
+          ${cartao.tipo ? `<span class="card-cartao-bandeira" style="background: rgba(255,255,255,0.15);">${cartao.tipo === 'fisico' ? 'Físico' : 'Virtual'}</span>` : ''}
+        </div>
       </div>
 
       <div class="card-cartao-numero">●●●● ${cartao.ultimos}</div>
@@ -342,7 +397,7 @@ function atualizarVisualizacao() {
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <span style="font-size: 16px; font-weight: bold;">${formatarMoedaBrasileira(saldoVisivel)}</span>
-          ${cartao.limite ? `<span style="font-size: 11px; opacity: 0.8;">${Math.round((saldoVisivel / cartao.limite) * 100)}%</span>` : ''}
+          ${cartao.limite ? `<span style="font-size: 11px; opacity: 0.8;">${Math.round((saldoVisivel / cartao.limite) * 100)}</span>` : ''}
         </div>
         ${cartao.limite ? `
         <div style="background: rgba(255,255,255,0.25); border-radius: 3px; height: 6px; overflow: hidden; margin-top: 4px;">
@@ -350,9 +405,9 @@ function atualizarVisualizacao() {
         </div>
         ` : ''}
       </div>
-      ` : ''}`
+      ` : ''}
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function formatarDiaOuDiaMes(valor) {

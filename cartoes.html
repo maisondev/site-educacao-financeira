@@ -282,6 +282,15 @@
       </div>
 
       <div class="form-group">
+        <label for="select-cartao-tipo">Tipo de Cartão</label>
+        <select id="select-cartao-tipo">
+          <option value="">Selecione...</option>
+          <option value="fisico">Físico</option>
+          <option value="virtual">Virtual</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label for="input-cartao-limite">Limite de Crédito</label>
         <input type="text" id="input-cartao-limite" placeholder="ex: 5.000,00" class="campo-moeda">
       </div>
@@ -380,7 +389,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="input-saldo-mes">Saldo da Fatura Aberta (R$) - Opcional</label>
+          <label for="input-saldo-mes">Saldo da Fatura Fechada (R$) - Opcional</label>
           <input type="text" id="input-saldo-mes" placeholder="1.500,00" class="campo-moeda">
         </div>
         <div id="historico-datas-mes" style="margin-top: var(--espacamento-lg); max-height: 200px; overflow-y: auto;"></div>
@@ -393,8 +402,10 @@
   </div>
 
   <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/lembretes.js"></script>
   <script src="./assets/js/menu.js"></script>
   <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/despesas-variaveis.js"></script>
   <script src="./assets/js/cartoes.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {

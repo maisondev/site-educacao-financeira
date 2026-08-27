@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Cursos | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .resumo-cursos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-resumo {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-resumo .valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .card-resumo .rotulo {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .formulario-curso {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .formulario-curso h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .btn-primario {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-primario:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .filtros-curso {
+      display: flex;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-lg);
+      flex-wrap: wrap;
+    }
+
+    .filtro-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--cor-borda);
+      border-radius: 999px;
+      background: white;
+      cursor: pointer;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .filtro-btn.ativo {
+      background-color: var(--cor-primaria);
+      color: white;
+      border-color: var(--cor-primaria);
+    }
+
+    .lista-cursos {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-md);
+    }
+
+    .item-curso {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--espacamento-md);
+      background: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-md) var(--espacamento-lg);
+    }
+
+    .item-curso.concluido {
+      background-color: #f0f9f4;
+      border-color: #b7e2c8;
+    }
+
+    .item-curso input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 3px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .item-curso-info {
+      flex: 1;
+    }
+
+    .item-curso-titulo {
+      font-weight: bold;
+      color: var(--cor-texto);
+    }
+
+    .item-curso.concluido .item-curso-titulo {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .item-curso-meta {
+      font-size: 13px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .item-curso-link {
+      font-size: 13px;
+      color: var(--cor-primaria);
+      text-decoration: none;
+    }
+
+    .item-curso-link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-remover-curso {
+      background: none;
+      border: none;
+      color: #c0392b;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: #888;
+    }
+
+    @media (max-width: 640px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Meus Cursos</p>
+
+    <h1>Meus Cursos</h1>
+
+    <p>
+      Acompanhe os cursos de educação financeira que você já concluiu, os que está fazendo e os que pretende fazer.
+      Marque como concluído e guarde o link de acesso.
+    </p>
+
+    <div class="resumo-cursos">
+      <div class="card-resumo">
+        <div class="valor" id="resumo-total">0</div>
+        <div class="rotulo">Total de cursos</div>
+      </div>
+      <div class="card-resumo">
+        <div class="valor" id="resumo-concluidos">0</div>
+        <div class="rotulo">Concluídos</div>
+      </div>
+      <div class="card-resumo">
+        <div class="valor" id="resumo-pendentes">0</div>
+        <div class="rotulo">Pendentes</div>
+      </div>
+    </div>
+
+    <section class="formulario-curso">
+      <h2>Adicionar Curso</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="input-curso-titulo">Nome do Curso *</label>
+          <input type="text" id="input-curso-titulo" placeholder="Ex: Organização Financeira - Nathalia Arcuri">
+        </div>
+        <div class="form-group">
+          <label for="input-curso-instituicao">Instituição / Autor</label>
+          <input type="text" id="input-curso-instituicao" placeholder="Ex: Me Poupe!">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="input-curso-link">Link do Curso</label>
+          <input type="text" id="input-curso-link" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label for="select-curso-status">Status</label>
+          <select id="select-curso-status">
+            <option value="pendente">Quero fazer</option>
+            <option value="andamento">Em andamento</option>
+            <option value="concluido">Já concluí</option>
+          </select>
+        </div>
+      </div>
+      <button type="button" class="btn-primario" onclick="adicionarCurso()">Adicionar</button>
+    </section>
+
+    <div class="filtros-curso">
+      <button class="filtro-btn ativo" data-filtro="todos" onclick="filtrarCursos('todos')">Todos</button>
+      <button class="filtro-btn" data-filtro="pendente" onclick="filtrarCursos('pendente')">Quero fazer</button>
+      <button class="filtro-btn" data-filtro="andamento" onclick="filtrarCursos('andamento')">Em andamento</button>
+      <button class="filtro-btn" data-filtro="concluido" onclick="filtrarCursos('concluido')">Concluídos</button>
+    </div>
+
+    <div id="lista-cursos" class="lista-cursos"></div>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li>Adicione os cursos que você já fez, mesmo os antigos, para manter seu histórico</li>
+        <li>Marque o checkbox assim que concluir um curso</li>
+        <li>Guarde o link para acessar o conteúdo rapidamente quando precisar revisar</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/cursos.js"></script>
+</body>
+</html>

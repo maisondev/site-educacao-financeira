@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>20 Hacks Nubank | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .hacks-container {
+      max-width: var(--max-width-conteudo);
+      margin: 0 auto;
+    }
+
+    .mes-atual {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+    }
+
+    .mes-atual span {
+      font-size: 18px;
+      font-weight: var(--fonte-peso-semibold);
+      color: var(--cor-texto);
+    }
+
+    .progresso-mes {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+      font-weight: var(--fonte-peso-semibold);
+    }
+
+    .barra-progresso {
+      width: 200px;
+      height: 8px;
+      background-color: var(--cor-borda);
+      border-radius: var(--border-radius-pill);
+      overflow: hidden;
+    }
+
+    .barra-progresso-fill {
+      height: 100%;
+      background-color: var(--cor-verde);
+      transition: width 0.3s ease;
+    }
+
+    .btn-reset-mes {
+      background-color: var(--cor-vermelho);
+      color: white;
+      border: none;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border-radius: var(--border-radius-md);
+      cursor: pointer;
+      font-weight: var(--fonte-peso-semibold);
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-reset-mes:hover {
+      background-color: #8a2424;
+    }
+
+    .lista-hacks {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-md);
+    }
+
+    .hack-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .hack-item:hover {
+      box-shadow: var(--sombra-sm);
+      border-color: var(--cor-primaria);
+    }
+
+    .hack-item.completado {
+      background-color: #f0fdf4;
+      border-color: var(--cor-verde);
+    }
+
+    .hack-checkbox {
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      cursor: pointer;
+      accent-color: var(--cor-verde);
+      margin-top: 2px;
+    }
+
+    .hack-conteudo {
+      flex: 1;
+    }
+
+    .hack-titulo {
+      font-weight: var(--fonte-peso-semibold);
+      color: var(--cor-texto);
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .hack-item.completado .hack-titulo {
+      text-decoration: line-through;
+      color: var(--cor-texto-light);
+    }
+
+    .hack-descricao {
+      font-size: 14px;
+      color: var(--cor-texto-light);
+      line-height: 1.5;
+    }
+
+    .badge-categoria {
+      display: inline-block;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: var(--border-radius-sm);
+      margin-top: 8px;
+      font-weight: var(--fonte-peso-semibold);
+    }
+
+    .badge-seguranca {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-economia {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-otimizacao {
+      background-color: #dbeafe;
+      color: #0c4a6e;
+    }
+
+    .badge-beneficio {
+      background-color: #f5d5fe;
+      color: #6b21a8;
+    }
+
+    .resumo-final {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-xl);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-resumo {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-resumo-numero {
+      font-size: 32px;
+      font-weight: var(--fonte-peso-bold);
+      color: var(--cor-primaria);
+      margin-bottom: 4px;
+    }
+
+    .card-resumo-label {
+      font-size: 14px;
+      color: var(--cor-texto-light);
+      font-weight: var(--fonte-peso-semibold);
+    }
+
+    .filtros {
+      display: flex;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-lg);
+      flex-wrap: wrap;
+    }
+
+    .btn-filtro {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      background-color: var(--cor-fundo);
+      border-radius: var(--border-radius-md);
+      cursor: pointer;
+      font-weight: var(--fonte-peso-semibold);
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn-filtro:hover {
+      border-color: var(--cor-primaria);
+      color: var(--cor-primaria);
+    }
+
+    .btn-filtro.ativo {
+      background-color: var(--cor-primaria);
+      color: white;
+      border-color: var(--cor-primaria);
+    }
+
+    .breadcrumb {
+      color: var(--cor-texto-light);
+      font-size: 14px;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .breadcrumb a {
+      color: var(--cor-azul);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main class="hacks-container">
+    <p class="breadcrumb">
+      <a href="./index.html">Início</a> > Hacks Nubank
+    </p>
+
+    <h1>20 Hacks Nubank para Fazer Mensalmente</h1>
+
+    <p>
+      Um checklist prático dos maiores "hacks" do Nubank que você pode fazer todo mês para
+      otimizar sua conta, economizar e ficar seguro. Marque conforme completa e acompanhe seu progresso.
+    </p>
+
+    <div class="mes-atual">
+      <span id="mes-info">Mês de Janeiro</span>
+      <div class="progresso-mes">
+        <div class="barra-progresso">
+          <div class="barra-progresso-fill" id="barra-fill" style="width: 0%"></div>
+        </div>
+        <span id="contador-progresso">0/20</span>
+      </div>
+      <button class="btn-reset-mes" id="btn-reset">Zerar para novo mês</button>
+    </div>
+
+    <div class="filtros">
+      <button class="btn-filtro ativo" data-filtro="todos">Todos</button>
+      <button class="btn-filtro" data-filtro="seguranca">Segurança</button>
+      <button class="btn-filtro" data-filtro="economia">Economia</button>
+      <button class="btn-filtro" data-filtro="otimizacao">Otimização</button>
+      <button class="btn-filtro" data-filtro="beneficio">Benefício</button>
+    </div>
+
+    <div class="resumo-final">
+      <div class="card-resumo">
+        <div class="card-resumo-numero" id="total-economia">R$ 0</div>
+        <div class="card-resumo-label">Economia potencial/mês</div>
+      </div>
+      <div class="card-resumo">
+        <div class="card-resumo-numero" id="total-seguranca">0</div>
+        <div class="card-resumo-label">Ações de segurança</div>
+      </div>
+      <div class="card-resumo">
+        <div class="card-resumo-numero" id="percentual-completado">0%</div>
+        <div class="card-resumo-label">Checklist completo</div>
+      </div>
+    </div>
+
+    <div class="lista-hacks" id="lista-hacks"></div>
+
+    <h2>Sobre esse checklist</h2>
+    <p>
+      Cada hack tem um impacto financeiro real, mas alguns são "um tempo" (segurança, atualizar dados)
+      e outros são recorrentes (cashback, alertas). O progresso é salvo automaticamente e reseta
+      todo mês. Use como checklist pessoal para otimizar sua vida financeira no Nubank.
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/hacks-nubank.js"></script>
+</body>
+</html>

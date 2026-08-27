@@ -55,10 +55,19 @@ function exibirSalario() {
   const dados = obterDados();
   const salarioInfo = document.getElementById('salario-info');
   const valorSalario = document.getElementById('valor-salario');
+  const competenciaEl = document.getElementById('competencia-salario');
 
   if (dados.salario > 0) {
     valorSalario.textContent = formatarMoedaBrasileira(dados.salario);
     salarioInfo.removeAttribute('hidden');
+
+    const competencia = typeof obterRendaMensalCompetencia === 'function' ? obterRendaMensalCompetencia() : null;
+    if (competencia) {
+      competenciaEl.textContent = `Referente ao contracheque de ${competencia}`;
+      competenciaEl.removeAttribute('hidden');
+    } else {
+      competenciaEl.setAttribute('hidden', '');
+    }
   }
 }
 

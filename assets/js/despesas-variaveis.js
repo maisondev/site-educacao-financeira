@@ -9,6 +9,7 @@ const CATEGORIAS = {
   streaming: '🎬 Streaming',
   combustivel: '⛽ Combustível',
   manutencao: '🔧 Manutenção',
+  cartao: '💳 Cartão',
   outro: '📝 Outro'
 };
 
@@ -24,6 +25,47 @@ function obterDespesasVariaveis() {
 
 function salvarDespesasVariaveis(despesas) {
   localStorage.setItem(CHAVE_DESPESAS_VARIAVEIS, JSON.stringify(despesas));
+}
+
+function adicionarDespesaDeCartao(descricao, valor, data, ultimosDígitos) {
+  const despesas = obterDespesasVariaveis();
+  const obj = {
+    id: Date.now(),
+    categoria: 'cartao',
+    descricao,
+    valor,
+    data,
+    dataCriacao: new Date().toISOString()
+  };
+  if (ultimosDígitos) {
+    obj.ultimosDígitos = ultimosDígitos;
+  }
+  despesas.push(obj);
+  salvarDespesasVariaveis(despesas);
+}
+
+function sincronizarUltimosDígitosCartão() {
+  const despesas = obterDespesasVariaveis();
+  const cartoes = obterCartoes();
+  let atualizado = false;
+
+  despesas.forEach(despesa => {
+    if (despesa.categoria === 'cartao' && !despesa.ultimosDígitos) {
+      const nomeCartao = despesa.descricao.split(' - ')[0];
+      const cartao = cartoes.find(c => c.nome === nomeCartao);
+      if (cartao && cartao.ultimos) {
+        despesa.ultimosDígitos = cartao.ultimos;
+        if (!despesa.descricao.includes('●●●●')) {
+          despesa.descricao = `${cartao.nome} ●●●● ${cartao.ultimos} - ${despesa.descricao.split(' - ').slice(1).join(' - ')}`;
+        }
+        atualizado = true;
+      }
+    }
+  });
+
+  if (atualizado) {
+    salvarDespesasVariaveis(despesas);
+  }
 }
 
 function adicionarDespesaVariavel() {
@@ -138,7 +180,7 @@ function carregarDespesasVariaveis() {
             <div class="registro-item">
               <div class="registro-info">
                 <div>${d.descricao || CATEGORIAS[d.categoria]}</div>
-                <div class="registro-data">${new Date(d.data).toLocaleDateString('pt-BR')}</div>
+                <div class="registro-data">${new Date(d.data + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
               </div>
               <div class="registro-valor">${formatarMoedaBrasileira(d.valor)}</div>
               <button type="button" class="btn-remover" onclick="removerDespesaVariavel(${d.id})" title="Remover">×</button>

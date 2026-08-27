@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Controle | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--espacamento-lg);
+    }
+
+    #dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--espacamento-lg);
+      margin: var(--espacamento-xl) 0;
+    }
+
+    .card-dashboard {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .card-dashboard:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .card-dashboard.vazio {
+      opacity: 0.8;
+    }
+
+    .card-header {
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+      background: var(--cor-cinza-leve);
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--cor-texto);
+    }
+
+    .card-body {
+      padding: var(--espacamento-lg);
+      flex: 1;
+    }
+
+    .card-stat {
+      text-align: center;
+    }
+
+    .stat-valor {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-md);
+    }
+
+    .card-stat-mini {
+      text-align: center;
+      padding: var(--espacamento-md);
+      background: var(--cor-cinza-leve);
+      border-radius: var(--border-radius-sm);
+    }
+
+    .card-stat-mini .stat-valor {
+      font-size: 22px;
+    }
+
+    .progresso-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .progresso-barra {
+      height: 8px;
+      background: var(--cor-cinza-leve);
+      border-radius: var(--border-radius-pill);
+      overflow: hidden;
+    }
+
+    .progresso-preenchido {
+      height: 100%;
+      background: var(--cor-primaria);
+      border-radius: var(--border-radius-pill);
+      transition: width 0.3s;
+    }
+
+    .progresso-preenchido.alerta {
+      background: var(--cor-aviso);
+    }
+
+    .progresso-preenchido.erro {
+      background: var(--cor-erro);
+    }
+
+    .progresso-label {
+      font-size: 12px;
+      color: var(--cor-texto-leve);
+      text-align: center;
+    }
+
+    .card-footer {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+      background: var(--cor-cinza-leve);
+      text-align: right;
+    }
+
+    .card-footer a {
+      color: var(--cor-primaria);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .card-footer a:hover {
+      color: var(--cor-primaria-hover);
+    }
+
+    @media (max-width: 640px) {
+      #dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-valor {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <h1>Painel de Controle</h1>
+    <p style="color: var(--cor-texto-leve); font-size: 16px;">
+      Veja um resumo consolidado de todas as suas finanças em um único lugar.
+    </p>
+
+    <div id="dashboard-grid">
+      <!-- Preenchido por JavaScript -->
+    </div>
+
+    <div id="container-lembretes" style="margin-top: var(--espacamento-xl); margin-bottom: var(--espacamento-xl);">
+      <!-- Lembretes renderizados por lembretes.js -->
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Acompanhe suas finanças em um só lugar.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/lembretes.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/dashboard.js"></script>
+</body>
+</html>
