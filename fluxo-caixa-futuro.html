@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parcelas de Cartão | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .secao-adicionar {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .secao-adicionar h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(45, 126, 60, 0.1);
+    }
+
+    .btn-adicionar-compra {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .btn-adicionar-compra:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .tabela-compras {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .tabela-compras th {
+      background-color: var(--cor-cinza-leve);
+      padding: var(--espacamento-md);
+      text-align: left;
+      font-weight: bold;
+      border-bottom: 2px solid var(--cor-borda);
+      font-size: 14px;
+    }
+
+    .tabela-compras td {
+      padding: var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+      font-size: 14px;
+    }
+
+    .tabela-compras tr:hover {
+      background-color: var(--cor-cinza-leve);
+    }
+
+    .valor-destaque {
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .btn-remover {
+      background: none;
+      border: none;
+      color: #c53030;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0;
+    }
+
+    .btn-remover:hover {
+      text-decoration: underline;
+    }
+
+    .calendario-fluxo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-xl);
+    }
+
+    .mes-card {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .mes-nome {
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-bottom: var(--espacamento-md);
+      border-bottom: 2px solid var(--cor-borda);
+      padding-bottom: var(--espacamento-sm);
+    }
+
+    .mes-parcelas {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-sm);
+    }
+
+    .parcela-item {
+      font-size: 13px;
+      padding: var(--espacamento-sm);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .parcela-descricao {
+      flex: 1;
+      color: var(--cor-texto-leve);
+    }
+
+    .parcela-valor {
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-left: var(--espacamento-sm);
+    }
+
+    .mes-total {
+      border-top: 2px solid var(--cor-primaria);
+      padding-top: var(--espacamento-md);
+      margin-top: var(--espacamento-md);
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      color: var(--cor-primaria);
+    }
+
+    .mes-sem-parcelas {
+      color: var(--cor-texto-leve);
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .alerta-info {
+      background-color: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+      color: #92400e;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .calendario-fluxo {
+        grid-template-columns: 1fr;
+      }
+
+      .tabela-compras {
+        font-size: 13px;
+      }
+
+      .tabela-compras th,
+      .tabela-compras td {
+        padding: var(--espacamento-sm);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="site-nav">
+          <li><a href="./index.html">Início</a></li>
+          <li><a href="./cartoes.html">Cartões</a></li>
+          <li><a href="./fluxo-caixa-futuro.html">Parcelas</a></li>
+          <li><a href="./despesas-fixas.html">Despesas Fixas</a></li>
+          <li><a href="./envelopes.html">Envelopes</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Parcelas de Cartão</p>
+
+    <h1>Parcelas de Cartão</h1>
+
+    <p>
+      Acompanhe suas compras parceladas no cartão de crédito mês a mês. Visualize quanto você
+      já está comprometido a pagar nos próximos meses. As parcelas do mês atual aparecem automaticamente
+      como despesas fixas no seu envelope de "Essenciais".
+    </p>
+
+    <div class="alerta-info">
+      💡 <strong>Como funciona:</strong> As parcelas do mês atual aparecem automaticamente em
+      <a href="./despesas-fixas.html">Despesas Fixas</a> como uma obrigação mensal. Nos próximos meses,
+      você verá o calendário aqui para se preparar.
+    </div>
+
+    <section class="secao-adicionar">
+      <h2>Registrar Nova Compra Parcelada</h2>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="input-descricao">Descrição da Compra *</label>
+          <input
+            type="text"
+            id="input-descricao"
+            placeholder="Ex: TV LG 55\" | Sofá | Notebook"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="input-cartao">Cartão / Forma de Pagamento (opcional)</label>
+          <input
+            type="text"
+            id="input-cartao"
+            placeholder="Ex: Nubank | Itaú | Financiamento"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="input-valor-total">Valor Total (R$) *</label>
+          <input
+            type="number"
+            id="input-valor-total"
+            placeholder="Ex: 1200.00"
+            min="0"
+            step="0.01"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="input-parcelas">Número de Parcelas *</label>
+          <input
+            type="number"
+            id="input-parcelas"
+            placeholder="Ex: 12"
+            min="1"
+            step="1"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="input-data-inicio">Mês da 1ª Parcela *</label>
+          <input
+            type="month"
+            id="input-data-inicio"
+          >
+        </div>
+      </div>
+
+      <button class="btn-adicionar-compra" onclick="adicionarCompra()">
+        Registrar Compra Parcelada
+      </button>
+    </section>
+
+    <section>
+      <h2>Compras Registradas</h2>
+      <div id="tabela-container">
+        <p style="text-align: center; color: var(--cor-texto-leve);">
+          Nenhuma compra parcelada registrada ainda.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Calendário de Parcelas (Próximos 12 Meses)</h2>
+      <div id="calendario-container" class="calendario-fluxo"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/fluxo-caixa-futuro.js"></script>
+  <script src="./assets/js/menu.js"></script>
+</body>
+</html>
