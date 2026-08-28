@@ -64,6 +64,7 @@ function importarSalarios() {
           tipo: 'salario',
           valor: ch.salarioLiquido,
           data: dataReceita,
+          competencia: `${ano}-${mes}`,
           destino: 'Importado de Contracheque',
           dataCriacao: new Date().toISOString(),
           metadata: { competencia }
@@ -118,6 +119,7 @@ function adicionarReceita() {
     tipo,
     valor,
     data,
+    competencia: data.slice(0, 7),
     destino,
     dataCriacao: new Date().toISOString()
   });

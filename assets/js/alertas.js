@@ -2,6 +2,7 @@
 // Só entra aqui o que é acionável — o calendário completo continua nos lembretes.
 
 const ALERTA_DIAS_CARTAO = 3;
+const ALERTA_DIAS_DESPESA_FIXA = 3;
 const ALERTA_DIAS_DIVIDA = 7;
 const ALERTA_DIAS_META = 30;
 const ALERTA_DIAS_BACKUP = 30;
@@ -108,6 +109,32 @@ function altAlertasDividas() {
   }, []);
 }
 
+function altAlertasDespesasFixas() {
+  const dados = Store.ler(Store.CHAVES.DESPESAS_FIXAS, null);
+  if (!dados || !Array.isArray(dados.despesas)) return [];
+
+  const mesAtual = new Date().toISOString().slice(0, 7);
+
+  return dados.despesas.reduce((alertas, d) => {
+    if (d.oculta || !d.vencimentoDia) return alertas;
+
+    // Já pago no ciclo deste mês: nada a cobrar.
+    if (typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === mesAtual) return alertas;
+
+    const dias = altDiasAteDiaDoMes(d.vencimentoDia);
+    if (dias === null || dias > ALERTA_DIAS_DESPESA_FIXA) return alertas;
+
+    alertas.push(altAlerta(
+      dias <= 1 ? 'critico' : 'atencao',
+      `${d.nome} vence ${altPrazoEmTexto(dias)} e não está paga`,
+      `${formatarMoedaBrasileira(d.valor || 0)} · dia ${parseInt(d.vencimentoDia, 10)} de cada mês.`,
+      './despesas-fixas.html',
+      'Ver despesas fixas'
+    ));
+    return alertas;
+  }, []);
+}
+
 function altAlertasMetas() {
   return Store.ler(Store.CHAVES.METAS, []).reduce((alertas, meta) => {
     const alvo = Number(meta.valorAlvo) || 0;
@@ -208,7 +235,8 @@ function altAlertasBackup() {
 function altAlertasSaldo() {
   if (typeof calcularSaldoDoMes !== 'function') return [];
 
-  const r = calcularSaldoDoMes();
+  // Alerta é sempre sobre o mês corrente, mesmo olhando outro no seletor.
+  const r = calcularSaldoDoMes(smCompetenciaAtual());
   if (r.receitas === 0 || r.saldo >= 0) return [];
 
   return [altAlerta(
@@ -224,6 +252,7 @@ function gerarAlertas() {
   return [].concat(
     altAlertasSaldo(),
     altAlertasCartoes(),
+    altAlertasDespesasFixas(),
     altAlertasDividas(),
     altAlertasEnvelopes(),
     altAlertasMetas(),

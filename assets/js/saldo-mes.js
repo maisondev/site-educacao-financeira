@@ -10,6 +10,21 @@ function smNaCompetencia(data, competencia) {
   return typeof data === 'string' && data.slice(0, 7) === competencia;
 }
 
+// Um lançamento pertence ao mês pela competência explícita; sem ela, pela data.
+function smRegistroNaCompetencia(registro, competencia, campoData = 'data') {
+  if (typeof competenciaDoRegistro === 'function') {
+    return competenciaDoRegistro(registro, campoData) === competencia;
+  }
+  return smNaCompetencia(registro[campoData], competencia);
+}
+
+// Mês em foco: o escolhido no seletor global, ou o mês corrente.
+function smCompetenciaEmFoco() {
+  return typeof competenciaSelecionada === 'function'
+    ? competenciaSelecionada()
+    : smCompetenciaAtual();
+}
+
 function smSomar(lista, campo) {
   return lista.reduce((total, item) => total + (Number(item[campo]) || 0), 0);
 }
@@ -17,7 +32,7 @@ function smSomar(lista, campo) {
 // Receitas lançadas no mês; sem lançamentos, cai para a renda mensal configurada.
 function smReceitasDoMes(competencia) {
   const receitas = Store.ler(Store.CHAVES.RECEITAS, [])
-    .filter(r => smNaCompetencia(r.data, competencia));
+    .filter(r => smRegistroNaCompetencia(r, competencia));
 
   if (receitas.length > 0) return smSomar(receitas, 'valor');
 
@@ -47,7 +62,7 @@ function smEhFaturaSincronizada(despesa) {
 
 function smDespesasVariaveisDoMes(competencia) {
   const despesas = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, [])
-    .filter(d => smNaCompetencia(d.data, competencia))
+    .filter(d => smRegistroNaCompetencia(d, competencia))
     .filter(d => !(d.categoria === 'cartao' && smEhFaturaSincronizada(d)));
   return smSomar(despesas, 'valor');
 }
@@ -131,7 +146,7 @@ function smReservaAtual() {
   return Number(reserva.valorAtual) || 0;
 }
 
-function calcularSaldoDoMes(competencia = smCompetenciaAtual()) {
+function calcularSaldoDoMes(competencia = smCompetenciaEmFoco()) {
   const renda = smReceitasDoMes(competencia);
   const rendasExtras = smRendasExtrasDoMes(competencia);
   const despesasFixas = smDespesasFixasDoMes();

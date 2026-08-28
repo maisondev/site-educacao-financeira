@@ -196,6 +196,12 @@ function criarCardDespesasFixas() {
   const totalDespesas = df.despesas.reduce((sum, d) => sum + d.valor, 0);
   const percentual = df.salario ? (totalDespesas / df.salario) * 100 : 0;
 
+  const mesAtual = new Date().toISOString().slice(0, 7);
+  const pagas = df.despesas.filter(d => typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === mesAtual);
+  const totalPago = pagas.reduce((sum, d) => sum + d.valor, 0);
+  const faltaPagar = totalDespesas - totalPago;
+  const pctPago = totalDespesas ? (totalPago / totalDespesas) * 100 : 0;
+
   return `
     <div class="card-dashboard">
       <div class="card-header">
@@ -210,6 +216,15 @@ function criarCardDespesasFixas() {
           <div class="card-stat-mini">
             <div class="stat-valor">${Math.round(percentual)}%</div>
             <div class="stat-label">Da renda</div>
+          </div>
+        </div>
+        <div class="progresso-container" style="margin-top: 12px;">
+          <div class="progresso-barra">
+            <div class="progresso-preenchido" style="width: ${Math.min(pctPago, 100)}%"></div>
+          </div>
+          <div class="progresso-label">
+            ${pagas.length}/${df.despesas.length} pagas neste mês ·
+            ${faltaPagar > 0 ? `falta ${formatarMoedaBrasileira(faltaPagar)}` : 'tudo pago'}
           </div>
         </div>
       </div>
@@ -410,18 +425,70 @@ function renderizarDashboard() {
   container.innerHTML = cards.join('');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  if (typeof renderizarLancamentoRapido === 'function') {
-    renderizarLancamentoRapido();
+// Fecha o mês em foco: arquiva o resumo e zera os envelopes para o mês seguinte.
+function confirmarFechamentoDoMes() {
+  const competencia = competenciaSelecionada();
+  const nome = formatarCompetencia(competencia);
+
+  if (competenciaFechada(competencia)) {
+    if (!confirm(`${nome} já está fechado. Reabrir para continuar lançando?`)) return;
+    reabrirMes(competencia);
+    atualizarPainel();
+    return;
   }
-  if (typeof renderizarAlertas === 'function') {
-    renderizarAlertas();
+
+  const confirmado = confirm(
+    `Fechar ${nome}?
+
+` +
+    'O resumo do mês é arquivado e os envelopes voltam a zero. ' +
+    'Nenhum lançamento é apagado, e dá para reabrir depois.'
+  );
+  if (!confirmado) return;
+
+  if (fecharMes(competencia)) {
+    atualizarPainel();
+  }
+}
+
+// Redesenha tudo que depende do mês em foco.
+function atualizarPainel() {
+  if (typeof renderizarSeletorCompetencia === 'function') {
+    renderizarSeletorCompetencia('container-competencia', atualizarPainel);
   }
   if (typeof renderizarSaldoDoMes === 'function') {
     renderizarSaldoDoMes();
   }
+  if (typeof renderizarAlertas === 'function') {
+    renderizarAlertas();
+  }
   renderizarDashboard();
+
+  const aviso = document.getElementById('cmp-aviso');
+  if (aviso && typeof competenciaSelecionada === 'function') {
+    const competencia = competenciaSelecionada();
+    aviso.textContent = competencia === competenciaAtual()
+      ? ''
+      : `Você está vendo ${formatarCompetencia(competencia)}; os alertas continuam sobre o mês corrente.`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof migrarCompetencias === 'function') {
+    migrarCompetencias();
+  }
+  if (typeof renderizarLancamentoRapido === 'function') {
+    renderizarLancamentoRapido();
+  }
+
+  atualizarPainel();
+
   if (typeof renderizarSecaoBackup === 'function') {
     renderizarSecaoBackup();
+  }
+
+  const botaoFechar = document.getElementById('btn-fechar-mes');
+  if (botaoFechar) {
+    botaoFechar.addEventListener('click', confirmarFechamentoDoMes);
   }
 });

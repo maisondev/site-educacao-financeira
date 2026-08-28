@@ -91,6 +91,7 @@ function lrCriarDespesa(interpretacao, categoria) {
     descricao: interpretacao.descricao,
     valor: interpretacao.valor,
     data: lrDataDeHoje(),
+    competencia: lrDataDeHoje().slice(0, 7),
     dataCriacao: new Date().toISOString()
   };
   despesas.push(despesa);

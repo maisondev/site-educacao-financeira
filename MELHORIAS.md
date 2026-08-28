@@ -68,7 +68,7 @@ Mais três indicadores de saúde: **taxa de poupança** (% da renda que sobrou),
 
 ## P1 — Alto valor, exige um pouco mais de desenho
 
-### 4. Competência mensal (fechamento de mês) (≈3h)
+### 4. ✅ Competência mensal (fechamento de mês) (≈3h) — feito em 2026-08-28
 
 **Problema:** o modelo de dados é "estado atual", não série temporal. Despesas variáveis, envelopes e receitas não têm um mês de referência consistente, então não dá para responder *"quanto gastei em julho vs agosto?"* nem gerar tendência. Só `renda_mensal_competencia` e `contracheques_historico` têm noção de tempo.
 

@@ -57,6 +57,14 @@ function toggleCategoria(categoria) {
   definirCategoriasColapsadas(lista);
 }
 
+// Mês do lançamento: a competência gravada ou, nos registros antigos, a data.
+function mesDaDespesa(despesa) {
+  if (typeof competenciaDoRegistro === 'function') {
+    return competenciaDoRegistro(despesa) || '';
+  }
+  return (despesa.competencia || despesa.data || '').slice(0, 7);
+}
+
 function obterDespesasVariaveis() {
   try {
     const dados = localStorage.getItem(CHAVE_DESPESAS_VARIAVEIS);
@@ -138,6 +146,7 @@ function adicionarDespesaDeCartao(descricao, valor, data, ultimosDígitos) {
     descricao,
     valor,
     data,
+    competencia: (data || '').slice(0, 7),
     dataCriacao: new Date().toISOString()
   };
   if (ultimosDígitos) {
@@ -207,6 +216,7 @@ function salvarDespesaVariavel() {
       despesa.descricao = descricao;
       despesa.valor = valor;
       despesa.data = data;
+      despesa.competencia = data.slice(0, 7);
       // Deixou de ser cartão: descarta os últimos dígitos herdados da fatura
       if (categoria !== 'cartao') {
         delete despesa.ultimosDígitos;
@@ -220,6 +230,7 @@ function salvarDespesaVariavel() {
       descricao,
       valor,
       data,
+      competencia: data.slice(0, 7),
       dataCriacao: new Date().toISOString()
     });
   }
@@ -294,11 +305,13 @@ function carregarDespesasVariaveis() {
   const despesas = obterDespesasVariaveis();
   const container = document.getElementById('historico-container');
 
-  // Calcular resumos
-  const hoje = new Date();
-  const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+  // Resumos do mês em foco (o do seletor global, ou o mês corrente)
+  const mesAtual = typeof competenciaSelecionada === 'function'
+    ? competenciaSelecionada()
+    : `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+  const hoje = new Date(mesAtual + '-01T00:00:00');
 
-  const despesasMesAtual = despesas.filter(d => (d.data || '').slice(0, 7) === mesAtual);
+  const despesasMesAtual = despesas.filter(d => mesDaDespesa(d) === mesAtual);
   const totalMesAtual = despesasMesAtual.reduce((sum, d) => sum + d.valor, 0);
 
   // Média mensal dos últimos 3 meses de calendário (atual + 2 anteriores),
@@ -310,7 +323,7 @@ function carregarDespesasVariaveis() {
   }
   const totaisPorMes = {};
   despesas.forEach(d => {
-    const chave = (d.data || '').slice(0, 7);
+    const chave = mesDaDespesa(d);
     if (chavesUltimos3Meses.includes(chave)) {
       totaisPorMes[chave] = (totaisPorMes[chave] || 0) + d.valor;
     }

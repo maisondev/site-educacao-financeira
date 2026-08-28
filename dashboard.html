@@ -423,6 +423,47 @@
       font-family: inherit;
       padding: 0;
     }
+    .secao-competencia {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .cmp-seletor {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-sm);
+    }
+
+    .cmp-label {
+      font-weight: 500;
+    }
+
+    .cmp-select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+      text-transform: capitalize;
+    }
+
+    .cmp-fechado {
+      background: var(--cor-cinza-leve);
+      color: var(--cor-texto-leve);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 13px;
+    }
+
+    .cmp-aviso {
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+      flex-basis: 100%;
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -443,6 +484,14 @@
     <p style="color: var(--cor-texto-leve); font-size: 16px;">
       Veja um resumo consolidado de todas as suas finanças em um único lugar.
     </p>
+
+    <div class="secao-competencia">
+      <div id="container-competencia" class="cmp-seletor">
+        <!-- Renderizado por competencia.js -->
+      </div>
+      <button type="button" class="btn btn-secondary" id="btn-fechar-mes">Fechar mês</button>
+      <p class="cmp-aviso" id="cmp-aviso"></p>
+    </div>
 
     <section id="container-lancamento-rapido" class="secao-lancamento-rapido">
       <!-- Renderizado por lancamento-rapido.js -->
@@ -483,6 +532,7 @@
   <script src="./assets/js/backup.js"></script>
   <script src="./assets/js/saldo-mes.js"></script>
   <script src="./assets/js/alertas.js"></script>
+  <script src="./assets/js/competencia.js"></script>
   <script src="./assets/js/lancamento-rapido.js"></script>
   <script src="./assets/js/dashboard.js"></script>
 </body>

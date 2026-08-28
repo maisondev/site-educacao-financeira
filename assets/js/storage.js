@@ -27,7 +27,9 @@ const Store = {
     HACKS_NUBANK: 'hacks_nubank_dados',
     CURSOS: 'cursos_lista',
     ANALISE_FATURAS: 'analise_faturas',
-    BACKUP_ULTIMA_DATA: 'backup_ultima_data'
+    BACKUP_ULTIMA_DATA: 'backup_ultima_data',
+    COMPETENCIA_SELECIONADA: 'competencia_selecionada',
+    HISTORICO_MENSAL: 'historico_mensal'
   },
 
   // Lê e desserializa. Devolve `padrao` quando a chave não existe ou o
