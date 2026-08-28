@@ -362,10 +362,9 @@ function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   if (datas.length === 0) return null;
 
-  return datas.reduce((max, d) => {
-    if (!max || d.mes > max.mes) return d;
-    return max;
-  }, null);
+  // Ordenar por mês em ordem decrescente e retornar a primeira (mais recente)
+  const ordenadas = datas.sort((a, b) => b.mes.localeCompare(a.mes));
+  return ordenadas[0] || null;
 }
 
 function obterSaldoExibicao(cartao) {
@@ -452,7 +451,7 @@ function atualizarVisualizacao() {
 
   container.innerHTML = cartoes.map(cartao => {
     const ultimaFatura = obterUltimaFaturaDisponivel(cartao);
-    const saldoVisivel = ultimaFatura?.saldo || cartao.saldoAberto;
+    const saldoVisivel = ultimaFatura?.saldo ?? cartao.saldoAberto;
     const mesReferencia = ultimaFatura?.mes;
     const banco = obterBancoPorNome(cartao.nome);
     const databancoAttr = banco ? ` data-banco="${banco}"` : '';
