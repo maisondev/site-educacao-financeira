@@ -23,6 +23,7 @@ const MENU_ITEMS = [
     label: 'Acompanhamento',
     href: './metas.html',
     submenu: [
+      { label: 'Carro', href: './carro.html' },
       { label: 'Cartões', href: './cartoes.html' },
       { label: 'Despesas Fixas', href: './despesas-fixas.html' },
       { label: 'Despesas Variáveis', href: './despesas-variaveis.html' },

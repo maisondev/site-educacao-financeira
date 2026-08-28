@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carro | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .bloco {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .bloco h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .form-row.tres { grid-template-columns: 1fr 1fr 1fr; }
+
+    .form-group { display: flex; flex-direction: column; }
+
+    .form-group label {
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-sm);
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .form-group textarea { min-height: 60px; }
+
+    .check-inline {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--espacamento-sm);
+    }
+
+    .check-inline label { margin-bottom: 0; font-weight: 400; }
+
+    .acoes-form { display: flex; gap: var(--espacamento-md); flex-wrap: wrap; }
+
+    .cards-resumo {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-info {
+      background-color: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-info p { margin: 0 0 var(--espacamento-sm) 0; color: var(--cor-texto-light); font-size: 13px; }
+    .card-info .valor { font-size: 24px; font-weight: bold; margin: 0; color: var(--cor-primaria); }
+
+    .valor-linha {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      padding: var(--espacamento-xs) 0;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+    .valor-linha:last-child { border-bottom: none; }
+
+    table.plano {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    table.plano th, table.plano td {
+      text-align: left;
+      padding: var(--espacamento-sm);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+    table.plano th { color: var(--cor-texto-light); font-weight: 600; }
+    .col-num { white-space: nowrap; }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--border-radius-pill);
+      font-size: 12px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .pill-atrasado { background: #f6dede; color: var(--cor-vermelho); }
+    .pill-proximo { background: #f8eccf; color: var(--cor-amarelo); }
+    .pill-em-dia { background: #dcefdf; color: var(--cor-verde); }
+    .pill-sem-registro { background: var(--cor-cinza-leve); color: var(--cor-texto-light); }
+
+    .tag-essencial {
+      font-size: 11px;
+      background: var(--cor-primaria);
+      color: #fff;
+      padding: 1px 6px;
+      border-radius: var(--border-radius-pill);
+      vertical-align: middle;
+    }
+
+    .aviso-box {
+      background: #f8eccf;
+      border: 1px solid var(--cor-amarelo);
+      border-radius: var(--border-radius-sm);
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+      font-size: 14px;
+    }
+
+    .lista-registros { display: grid; gap: var(--espacamento-md); }
+
+    .registro-card {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-left: 4px solid var(--cor-verde);
+      border-radius: var(--border-radius-sm);
+      padding: var(--espacamento-md);
+    }
+    .registro-card.corretiva { border-left-color: var(--cor-vermelho); }
+
+    .registro-topo { display: flex; justify-content: space-between; gap: var(--espacamento-md); }
+    .registro-meta { margin: var(--espacamento-xs) 0 0; font-size: 13px; color: var(--cor-texto-light); }
+    .registro-desc { margin: var(--espacamento-xs) 0 0; font-size: 14px; }
+    .registro-tipo {
+      font-size: 11px; text-transform: uppercase; color: var(--cor-texto-light);
+      border: 1px solid var(--cor-borda); border-radius: var(--border-radius-pill); padding: 1px 6px; margin-left: 4px;
+    }
+
+    .btn-link-remover {
+      background: none; border: none; color: var(--cor-vermelho);
+      font-size: 13px; cursor: pointer; padding: var(--espacamento-xs) 0 0; margin-top: var(--espacamento-xs);
+    }
+
+    .total-linha { text-align: right; font-weight: bold; margin-top: var(--espacamento-md); }
+    .vazio-msg { color: var(--cor-texto-light); font-size: 14px; text-align: center; padding: var(--espacamento-lg); }
+
+    .dicas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--espacamento-lg); }
+    .dicas-grid h3 { font-size: 15px; margin: 0 0 var(--espacamento-sm); }
+    .dicas-grid ul { margin: 0; padding-left: var(--espacamento-lg); font-size: 14px; }
+    .dicas-grid li { margin-bottom: var(--espacamento-xs); }
+
+    .subtitulo-bloco { color: var(--cor-texto-light); font-size: 14px; margin-top: -8px; }
+
+    @media (max-width: 640px) {
+      .form-row, .form-row.tres, .cards-resumo, .dicas-grid { grid-template-columns: 1fr; }
+      table.plano { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Carro</p>
+
+    <h1>Carro</h1>
+    <p>
+      Um lugar só para o seu carro: registre manutenções, acompanhe o plano preventivo por
+      quilometragem e tempo, mantenha um fundo para os imprevistos e veja quanto o carro
+      realmente custa por quilômetro rodado.
+    </p>
+
+    <div class="cards-resumo">
+      <div class="card-info"><p>Km atual</p><p class="valor" id="r-km">—</p></div>
+      <div class="card-info"><p>Custo por km</p><p class="valor" id="r-custo-km">—</p></div>
+      <div class="card-info"><p>Consumo médio</p><p class="valor" id="r-consumo">—</p></div>
+      <div class="card-info"><p>Fundo do carro</p><p class="valor" id="r-fundo">—</p></div>
+    </div>
+
+    <!-- Veículo -->
+    <section class="bloco">
+      <h2>Meu veículo</h2>
+      <div class="form-row tres">
+        <div class="form-group">
+          <label for="v-nome">Modelo *</label>
+          <input type="text" id="v-nome" placeholder="Ex: Onix 1.0 2019">
+        </div>
+        <div class="form-group">
+          <label for="v-placa">Placa</label>
+          <input type="text" id="v-placa" placeholder="ABC1D23">
+        </div>
+        <div class="form-group">
+          <label for="v-ano">Ano/modelo</label>
+          <input type="text" id="v-ano" placeholder="2019">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="v-km">Km atual</label>
+          <input type="number" id="v-km" min="0" step="1" placeholder="Ex: 68000">
+        </div>
+        <div class="form-group">
+          <label for="v-km-data">Data da leitura</label>
+          <input type="date" id="v-km-data">
+        </div>
+      </div>
+      <div class="acoes-form">
+        <button class="btn btn-primary" onclick="salvarVeiculo()">Salvar veículo</button>
+      </div>
+    </section>
+
+    <!-- Plano preventivo -->
+    <section class="bloco">
+      <h2>Plano preventivo</h2>
+      <p class="subtitulo-bloco">
+        Intervalos de referência para carro de passeio flex. Ajuste sempre pelo manual do fabricante.
+        O status usa a última manutenção registrada de cada item.
+      </p>
+      <div class="aviso-box" id="plano-alerta" hidden></div>
+      <table class="plano">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="col-num">Intervalo</th>
+            <th>Última</th>
+            <th>Próxima</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="plano-body"></tbody>
+      </table>
+    </section>
+
+    <!-- Nova manutenção -->
+    <section class="bloco">
+      <h2>Registrar manutenção</h2>
+      <div class="form-row tres">
+        <div class="form-group">
+          <label for="m-data">Data *</label>
+          <input type="date" id="m-data">
+        </div>
+        <div class="form-group">
+          <label for="m-km">Km *</label>
+          <input type="number" id="m-km" min="0" step="1" placeholder="Ex: 68000">
+        </div>
+        <div class="form-group">
+          <label for="m-tipo">Tipo *</label>
+          <select id="m-tipo">
+            <option value="preventiva">Preventiva</option>
+            <option value="corretiva">Corretiva</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="m-categoria">Categoria *</label>
+          <select id="m-categoria"><option value="">Selecione</option></select>
+        </div>
+        <div class="form-group">
+          <label for="m-oficina">Oficina</label>
+          <input type="text" id="m-oficina" placeholder="Onde foi feito">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--espacamento-lg);">
+        <label for="m-descricao">Descrição</label>
+        <input type="text" id="m-descricao" placeholder="Ex: troca de óleo 5W30 sintético + filtro">
+      </div>
+      <div class="form-row tres">
+        <div class="form-group">
+          <label for="m-pecas">Valor peças (R$)</label>
+          <input type="number" id="m-pecas" min="0" step="0.01" placeholder="0,00">
+        </div>
+        <div class="form-group">
+          <label for="m-mao-obra">Valor mão de obra (R$)</label>
+          <input type="number" id="m-mao-obra" min="0" step="0.01" placeholder="0,00">
+        </div>
+        <div class="form-group check-inline">
+          <input type="checkbox" id="m-fundo">
+          <label for="m-fundo">Pagar com o fundo do carro</label>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: var(--espacamento-lg);">
+        <label for="m-obs">Observações</label>
+        <textarea id="m-obs" placeholder="Garantia, próxima recomendação, etc."></textarea>
+      </div>
+      <div class="acoes-form">
+        <button class="btn btn-primary" onclick="adicionarManutencao()">Adicionar manutenção</button>
+        <button class="btn btn-secondary" onclick="limparFormManutencao()">Limpar</button>
+      </div>
+    </section>
+
+    <!-- Histórico de manutenções -->
+    <section class="bloco">
+      <h2>Histórico de manutenções</h2>
+      <div id="lista-manutencoes" class="lista-registros"></div>
+      <p class="total-linha" id="total-manutencoes"></p>
+    </section>
+
+    <!-- Custo por km -->
+    <section class="bloco">
+      <h2>Custo por km</h2>
+      <div id="detalhe-custos"></div>
+    </section>
+
+    <!-- Abastecimentos -->
+    <section class="bloco">
+      <h2>Abastecimentos e consumo</h2>
+      <p class="subtitulo-bloco">
+        Marque "tanque cheio" para o cálculo de consumo. A média usa a distância entre dois
+        abastecimentos completos.
+      </p>
+      <div class="form-row tres">
+        <div class="form-group">
+          <label for="a-data">Data *</label>
+          <input type="date" id="a-data">
+        </div>
+        <div class="form-group">
+          <label for="a-km">Km *</label>
+          <input type="number" id="a-km" min="0" step="1" placeholder="Ex: 68420">
+        </div>
+        <div class="form-group">
+          <label for="a-litros">Litros *</label>
+          <input type="number" id="a-litros" min="0" step="0.01" placeholder="Ex: 38,5">
+        </div>
+      </div>
+      <div class="form-row tres">
+        <div class="form-group">
+          <label for="a-valor-litro">Valor por litro (R$)</label>
+          <input type="number" id="a-valor-litro" min="0" step="0.001" placeholder="Ex: 5,89">
+        </div>
+        <div class="form-group">
+          <label for="a-valor-total">Valor total (R$)</label>
+          <input type="number" id="a-valor-total" min="0" step="0.01" placeholder="opcional, calcula sozinho">
+        </div>
+        <div class="form-group check-inline">
+          <input type="checkbox" id="a-cheio">
+          <label for="a-cheio">Tanque cheio</label>
+        </div>
+      </div>
+      <div class="acoes-form">
+        <button class="btn btn-primary" onclick="adicionarAbastecimento()">Adicionar abastecimento</button>
+      </div>
+      <div id="lista-abastecimentos" class="lista-registros" style="margin-top: var(--espacamento-lg);"></div>
+    </section>
+
+    <!-- Fundo do carro -->
+    <section class="bloco">
+      <h2>Fundo do carro</h2>
+      <p class="subtitulo-bloco">
+        Uma reserva mensal só para o carro. Assim manutenção e imprevisto saem daqui — e não viram dívida.
+      </p>
+      <div class="cards-resumo" style="grid-template-columns: 1fr;">
+        <div class="card-info">
+          <p>Saldo do fundo</p>
+          <p class="valor" id="f-saldo">R$ 0,00</p>
+          <p id="f-dica" style="font-size: 13px; color: var(--cor-texto-light); margin-top: 4px;"></p>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="f-aporte">Aporte mensal (R$)</label>
+          <input type="number" id="f-aporte" min="0" step="0.01" placeholder="Ex: 150">
+        </div>
+        <div class="form-group">
+          <label for="f-saldo-inicial">Saldo inicial (R$)</label>
+          <input type="number" id="f-saldo-inicial" min="0" step="0.01" placeholder="0,00">
+        </div>
+      </div>
+      <div class="acoes-form" style="margin-bottom: var(--espacamento-lg);">
+        <button class="btn btn-secondary" onclick="salvarConfigFundo()">Salvar configuração</button>
+        <button class="btn btn-primary" onclick="registrarAporteMensal()">Registrar aporte do mês</button>
+      </div>
+      <div class="form-row tres">
+        <div class="form-group">
+          <label for="f-mov-valor">Valor (R$)</label>
+          <input type="number" id="f-mov-valor" min="0" step="0.01" placeholder="0,00">
+        </div>
+        <div class="form-group">
+          <label for="f-mov-desc">Descrição</label>
+          <input type="text" id="f-mov-desc" placeholder="Ex: pneu furado">
+        </div>
+        <div class="form-group check-inline" style="align-items: flex-end;">
+          <button class="btn btn-secondary" onclick="movimentarFundo('aporte')">+ Aporte</button>
+          <button class="btn btn-secondary" onclick="movimentarFundo('retirada')">− Retirada</button>
+        </div>
+      </div>
+      <div id="lista-fundo" class="lista-registros" style="margin-top: var(--espacamento-lg);"></div>
+    </section>
+
+    <!-- Dicas -->
+    <section class="bloco">
+      <h2>Como priorizar e economizar</h2>
+
+      <div class="dicas-grid">
+        <div>
+          <h3>Faça sem adiar (segurança e quebra maior)</h3>
+          <ul>
+            <li>Óleo e filtro no prazo do manual — óleo velho destrói o motor</li>
+            <li>Freios: pastilhas, discos e fluido — não negocie com isso</li>
+            <li>Pneus: calibragem a cada 15 dias e sulco acima de 1,6 mm</li>
+            <li>Correia dentada no km recomendado — se arrebentar, dobra a conta</li>
+            <li>Líquido de arrefecimento — superaquecimento é motor fundido</li>
+            <li>Suspensão com folga, direção com barulho, luz de injeção acesa</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Pode esperar ou avaliar com calma</h3>
+          <ul>
+            <li>Estética: riscos, polimento, pequenos amassados</li>
+            <li>Ruídos sem risco identificado (acompanhe, não corra)</li>
+            <li>Itens de conforto que não afetam funcionamento</li>
+            <li>Troca preventiva muito antes do prazo "por garantia"</li>
+            <li>Aditivos e "tratamentos" milagrosos oferecidos na hora</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 style="margin-top: var(--espacamento-lg);">Táticas para pagar menos</h3>
+      <ul style="font-size: 14px;">
+        <li>Siga o manual do fabricante: nem antes, nem depois. Trocar peça boa é jogar dinheiro fora.</li>
+        <li>Peça 2 ou 3 orçamentos. Preço de mão de obra varia muito entre oficinas.</li>
+        <li>Peças de linha de marcas conhecidas resolvem na maioria dos casos — nem tudo precisa ser original.</li>
+        <li>Agrupe serviços na mesma visita: você paga a desmontagem uma vez só.</li>
+        <li>Rodízio de pneus no prazo faz o jogo durar quase o dobro.</li>
+        <li>Condução leve (menos freada brusca) estica a vida de pastilha, disco, pneu e embreagem.</li>
+        <li>Pneu murcho gasta mais combustível e borracha — calibragem é economia grátis.</li>
+        <li>Não ignore barulho e luz no painel: problema barato vira problema caro.</li>
+        <li>Tenha o fundo do carro. Sem ele, cada imprevisto vira <a href="./dividas.html">dívida no cartão</a>.</li>
+      </ul>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><a href="./dividas.html">Dívidas</a> — se hoje há financiamento do carro, acompanhe por lá</li>
+        <li><a href="./reserva-emergencia.html">Reserva de emergência</a> — o fundo do carro é separado da reserva</li>
+        <li><a href="./despesas-fixas.html">Despesas fixas</a> — inclua o aporte do fundo do carro no orçamento</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/lembretes.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/carro.js"></script>
+</body>
+</html>
