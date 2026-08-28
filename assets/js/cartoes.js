@@ -362,29 +362,23 @@ function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   const historico = cartao.historicoUtilizacao || [];
 
-  // Priorizar historicoUtilizacao que tem saldo real
-  if (historico.length > 0) {
-    const ordenadas = historico.sort((a, b) => {
-      const aNum = parseInt(a.mes.replace('-', ''));
-      const bNum = parseInt(b.mes.replace('-', ''));
-      return bNum - aNum;
-    });
-    const ultimoHistorico = ordenadas[0];
+  // Combinar ambos e retornar o mais recente por mês
+  const todasAsEntradas = [
+    ...datas,
+    ...historico.map(h => ({ mes: h.mes, saldo: h.saldo }))
+  ];
 
-    // Buscar a data correspondente em datasPorMes
-    const dataCorrespondente = datas.find(d => d.mes === ultimoHistorico.mes);
-    return dataCorrespondente || ultimoHistorico;
-  }
+  if (todasAsEntradas.length === 0) return null;
 
-  if (datas.length === 0) return null;
-
-  // Ordenar por mês numericamente (YYYY-MM): maior mês primeiro
-  const ordenadas = datas.sort((a, b) => {
+  // Ordenar por mês numericamente (maior = mais recente)
+  const ordenadas = todasAsEntradas.sort((a, b) => {
     const aNum = parseInt(a.mes.replace('-', ''));
     const bNum = parseInt(b.mes.replace('-', ''));
     return bNum - aNum;
   });
-  return ordenadas[0] || null;
+
+  // Retornar última entrada, garantindo que tem saldo
+  return ordenadas[0] && ordenadas[0].saldo ? ordenadas[0] : (ordenadas[0] || null);
 }
 
 function obterSaldoExibicao(cartao) {
