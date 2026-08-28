@@ -243,8 +243,8 @@ function altAlertasSaldo() {
     'critico',
     `Saldo projetado do mês está negativo em ${formatarMoedaBrasileira(Math.abs(r.saldo))}`,
     `${formatarMoedaBrasileira(r.saidas)} de saídas para ${formatarMoedaBrasileira(r.receitas)} de receitas.`,
-    null,
-    null
+    '#container-saldo-mes',
+    'Ver detalhamento do saldo do mês'
   )];
 }
 

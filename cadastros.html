@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastros Gerais | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .cad-secao {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .cad-secao h2 {
+      margin-top: 0;
+    }
+
+    .cad-descricao {
+      color: var(--cor-texto-leve);
+      max-width: 70ch;
+    }
+
+    .cad-form {
+      display: flex;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .cad-form input {
+      flex: 1 1 240px;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .cad-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cad-item {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .cad-item-rotulo {
+      flex: 1 1 auto;
+    }
+
+    .cad-edit-rotulo {
+      flex: 1 1 auto;
+      padding: var(--espacamento-sm);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    .cad-tag {
+      flex: 0 0 auto;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cor-texto-leve);
+      background: var(--cor-cinza-leve);
+      border-radius: 999px;
+      padding: 2px 10px;
+    }
+
+    .cad-btn-remover {
+      flex: 0 0 auto;
+      background: none;
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--cor-texto);
+    }
+
+    .cad-btn-remover:hover {
+      border-color: var(--cor-erro);
+      color: var(--cor-erro);
+    }
+
+    .cad-ajuda {
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+      margin: var(--espacamento-md) 0 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Cadastros Gerais</p>
+
+    <h1>Cadastros Gerais</h1>
+    <p class="cad-descricao">
+      Gerencie aqui as listas básicas usadas nos formulários do app. Categorias e formas de
+      pagamento personalizadas passam a aparecer nos selects; estabelecimentos viram sugestões
+      no lançamento rápido. Tudo fica salvo apenas neste navegador.
+    </p>
+
+    <section class="cad-secao">
+      <h2>Categorias de despesa</h2>
+      <div class="cad-form">
+        <input type="text" id="cad-nova-categoria" placeholder="Nova categoria (ex.: Pet / Animais)" autocomplete="off">
+        <button type="button" class="btn btn-primary" id="cad-add-categoria">Adicionar</button>
+      </div>
+      <div id="cad-categorias" class="cad-lista"></div>
+    </section>
+
+    <section class="cad-secao">
+      <h2>Formas de pagamento</h2>
+      <div class="cad-form">
+        <input type="text" id="cad-nova-pagamento" placeholder="Nova forma (ex.: Vale-refeição)" autocomplete="off">
+        <button type="button" class="btn btn-primary" id="cad-add-pagamento">Adicionar</button>
+      </div>
+      <div id="cad-pagamentos" class="cad-lista"></div>
+    </section>
+
+    <section class="cad-secao">
+      <h2>Estabelecimentos</h2>
+      <div class="cad-form">
+        <input type="text" id="cad-novo-estabelecimento" placeholder="Novo estabelecimento (ex.: Supermercado Central)" autocomplete="off">
+        <button type="button" class="btn btn-primary" id="cad-add-estabelecimento">Adicionar</button>
+      </div>
+      <div id="cad-estabelecimentos" class="cad-lista"></div>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><a href="./dashboard.html">Ir para o painel e usar o lançamento rápido</a></li>
+        <li><a href="./despesas-variaveis.html">Registrar despesas variáveis</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/cadastros-dados.js"></script>
+  <script src="./assets/js/cadastros.js"></script>
+</body>
+</html>

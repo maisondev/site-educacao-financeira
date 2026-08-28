@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roadmap de Estudos | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .destaque {
+      background: linear-gradient(135deg, var(--cor-primaria-light), var(--cor-primaria));
+      color: white;
+      padding: var(--espacamento-lg);
+      border-radius: var(--border-radius-md);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .destaque h2 {
+      border: none;
+      color: white;
+      margin-top: 0;
+    }
+
+    .destaque p {
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 0;
+    }
+
+    /* Trilha vertical de etapas */
+    .etapa {
+      margin-bottom: var(--espacamento-xl);
+      border-left: 4px solid var(--cor-borda);
+      padding-left: var(--espacamento-lg);
+    }
+
+    .etapa.etapa-basico { border-left-color: #2e7d32; }
+    .etapa.etapa-intermediario { border-left-color: #f9a825; }
+    .etapa.etapa-avancado { border-left-color: #c62828; }
+
+    .etapa-cabecalho {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .etapa-cabecalho h2 {
+      color: var(--cor-primaria);
+      margin: 0;
+      border: none;
+    }
+
+    .etapa > p.etapa-resumo {
+      color: var(--cor-texto-light);
+      margin-top: 0;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .modulo {
+      margin-bottom: var(--espacamento-lg);
+      padding: var(--espacamento-lg);
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+    }
+
+    .modulo h3 {
+      margin-top: 0;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-primaria);
+      font-size: 18px;
+    }
+
+    .modulo .modulo-numero {
+      display: inline-block;
+      min-width: 26px;
+      margin-right: 6px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background-color: var(--cor-primaria);
+      color: white;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .modulo .aprende {
+      font-size: 14px;
+      color: var(--cor-texto-light);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .modulo .rotulo-refs {
+      font-size: 12px;
+      font-weight: var(--fonte-peso-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cor-texto-leve, #888);
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--espacamento-md);
+    }
+
+    @media (min-width: 640px) {
+      .links-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .link-card {
+      display: flex;
+      flex-direction: column;
+      padding: var(--espacamento-md);
+      background-color: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .link-card:hover {
+      box-shadow: var(--sombra-md);
+      border-color: var(--cor-primaria);
+      transform: translateY(-2px);
+    }
+
+    .link-card h4 {
+      color: var(--cor-primaria);
+      margin: 0 0 4px;
+      font-size: 15px;
+    }
+
+    .link-card p {
+      color: var(--cor-texto-light);
+      font-size: 13px;
+      margin: 0 0 var(--espacamento-sm);
+      flex-grow: 1;
+    }
+
+    .link-card .link-tipo {
+      font-size: 11px;
+      font-weight: var(--fonte-peso-semibold);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #666;
+    }
+
+    .link-card.interno .link-tipo { color: #2e7d32; }
+    .link-card.gratuito .link-tipo { color: #1264a3; }
+
+    .como-registrar {
+      margin-top: var(--espacamento-lg);
+      padding: var(--espacamento-lg);
+      border: 1px dashed var(--cor-primaria);
+      border-radius: var(--border-radius-md);
+    }
+
+    .como-registrar h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Roadmap de Estudos</p>
+
+    <h1>Roadmap de Estudos — Finanças e Riqueza</h1>
+
+    <p>
+      Uma trilha progressiva, do básico ao avançado, para organizar seus estudos em educação
+      financeira e construção de patrimônio. Cada módulo traz <strong>o que estudar</strong>,
+      <strong>referências de cursos</strong> (a maioria gratuitos) e os <strong>materiais internos</strong>
+      deste site relacionados.
+    </p>
+
+    <div class="destaque">
+      <h2>Como usar este roadmap</h2>
+      <p>
+        Siga na ordem — cada etapa assume que a anterior está dominada. Estude um módulo por vez,
+        faça o curso indicado, aplique nas ferramentas do site e só então avance. Registre cada
+        curso concluído em <a href="./cursos.html" style="color:white;text-decoration:underline;">Meus Cursos</a>
+        para manter o histórico.
+      </p>
+    </div>
+
+    <!-- ETAPA 1 -->
+    <section class="etapa etapa-basico">
+      <div class="etapa-cabecalho">
+        <span class="badge-nivel badge-basico">Básico</span>
+        <h2>Etapa 1 — Fundamentos: organizar a casa</h2>
+      </div>
+      <p class="etapa-resumo">
+        Antes de investir, é preciso gastar menos do que ganha, sair do vermelho e ter um colchão
+        de segurança. Esta etapa é sobre controle e hábito.
+      </p>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">1</span>Mentalidade e relação com o dinheiro</h3>
+        <p class="aprende">
+          Entender de onde vêm seus hábitos financeiros, diferença entre necessidade e desejo,
+          e por que ganhar mais não resolve sozinho. Base emocional antes da técnica.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.bcb.gov.br/cidadaniafinanceira" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Cidadania Financeira — Banco Central</h4>
+            <p>Portal oficial do BCB com cadernos e cursos gratuitos sobre educação financeira do cidadão.</p>
+            <span class="link-tipo">Curso gratuito</span>
+          </a>
+          <a href="https://www.youtube.com/@nathfinancas" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Nath Finanças (YouTube)</h4>
+            <p>Educação financeira para quem está começando do zero, linguagem simples e realidade brasileira.</p>
+            <span class="link-tipo">Canal gratuito</span>
+          </a>
+          <a href="./maximas.html" class="link-card interno">
+            <h4>Grandes Máximas</h4>
+            <p>Os princípios que valem em qualquer cenário — comece por aqui para fixar a mentalidade.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">2</span>Orçamento pessoal e controle de gastos</h3>
+        <p class="aprende">
+          Registrar todas as entradas e saídas, separar despesas fixas e variáveis, aplicar um
+          método de divisão da renda (ex.: 50/30/20) e fechar o mês no azul.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://meubolsoemdia.com.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Meu Bolso em Dia (Febraban)</h4>
+            <p>Cursos gratuitos e certificados sobre organização do orçamento, planejamento e consumo consciente.</p>
+            <span class="link-tipo">Curso gratuito</span>
+          </a>
+          <a href="./temas/orcamento-pessoal/metodo-50-30-20.html" class="link-card interno">
+            <h4>Método 50/30/20</h4>
+            <p>Como dividir a renda entre essenciais, desejos e futuro, com exemplo numérico.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+          <a href="./envelopes.html" class="link-card interno">
+            <h4>Envelopes</h4>
+            <p>Ferramenta para alocar a renda do mês em categorias com teto fixo.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">3</span>Dívidas e uso consciente do crédito</h3>
+        <p class="aprende">
+          Diferença entre dívida cara e barata, juro rotativo do cartão, como priorizar quitação
+          (bola de neve x avalanche), negociar e usar o cartão sem se enrolar.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.serasa.com.br/ensina/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Serasa Ensina</h4>
+            <p>Artigos e guias gratuitos sobre score, negociação de dívidas e organização do crédito.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="./dividas.html" class="link-card interno">
+            <h4>Dívidas</h4>
+            <p>Registre cada dívida, veja o total devido e acompanhe o progresso de quitação.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+          <a href="./glossario.html" class="link-card interno">
+            <h4>Glossário</h4>
+            <p>Termos como CET, juro rotativo, IOF e amortização explicados de forma simples.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">4</span>Reserva de emergência</h3>
+        <p class="aprende">
+          Quanto guardar (3 a 12 meses de custo), onde deixar (liquidez diária e baixo risco) e
+          como construir a reserva antes de qualquer investimento de longo prazo.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="./temas/reserva-de-emergencia/index.html" class="link-card interno">
+            <h4>Tema: Reserva de Emergência</h4>
+            <p>O que é, qual o tamanho ideal e como priorizar.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+          <a href="./temas/juros-e-investimentos/renda-fixa-para-comecar.html" class="link-card interno">
+            <h4>Renda Fixa: onde deixar a reserva</h4>
+            <p>Comparação entre CDB de liquidez diária, Tesouro Selic e conta que rende.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+          <a href="./reserva-emergencia.html" class="link-card interno">
+            <h4>Acompanhamento da Reserva</h4>
+            <p>Defina a meta em meses e acompanhe o aporte mês a mês.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 2 -->
+    <section class="etapa etapa-intermediario">
+      <div class="etapa-cabecalho">
+        <span class="badge-nivel badge-intermediario">Intermediário</span>
+        <h2>Etapa 2 — Fazer o dinheiro render</h2>
+      </div>
+      <p class="etapa-resumo">
+        Com o orçamento no azul e a reserva feita, é hora de entender juros, renda fixa e os
+        primeiros passos em renda variável — sempre com foco no longo prazo.
+      </p>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">5</span>Juros compostos e matemática financeira</h3>
+        <p class="aprende">
+          Juros simples x compostos, valor do dinheiro no tempo, taxa nominal x real, inflação
+          e o efeito de aportes constantes ao longo de décadas.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.ev.org.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Escola Virtual — Fundação Bradesco</h4>
+            <p>Curso gratuito e com certificado de Matemática Financeira e planejamento pessoal.</p>
+            <span class="link-tipo">Curso gratuito</span>
+          </a>
+          <a href="https://pt.khanacademy.org/economics-finance-domain/core-finance" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Khan Academy — Finanças</h4>
+            <p>Aulas gratuitas sobre juros, inflação, valor presente e conceitos-base de finanças.</p>
+            <span class="link-tipo">Curso gratuito</span>
+          </a>
+          <a href="./ferramentas/calculadora-juros-compostos.html" class="link-card interno">
+            <h4>Calculadora de Juros Compostos</h4>
+            <p>Simule aportes mensais e veja o patrimônio crescer mês a mês.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">6</span>Renda fixa</h3>
+        <p class="aprende">
+          Tesouro Direto (Selic, Prefixado, IPCA+), CDB, LCI/LCA, CRI/CRA, marcação a mercado,
+          FGC e como escolher o título certo para cada objetivo.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.tesourodireto.com.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Portal do Tesouro Direto</h4>
+            <p>Conteúdos e simulador oficiais sobre títulos públicos e como investir.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="https://comoinvestir.anbima.com.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Como Investir — ANBIMA</h4>
+            <p>Guia independente sobre produtos de renda fixa, tributação e perfil de investidor.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="./investimentos.html" class="link-card interno">
+            <h4>Investimentos</h4>
+            <p>Cadastre suas aplicações e acompanhe rentabilidade e ganhos/perdas.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">7</span>Tributação dos investimentos e Imposto de Renda</h3>
+        <p class="aprende">
+          Tabela regressiva da renda fixa, isenções (LCI/LCA, dividendos), come-cotas dos fundos,
+          DARF de ações e como declarar aplicações no IRPF.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Meu Imposto de Renda — Receita Federal</h4>
+            <p>Página oficial com regras, prazos e o programa de declaração do IRPF.</p>
+            <span class="link-tipo">Fonte oficial</span>
+          </a>
+          <a href="https://comoinvestir.anbima.com.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Como Investir — ANBIMA (Tributação)</h4>
+            <p>Explicações sobre alíquotas, come-cotas e incidência por tipo de investimento.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">8</span>Primeiros passos em renda variável: ações e FIIs</h3>
+        <p class="aprende">
+          Como funciona a bolsa, home broker, ações x fundos imobiliários, dividendos, custos de
+          corretagem e por que diversificar. Foco em carteira, não em especulação.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.b3.com.br/pt_br/para-voce/educacao-financeira/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Educação Financeira — B3</h4>
+            <p>Cursos e simuladores gratuitos da bolsa brasileira sobre ações, FIIs e ETFs.</p>
+            <span class="link-tipo">Curso gratuito</span>
+          </a>
+          <a href="https://www.youtube.com/@ClubedoValor" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Clube do Valor (YouTube)</h4>
+            <p>Conteúdo sobre investimento de longo prazo, carteira diversificada e comportamento.</p>
+            <span class="link-tipo">Canal gratuito</span>
+          </a>
+          <a href="./pensadores.html" class="link-card interno">
+            <h4>Grandes Nomes</h4>
+            <p>Princípios de Buffett, Graham, Bogle e Dalio aplicados à montagem de carteira.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">9</span>Fundos, ETFs e diversificação</h3>
+        <p class="aprende">
+          Fundos de investimento (renda fixa, multimercado, ações), ETFs, taxa de administração
+          e performance, e como combinar classes de ativos conforme o objetivo e o prazo.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://comoinvestir.anbima.com.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Como Investir — ANBIMA (Fundos)</h4>
+            <p>Classificação de fundos, taxas, lâmina e como comparar produtos.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="https://www.youtube.com/@OPrimoRico" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>O Primo Rico (YouTube)</h4>
+            <p>Vídeos sobre carteira diversificada, ETFs e erros comuns do investidor iniciante.</p>
+            <span class="link-tipo">Canal gratuito</span>
+          </a>
+          <a href="./temas/juros-e-investimentos/index.html" class="link-card interno">
+            <h4>Tema: Juros e Investimentos</h4>
+            <p>Base conceitual do site sobre como o dinheiro cresce ao longo do tempo.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 3 -->
+    <section class="etapa etapa-avancado">
+      <div class="etapa-cabecalho">
+        <span class="badge-nivel badge-avancado">Avançado</span>
+        <h2>Etapa 3 — Construir e proteger patrimônio</h2>
+      </div>
+      <p class="etapa-resumo">
+        Estratégia de longo prazo: alocação de ativos, independência financeira, investimento no
+        exterior, proteção patrimonial e múltiplas fontes de renda.
+      </p>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">10</span>Alocação de ativos e carteira de longo prazo</h3>
+        <p class="aprende">
+          Definir pesos por classe de ativo, rebalanceamento, correlação, risco x retorno e por
+          que a alocação explica a maior parte do resultado no longo prazo.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.bogleheads.org/wiki/Getting_started" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Bogleheads Wiki (inglês)</h4>
+            <p>Referência mundial sobre investimento passivo, alocação e rebalanceamento com baixo custo.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="https://www.coursera.org/learn/financial-markets-global" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Financial Markets — Yale / Coursera</h4>
+            <p>Curso do prof. Robert Shiller sobre mercados, risco, seguros e finanças comportamentais. Gratuito no modo audit.</p>
+            <span class="link-tipo">Curso gratuito</span>
+          </a>
+          <a href="./livros.html" class="link-card interno">
+            <h4>Grandes Livros</h4>
+            <p>Resumos de "O Investidor Inteligente", "Os Axiomas de Zurique" e outros clássicos.</p>
+            <span class="link-tipo">Material do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">11</span>Independência financeira e aposentadoria</h3>
+        <p class="aprende">
+          Número da independência (25x a 30x o custo anual), taxa de retirada segura, previdência
+          privada (PGBL x VGBL), regimes tributários e o movimento FIRE.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://comoinvestir.anbima.com.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Como Investir — ANBIMA (Previdência)</h4>
+            <p>Diferença entre PGBL e VGBL, tabela progressiva x regressiva e portabilidade.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="https://www.youtube.com/@ClubedoValor" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Clube do Valor — Independência Financeira</h4>
+            <p>Séries sobre número da liberdade financeira e taxa de retirada segura.</p>
+            <span class="link-tipo">Canal gratuito</span>
+          </a>
+          <a href="./metas.html" class="link-card interno">
+            <h4>Metas</h4>
+            <p>Cadastre o objetivo de independência com valor alvo e prazo, e acompanhe o progresso.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">12</span>Investimentos no exterior</h3>
+        <p class="aprende">
+          Por que ter exposição em dólar, formas de investir (BDRs, ETFs internacionais, conta no
+          exterior), tributação de aplicações lá fora e câmbio.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.b3.com.br/pt_br/para-voce/educacao-financeira/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>B3 — BDRs e ETFs</h4>
+            <p>Como investir em empresas estrangeiras pela bolsa brasileira via BDRs e ETFs.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="https://www.gov.br/receitafederal/pt-br/assuntos/meu-imposto-de-renda" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Receita Federal — Bens no exterior</h4>
+            <p>Regras de declaração de aplicações e contas mantidas fora do país.</p>
+            <span class="link-tipo">Fonte oficial</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">13</span>Proteção patrimonial: seguros e sucessão</h3>
+        <p class="aprende">
+          Seguro de vida, invalidez e residencial, previdência como ferramenta sucessória,
+          inventário, testamento e holding familiar — proteger o que foi construído.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://www.tudosobreseguros.org.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Tudo Sobre Seguros (CNseg)</h4>
+            <p>Portal educativo do setor de seguros: tipos de cobertura, como contratar e acionar.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="https://planejar.org.br/" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Planejar (Associação de Planejadores CFP)</h4>
+            <p>Artigos sobre planejamento financeiro, sucessório e como funciona a certificação CFP.</p>
+            <span class="link-tipo">Conteúdo gratuito</span>
+          </a>
+          <a href="./balanco-patrimonial.html" class="link-card interno">
+            <h4>Balanço Patrimonial</h4>
+            <p>Visualize seu patrimônio líquido (ativos menos passivos) para saber o que proteger.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="modulo">
+        <h3><span class="modulo-numero">14</span>Múltiplas fontes de renda e empreendedorismo</h3>
+        <p class="aprende">
+          Renda ativa x passiva, renda extra, freelancing, produtos digitais, pequenos negócios
+          e como reinvestir o excedente para acelerar o patrimônio.
+        </p>
+        <p class="rotulo-refs">Referências</p>
+        <div class="links-grid">
+          <a href="https://sebrae.com.br/sites/PortalSebrae/cursosonline" target="_blank" rel="noopener noreferrer" class="link-card gratuito">
+            <h4>Cursos Online — Sebrae</h4>
+            <p>Dezenas de cursos gratuitos sobre finanças de pequenos negócios, precificação e gestão.</p>
+            <span class="link-tipo">Curso gratuito</span>
+          </a>
+          <a href="./renda-extra.html" class="link-card interno">
+            <h4>Renda Extra</h4>
+            <p>Acompanhe cada fonte de renda extra e descubra qual rende mais por hora dedicada.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+          <a href="./desapego.html" class="link-card interno">
+            <h4>Desapego</h4>
+            <p>Transforme itens parados em casa em uma primeira fonte de caixa extra.</p>
+            <span class="link-tipo">Ferramenta do site</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="como-registrar">
+      <h2>Como registrar seus estudos</h2>
+      <ul>
+        <li>Ao concluir um curso, adicione-o em <a href="./cursos.html">Meus Cursos</a> com o link e a data.</li>
+        <li>Anote as ideias principais de cada módulo — o site já tem <a href="./maximas.html">Máximas</a>, <a href="./livros.html">Livros</a> e <a href="./glossario.html">Glossário</a> como apoio.</li>
+        <li>Sempre que aprender algo novo, aplique numa ferramenta do site (Envelopes, Investimentos, Metas) no mesmo dia.</li>
+        <li>Revise este roadmap a cada trimestre e marque em que módulo você está.</li>
+      </ul>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><a href="./temas/orcamento-pessoal/index.html">Começar pela Etapa 1: Orçamento Pessoal</a></li>
+        <li><a href="./cursos.html">Registrar um curso concluído</a></li>
+        <li><a href="./links-uteis.html">Ver a lista completa de links úteis</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+</body>
+</html>

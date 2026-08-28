@@ -6,10 +6,23 @@
   <title>Receitas | Educação Financeira</title>
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>
+    .caixa-importacao {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-left: 4px solid var(--cor-info);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .caixa-importacao h2 {
+      margin-top: 0;
+    }
+
     .formulario-receita {
       background-color: var(--cor-cinza-leve);
       border: 1px solid var(--cor-borda);
-      border-radius: 4px;
+      border-radius: var(--border-radius-md);
       padding: var(--espacamento-lg);
       margin-bottom: var(--espacamento-xl);
     }
@@ -22,7 +35,7 @@
       color: var(--cor-texto);
     }
 
-    .formulario-receita label:first-child {
+    .formulario-receita label.primeiro {
       margin-top: 0;
     }
 
@@ -44,47 +57,122 @@
       box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
     }
 
-    .btn-primario {
-      padding: var(--espacamento-md) var(--espacamento-lg);
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      background-color: var(--cor-primaria);
-      color: white;
+    .formulario-receita input.campo-invalido,
+    .formulario-receita select.campo-invalido {
+      border-color: var(--cor-erro);
     }
 
-    .btn-primario:hover {
-      background-color: var(--cor-primaria-hover);
+    .erro-campo {
+      color: var(--cor-erro);
+      font-size: 13px;
+      margin: -8px 0 var(--espacamento-md) 0;
     }
 
     .resumo-receitas {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: var(--espacamento-lg);
       margin-bottom: var(--espacamento-xl);
     }
 
     .card-resumo {
-      background-color: white;
+      background-color: var(--cor-fundo-card);
+      border: 1px solid var(--cor-borda);
       border-left: 4px solid var(--cor-primaria);
-      border-radius: 4px;
+      border-radius: var(--border-radius-md);
       padding: var(--espacamento-lg);
       text-align: center;
     }
 
     .card-resumo h3 {
       margin: 0 0 var(--espacamento-sm) 0;
-      font-size: 14px;
+      font-size: 13px;
       color: var(--cor-texto-leve);
       text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     .card-resumo .valor {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
       color: var(--cor-primaria);
+    }
+
+    .barra-ferramentas {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .barra-ferramentas label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .barra-ferramentas select {
+      display: block;
+      margin-top: var(--espacamento-sm);
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: var(--fonte-sistema);
+      min-width: 140px;
+    }
+
+    .barra-ferramentas .espaco {
+      flex: 1;
+    }
+
+    /* Gráfico de barras (CSS puro, sem dependências) */
+    .grafico-mensal {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--espacamento-sm);
+      align-items: end;
+      height: 200px;
+      padding: var(--espacamento-md) 0;
+      border-bottom: 2px solid var(--cor-borda);
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .grafico-coluna {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 100%;
+      gap: 4px;
+    }
+
+    .grafico-barra {
+      width: 70%;
+      min-height: 2px;
+      background-color: var(--cor-primaria);
+      border-radius: 3px 3px 0 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .grafico-coluna:hover .grafico-barra {
+      opacity: 0.75;
+    }
+
+    .grafico-valor {
+      font-size: 10px;
+      color: var(--cor-texto-leve);
+      white-space: nowrap;
+    }
+
+    .grafico-labels {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--espacamento-sm);
+      font-size: 11px;
+      color: var(--cor-texto-leve);
+      text-align: center;
+      margin-bottom: var(--espacamento-xl);
     }
 
     .lista-receitas {
@@ -98,7 +186,7 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: var(--espacamento-md);
-      background: white;
+      background: var(--cor-fundo-card);
       border: 1px solid var(--cor-borda);
       border-radius: 8px;
       padding: var(--espacamento-md) var(--espacamento-lg);
@@ -118,12 +206,12 @@
     .item-receita-tipo {
       display: inline-block;
       padding: 2px 8px;
-      border-radius: 999px;
+      border-radius: var(--border-radius-pill);
       font-size: 11px;
       font-weight: bold;
       text-transform: uppercase;
       background-color: #e6f2ff;
-      color: #1264a3;
+      color: var(--cor-azul);
       margin-right: 6px;
     }
 
@@ -134,14 +222,29 @@
       white-space: nowrap;
     }
 
-    .btn-remover-receita {
+    .item-receita-acoes {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+    }
+
+    .btn-icone {
       background: none;
       border: none;
-      color: #c0392b;
-      font-size: 20px;
       cursor: pointer;
       line-height: 1;
-      padding: 0 4px;
+      padding: 4px;
+      color: var(--cor-texto-leve);
+      border-radius: 4px;
+    }
+
+    .btn-icone:hover {
+      background-color: var(--cor-fundo-hover);
+      color: var(--cor-texto);
+    }
+
+    .btn-icone.remover:hover {
+      color: var(--cor-erro);
     }
 
     .lista-vazia {
@@ -149,7 +252,11 @@
       padding: var(--espacamento-xl);
       color: var(--cor-texto-leve);
       background-color: var(--cor-cinza-leve);
-      border-radius: 4px;
+      border-radius: var(--border-radius-md);
+    }
+
+    .lista-vazia p {
+      margin: 0;
     }
 
     .secao-periodo {
@@ -179,6 +286,113 @@
       gap: var(--espacamento-md);
     }
 
+    .tabela-sazonais {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .tabela-sazonais th,
+    .tabela-sazonais td {
+      padding: var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+      text-align: right;
+    }
+
+    .tabela-sazonais th:first-child,
+    .tabela-sazonais td:first-child {
+      text-align: left;
+    }
+
+    .tabela-sazonais th {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+    }
+
+    .tabela-sazonais tr:hover td {
+      background-color: var(--cor-cinza-leve);
+    }
+
+    /* Modal de edição */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] {
+      display: none;
+    }
+
+    .modal-content {
+      background-color: var(--cor-fundo-card);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn-fechar-modal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+    }
+
+    .btn-fechar-modal:hover {
+      color: var(--cor-texto);
+    }
+
+    #form-edicao {
+      padding: var(--espacamento-lg);
+    }
+
+    #form-edicao label {
+      display: block;
+      font-weight: 500;
+      margin: var(--espacamento-md) 0 var(--espacamento-sm);
+    }
+
+    #form-edicao input,
+    #form-edicao select {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .botoes-formulario {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+    }
+
     @media (max-width: 640px) {
       .item-receita {
         flex-direction: column;
@@ -188,6 +402,14 @@
         flex-direction: column;
         align-items: flex-start;
         gap: var(--espacamento-sm);
+      }
+
+      .grafico-valor {
+        display: none;
+      }
+
+      .botoes-formulario {
+        flex-direction: column;
       }
     }
   </style>
@@ -210,7 +432,7 @@
 
     <h1>Receitas</h1>
 
-    <p>
+    <p class="texto-descricao">
       Registre tudo que você recebe: salário mensal, férias, 13º salário, bônus, restituição de IR, venda de item.
       Diferente da Renda Extra (fontes recorrentes paralelas ao salário), aqui é o extrato de tudo que entrou,
       recorrente ou pontual.
@@ -226,66 +448,92 @@
         <div class="valor" id="resumo-total-mes">R$ 0,00</div>
       </div>
       <div class="card-resumo">
+        <h3>Média Mensal (ano)</h3>
+        <div class="valor" id="resumo-media-mes">R$ 0,00</div>
+      </div>
+      <div class="card-resumo">
         <h3>Registros</h3>
         <div class="valor" id="resumo-quantidade">0</div>
       </div>
     </div>
 
-    <section style="background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-xl);">
-      <h2 style="margin-top: 0; color: #2e7d32;">Importar Salários do Contracheque</h2>
-      <p style="margin: 0 0 var(--espacamento-md) 0; color: #1b5e20;">
-        Adicione automaticamente os salários registrados em Análise de Contracheque para este ano.
-      </p>
-      <button type="button" class="btn-primario" onclick="importarSalarios()" style="background-color: #4caf50;">
+    <section class="caixa-importacao">
+      <h2>Importar Salários do Contracheque</h2>
+      <p>Adiciona automaticamente os salários líquidos registrados em Análise de Contracheque que ainda não estão aqui.</p>
+      <button type="button" class="btn btn-secondary" onclick="importarSalarios()">
         Importar Salários de Contracheques
       </button>
-      <div id="msg-importacao" style="margin-top: var(--espacamento-md); font-size: 0.9rem;"></div>
+      <div id="msg-importacao" role="status" aria-live="polite" style="margin-top: var(--espacamento-md);"></div>
     </section>
 
     <section class="formulario-receita">
       <h2>Registrar Receita</h2>
 
-      <label for="receita-nome">Descrição *</label>
-      <input type="text" id="receita-nome" placeholder="Ex: Férias, 13º salário, Bônus, Salário de Agosto">
+      <form id="form-receita" novalidate>
+        <label class="primeiro" for="receita-nome">Descrição *</label>
+        <input type="text" id="receita-nome" required
+               placeholder="Ex: Férias, 13º salário, Bônus, Salário de Agosto">
 
-      <label for="receita-tipo">Tipo *</label>
-      <select id="receita-tipo">
-        <option value="salario">Salário</option>
-        <option value="ferias">Férias</option>
-        <option value="decimo">13º Salário</option>
-        <option value="bonus">Bônus/PLR</option>
-        <option value="diferenca_salarial">Diferença Salarial / ACT</option>
-        <option value="restituicao">Restituição de IR</option>
-        <option value="venda">Venda de item</option>
-        <option value="outro">Outro</option>
-      </select>
+        <label for="receita-tipo">Tipo *</label>
+        <select id="receita-tipo" required>
+          <option value="salario">Salário</option>
+          <option value="ferias">Férias</option>
+          <option value="decimo">13º Salário</option>
+          <option value="bonus">Bônus/PLR</option>
+          <option value="diferenca_salarial">Diferença Salarial / ACT</option>
+          <option value="restituicao">Restituição de IR</option>
+          <option value="venda">Venda de item</option>
+          <option value="outro">Outro</option>
+        </select>
 
-      <label for="receita-valor">Valor Líquido Recebido (R$) *</label>
-      <input type="text" id="receita-valor" data-moeda placeholder="Ex: 6.033,76 ou 6033,76 ou 6033.76">
+        <label for="receita-valor">Valor Líquido Recebido (R$) *</label>
+        <input type="text" id="receita-valor" data-moeda inputmode="decimal"
+               placeholder="Ex: 6.033,76 ou 6033,76 ou 6033.76">
 
-      <label for="receita-data">Data do Recebimento *</label>
-      <input type="date" id="receita-data">
+        <label for="receita-data">Data do Recebimento *</label>
+        <input type="date" id="receita-data" required>
 
-      <label for="receita-destino">Para onde foi/vai esse dinheiro? (opcional)</label>
-      <input type="text" id="receita-destino" placeholder="Ex: Quitação do cartão + reserva de emergência">
+        <label for="receita-destino">Para onde foi/vai esse dinheiro? (opcional)</label>
+        <input type="text" id="receita-destino" placeholder="Ex: Quitação do cartão + reserva de emergência">
 
-      <button type="button" class="btn-primario" onclick="adicionarReceita()">Registrar</button>
+        <button type="submit" class="btn btn-primary btn-large" style="margin-top: var(--espacamento-md);">Registrar</button>
+      </form>
+
+      <div id="msg-receita" role="status" aria-live="polite" style="margin-top: var(--espacamento-md);"></div>
+    </section>
+
+    <section id="secao-grafico" hidden>
+      <h2>Receitas por Mês</h2>
+      <div id="grafico-mensal" class="grafico-mensal"></div>
+      <div id="grafico-labels" class="grafico-labels"></div>
     </section>
 
     <section>
       <h2>Histórico de Receitas</h2>
 
-      <div style="margin-bottom: var(--espacamento-lg);">
-        <label for="filtro-ano" style="margin-right: var(--espacamento-md);">
-          <strong>Filtrar por Ano:</strong>
-          <select id="filtro-ano" onchange="renderizarReceitas()" style="padding: var(--espacamento-sm) var(--espacamento-md); border: 1px solid var(--cor-borda); border-radius: 4px; font-size: 14px; min-width: 100px;">
+      <div class="barra-ferramentas">
+        <label>
+          Filtrar por Ano
+          <select id="filtro-ano" onchange="renderizarReceitas()">
             <option value="">Todos os anos</option>
           </select>
         </label>
+        <div class="espaco"></div>
+        <button type="button" class="btn btn-secondary btn-small" onclick="exportarReceitasCSV()">
+          Exportar CSV
+        </button>
       </div>
 
       <div id="lista-receitas" class="lista-receitas">
         <div class="lista-vazia"><p>Nenhuma receita registrada ainda.</p></div>
+      </div>
+    </section>
+
+    <section id="secao-sazonais" hidden>
+      <h2>Comparativo Anual — Receitas Sazonais</h2>
+      <p class="texto-descricao">Férias, 13º e bônus tendem a se repetir todo ano. Use como base para planejar o próximo.</p>
+      <div style="overflow-x: auto;">
+        <table class="tabela-sazonais" id="tabela-sazonais"></table>
       </div>
     </section>
 
@@ -294,9 +542,50 @@
       <ul>
         <li>Receitas pontuais (férias, 13º, bônus) não entram na renda mensal recorrente usada em Envelopes</li>
         <li>Use o campo "destino" pra lembrar depois onde o dinheiro foi aplicado</li>
-        <li>Todo ano os valores sazonais (férias, 13º) tendem a se repetir — use o histórico pra já planejar o próximo</li>
+        <li>Todo ano os valores sazonais (férias, 13º) tendem a se repetir — use o comparativo pra já planejar o próximo</li>
       </ul>
     </section>
+
+    <div id="modal-edicao" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Editar Receita</h2>
+          <button type="button" class="btn-fechar-modal" onclick="fecharModalEdicao()" aria-label="Fechar">&times;</button>
+        </div>
+        <form id="form-edicao">
+          <input type="hidden" id="edit-id">
+
+          <label for="edit-nome">Descrição *</label>
+          <input type="text" id="edit-nome" required>
+
+          <label for="edit-tipo">Tipo *</label>
+          <select id="edit-tipo" required>
+            <option value="salario">Salário</option>
+            <option value="ferias">Férias</option>
+            <option value="decimo">13º Salário</option>
+            <option value="bonus">Bônus/PLR</option>
+            <option value="diferenca_salarial">Diferença Salarial / ACT</option>
+            <option value="restituicao">Restituição de IR</option>
+            <option value="venda">Venda de item</option>
+            <option value="outro">Outro</option>
+          </select>
+
+          <label for="edit-valor">Valor Líquido Recebido (R$) *</label>
+          <input type="text" id="edit-valor" data-moeda inputmode="decimal">
+
+          <label for="edit-data">Data do Recebimento *</label>
+          <input type="date" id="edit-data" required>
+
+          <label for="edit-destino">Destino (opcional)</label>
+          <input type="text" id="edit-destino">
+
+          <div class="botoes-formulario">
+            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            <button type="button" class="btn btn-secondary" onclick="fecharModalEdicao()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -306,6 +595,7 @@
   <script src="./assets/js/icones.js"></script>
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/storage.js"></script>
   <script src="./assets/js/config.js"></script>
   <script src="./assets/js/menu.js"></script>
   <script src="./assets/js/receitas.js"></script>

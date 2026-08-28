@@ -24,11 +24,17 @@ const GRAF_CATEGORIAS = {
   internet: 'Internet',
   telefone: 'Telefone / Celular',
   streaming: 'Streaming / Assinaturas',
+  alimentacao: 'Alimentação',
   combustivel: 'Combustível',
   manutencao: 'Manutenção / Consertos',
   cartao: 'Cartão de Crédito',
   outro: 'Outro'
 };
+
+// Mescla categorias personalizadas dos Cadastros Gerais, se disponíveis.
+if (typeof Cadastros !== 'undefined') {
+  Object.assign(GRAF_CATEGORIAS, Cadastros.categorias());
+}
 
 const GRAF_MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 

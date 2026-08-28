@@ -18,6 +18,7 @@ const Store = {
     DIVIDAS: 'dividas',
     CARRO: 'carro',
     INVESTIMENTOS: 'investimentos',
+    FGTS: 'fgts',
     BALANCO: 'balanco_patrimonial',
     RESERVA: 'reserva_emergencia',
     CARTOES: 'cartoes',

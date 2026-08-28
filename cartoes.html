@@ -54,6 +54,10 @@
       background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);
     }
 
+    .card-cartao[data-banco="inter"] {
+      background: linear-gradient(135deg, #ff7a00 0%, #ea580c 100%);
+    }
+
     @media (min-width: 768px) {
       .cartoes-container {
         grid-template-columns: repeat(2, 1fr);
@@ -439,7 +443,7 @@
 
     <div id="resumo-saldos" style="display: none; background-color: var(--cor-fundo-alt); border: 2px solid var(--cor-primaria); border-radius: 8px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-lg);">
       <h3 style="margin: 0 0 var(--espacamento-md) 0; color: var(--cor-primaria);">Faturas Fechadas por Cartão</h3>
-      <div id="lista-saldos-por-cartao" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--espacamento-md);">
+      <div id="lista-saldos-por-cartao" style="display: block;">
         <!-- Preenchido por JavaScript -->
       </div>
       <div style="margin-top: var(--espacamento-md); padding-top: var(--espacamento-md); border-top: 2px solid var(--cor-primaria);">
@@ -507,6 +511,15 @@
           <option value="fisico">Físico</option>
           <option value="virtual">Virtual</option>
         </select>
+      </div>
+
+      <div class="form-group">
+        <label for="input-cartao-cor">Cor do Cartão</label>
+        <div style="display: flex; align-items: center; gap: var(--espacamento-sm);">
+          <input type="color" id="input-cartao-cor" value="#4a154b" style="width: 56px; height: 38px; padding: 2px; cursor: pointer;">
+          <button type="button" class="btn btn-secondary" onclick="limparCorCartao()" style="padding: 6px 12px; font-size: 13px;">Usar padrão do banco</button>
+        </div>
+        <small class="form-hint">Deixe no padrão para usar a cor automática do banco (ex.: Inter = laranja)</small>
       </div>
 
       <div class="form-group">

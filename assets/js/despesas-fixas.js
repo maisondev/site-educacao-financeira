@@ -1,5 +1,5 @@
 let despesaEmEdicaoId = null;
-let ordemDespesas = 'valor';
+let ordemDespesas = 'proximas';
 
 // Escapa texto do usuário antes de injetar via innerHTML
 function escaparTexto(texto) {
@@ -12,7 +12,7 @@ function inicializarDespesasFixas() {
   const dados = obterDados();
   const rendaCentralizada = obterRendaMensal();
 
-  ordemDespesas = dados.ordem === 'vencimento' ? 'vencimento' : 'valor';
+  ordemDespesas = normalizarOrdem(dados.ordem);
   const selectOrdem = document.getElementById('select-ordem');
   if (selectOrdem) selectOrdem.value = ordemDespesas;
 
@@ -326,8 +326,42 @@ function atualizarVisualizacao() {
     infoOcultas.setAttribute('hidden', '');
   }
 
+  atualizarPainelProvisionamento(despesasNoCalculo);
   atualizarResumoCategorias(despesasNoCalculo, totalDespesas);
   atualizarListaDespesas();
+}
+
+// Quanto do dinheiro das despesas fixas ainda por pagar já está separado
+function atualizarPainelProvisionamento(despesasNoCalculo) {
+  const painel = document.getElementById('painel-provisionamento');
+  if (!painel) return;
+
+  const aPagar = despesasNoCalculo.filter(d => !d.pagoEm);
+  if (aPagar.length === 0) {
+    painel.setAttribute('hidden', '');
+    painel.innerHTML = '';
+    return;
+  }
+
+  const totalAPagar = aPagar.reduce((s, d) => s + d.valor, 0);
+  const provisionadas = aPagar.filter(d => d.provisionada);
+  const totalProvisionado = provisionadas.reduce((s, d) => s + d.valor, 0);
+  const falta = Math.max(totalAPagar - totalProvisionado, 0);
+  const pct = totalAPagar > 0 ? (totalProvisionado / totalAPagar) * 100 : 0;
+  const nFalta = aPagar.length - provisionadas.length;
+  const completo = falta === 0;
+
+  painel.innerHTML = `
+    <div class="prov-cabecalho">
+      <h3>Dinheiro separado para pagar</h3>
+      <span class="prov-numeros">${formatarMoedaBrasileira(totalProvisionado)} de ${formatarMoedaBrasileira(totalAPagar)}</span>
+    </div>
+    <div class="prov-barra"><div class="prov-barra-fill${completo ? ' completo' : ''}" style="width: ${Math.min(pct, 100)}%"></div></div>
+    <p class="prov-status">${completo
+      ? 'Tudo provisionado. O dinheiro das despesas fixas deste mês já está reservado.'
+      : `Falta separar <strong>${formatarMoedaBrasileira(falta)}</strong> (${nFalta} despesa${nFalta > 1 ? 's' : ''}).`}</p>
+  `;
+  painel.removeAttribute('hidden');
 }
 
 function marcarPagoDespesa(id) {
@@ -368,8 +402,22 @@ function toggleOcultarDespesa(id) {
   atualizarVisualizacao();
 }
 
+// Marca se o dinheiro para pagar essa despesa (débito/pix) já está separado
+function toggleProvisionadaDespesa(id) {
+  const dados = obterDados();
+  const despesa = dados.despesas.find(d => d.id === id);
+  if (!despesa) return;
+  despesa.provisionada = !despesa.provisionada;
+  salvarDados(dados);
+  atualizarVisualizacao();
+}
+
+function normalizarOrdem(valor) {
+  return ['proximas', 'vencimento', 'valor'].includes(valor) ? valor : 'proximas';
+}
+
 function alterarOrdemDespesas(valor) {
-  ordemDespesas = valor === 'vencimento' ? 'vencimento' : 'valor';
+  ordemDespesas = normalizarOrdem(valor);
   const dados = obterDados();
   dados.ordem = ordemDespesas;
   salvarDados(dados);
@@ -386,7 +434,15 @@ function atualizarListaDespesas() {
   }
 
   const despesasOrdenadas = [...dados.despesas].sort((a, b) => {
-    if (ordemDespesas === 'vencimento') {
+    // Despesas já pagas saem do fluxo e vão para o fim da lista
+    const pagoA = a.pagoEm ? 1 : 0;
+    const pagoB = b.pagoEm ? 1 : 0;
+    if (pagoA !== pagoB) return pagoA - pagoB;
+    if (ordemDespesas === 'proximas') {
+      const proxA = a.vencimentoDia ? diasAteVencimento(a.vencimentoDia) : Infinity;
+      const proxB = b.vencimentoDia ? diasAteVencimento(b.vencimentoDia) : Infinity;
+      if (proxA !== proxB) return proxA - proxB;
+    } else if (ordemDespesas === 'vencimento') {
       const diaA = a.vencimentoDia || 99;
       const diaB = b.vencimentoDia || 99;
       if (diaA !== diaB) return diaA - diaB;
@@ -416,12 +472,19 @@ function atualizarListaDespesas() {
       : '';
     const acaoPagar = pago ? 'Desmarcar pagamento' : 'Marcar como pago';
 
+    const provisionada = !pago && !!despesa.provisionada;
+    const provisionadaHtml = provisionada
+      ? `<p class="despesa-provisionada">${icone('carteira')} Dinheiro separado</p>`
+      : '';
+    const acaoProvisionar = despesa.provisionada ? 'Dinheiro ainda não separado' : 'Marcar dinheiro como separado';
+
     return `
-      <div class="despesa-item${oculta ? ' oculta' : ''}${pago ? ' pago' : ''}">
+      <div class="despesa-item${oculta ? ' oculta' : ''}${pago ? ' pago' : ''}${provisionada ? ' provisionada' : ''}">
         <div class="despesa-info">
           <h3>${escaparTexto(despesa.nome)}${oculta ? ' <span class="despesa-badge-oculta">fora do cálculo</span>' : ''}</h3>
           <p class="despesa-categoria">${obterNomeCategoria(despesa.categoria)}</p>
           ${vencimentoHtml}
+          ${provisionadaHtml}
           ${pagoHtml}
         </div>
         <div class="despesa-valor">
@@ -430,6 +493,7 @@ function atualizarListaDespesas() {
         </div>
         <div class="despesa-acoes">
           <button class="btn-pagar${pago ? ' ativo' : ''}" onclick="marcarPagoDespesa('${despesa.id}')" title="${acaoPagar}" aria-label="${acaoPagar}">${icone('check')}</button>
+          <button class="btn-provisionar${despesa.provisionada ? ' ativo' : ''}" onclick="toggleProvisionadaDespesa('${despesa.id}')" title="${acaoProvisionar}" aria-label="${acaoProvisionar}"${pago ? ' disabled' : ''}>${icone('carteira')}</button>
           <button class="btn-ocultar${oculta ? ' ativo' : ''}" onclick="toggleOcultarDespesa('${despesa.id}')" title="${acaoOcultar}" aria-label="${acaoOcultar}">${icone(oculta ? 'olho-fechado' : 'olho')}</button>
           <button class="btn-editar" onclick="abrirModalDespesaEdicao('${despesa.id}')" title="Editar despesa" aria-label="Editar despesa">${icone('lapis')}</button>
           <button class="btn-remover" onclick="removerDespesa('${despesa.id}')" title="Remover despesa" aria-label="Remover despesa">${icone('lixeira')}</button>

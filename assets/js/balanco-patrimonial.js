@@ -11,6 +11,26 @@ function salvarDados(dados) {
   localStorage.setItem('balanco_patrimonial', JSON.stringify(dados));
 }
 
+// Saldo total do FGTS, puxado da página FGTS (chave 'fgts').
+// Soma o último registro de saldo de cada conta vinculada. Entra como ativo
+// automático no balanço — não é editável aqui.
+function obterSaldoFgts() {
+  let dados;
+  try {
+    dados = JSON.parse(localStorage.getItem('fgts'));
+  } catch (e) {
+    return 0;
+  }
+  if (!dados || !Array.isArray(dados.contas)) return 0;
+
+  return dados.contas.reduce((total, conta) => {
+    const snaps = Array.isArray(conta.snapshots) ? conta.snapshots : [];
+    if (snaps.length === 0) return total;
+    const ultimo = [...snaps].sort((a, b) => new Date(a.data) - new Date(b.data)).pop();
+    return total + (ultimo && ultimo.saldo ? ultimo.saldo : 0);
+  }, 0);
+}
+
 function abrirModalAtivo() {
   document.getElementById('input-ativo-nome').value = '';
   document.getElementById('select-ativo-categoria').value = '';
@@ -110,7 +130,8 @@ function salvarPassivo() {
 function atualizarVisualizacao() {
   const dados = obterDados();
 
-  const totalAtivos = dados.ativos.reduce((sum, a) => sum + a.valor, 0);
+  const saldoFgts = obterSaldoFgts();
+  const totalAtivos = dados.ativos.reduce((sum, a) => sum + a.valor, 0) + saldoFgts;
   const totalPassivos = dados.passivos.reduce((sum, p) => sum + p.valor, 0);
   const patrimonioLiquido = totalAtivos - totalPassivos;
 
@@ -129,16 +150,31 @@ function atualizarVisualizacao() {
 
 function atualizarListaAtivos(dados) {
   const lista = document.getElementById('lista-ativos');
+  const saldoFgts = obterSaldoFgts();
 
-  if (dados.ativos.length === 0) {
+  if (dados.ativos.length === 0 && saldoFgts <= 0) {
     lista.innerHTML = '<div class="lista-vazia">Nenhum ativo registrado</div>';
     return;
   }
 
+  const linhaFgts = saldoFgts > 0 ? `
+    <div class="item-patrimonio item-ativo">
+      <div class="item-info">
+        <h4>FGTS</h4>
+        <p class="item-categoria">Saldo automático — da página <a href="./fgts.html">FGTS</a></p>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <div class="item-valor">
+          <div class="item-valor-principal">${formatarMoedaBrasileira(saldoFgts)}</div>
+        </div>
+      </div>
+    </div>
+  ` : '';
+
   // Ordenar por valor (maior primeiro)
   const ativosOrdenados = [...dados.ativos].sort((a, b) => b.valor - a.valor);
 
-  lista.innerHTML = ativosOrdenados.map((ativo, index) => `
+  lista.innerHTML = linhaFgts + ativosOrdenados.map((ativo, index) => `
     <div class="item-patrimonio item-ativo">
       <div class="item-info">
         <h4>${ativo.nome}</h4>

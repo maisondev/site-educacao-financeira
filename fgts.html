@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FGTS | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .intro-fgts {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+    .intro-fgts p { margin: 0 0 var(--espacamento-md); }
+    .intro-fgts p:last-child { margin-bottom: 0; }
+
+    .form-card {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+    .form-card h2 { margin-top: 0; font-size: 18px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-lg);
+    }
+    .form-group { display: flex; flex-direction: column; margin-bottom: var(--espacamento-md); }
+    .form-group.linha-cheia { grid-column: 1 / -1; }
+    .form-group label { font-weight: 500; margin-bottom: var(--espacamento-sm); }
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+    .form-group.inline-check { flex-direction: row; align-items: center; gap: var(--espacamento-sm); }
+    .form-group.inline-check label { margin: 0; }
+
+    .resumo-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-md);
+    }
+    .card-info {
+      background-color: #fff;
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+    .card-info p { margin: 0; color: var(--cor-texto-leve); font-size: 14px; }
+    .card-info .valor {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-top: var(--espacamento-sm);
+    }
+    .resumo-obs { color: var(--cor-texto-leve); font-size: 13px; margin: 0 0 var(--espacamento-md); }
+
+    .fgts-explica {
+      border: 1px solid var(--cor-borda);
+      border-radius: var(--border-radius-md);
+      padding: 0 var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+      background-color: #fff;
+    }
+    .fgts-explica summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: var(--espacamento-md) 0;
+      list-style-position: inside;
+    }
+    .fgts-explica[open] summary { border-bottom: 1px solid var(--cor-borda); }
+    .fgts-explica h4 { margin: var(--espacamento-lg) 0 var(--espacamento-xs); font-size: 15px; }
+    .fgts-explica p { margin: 0 0 var(--espacamento-md); font-size: 14px; }
+    .fgts-explica ul { margin: 0 0 var(--espacamento-md); padding-left: var(--espacamento-lg); font-size: 14px; }
+    .fgts-explica li { margin-bottom: 4px; }
+    .fgts-explica .aviso {
+      border-left: 3px solid var(--cor-amarelo);
+      background-color: var(--cor-cinza-leve);
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      margin-bottom: var(--espacamento-lg);
+    }
+    .fgts-explica .aviso p:last-child { margin-bottom: 0; }
+
+    .fgts-conta {
+      border: 1px solid var(--cor-borda);
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: var(--border-radius-md);
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+    .fgts-conta.inativa { border-left-color: var(--cor-texto-leve); opacity: 0.9; }
+    .fgts-conta-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+    .fgts-conta-header h3 { margin: 0; }
+    .fgts-conta-sub { margin: 2px 0 0; font-size: 13px; color: var(--cor-texto-leve); }
+    .fgts-conta-saldo { font-size: 20px; font-weight: bold; color: var(--cor-primaria); white-space: nowrap; }
+
+    .divida-valores { margin-bottom: var(--espacamento-md); }
+    .valor-linha {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--espacamento-md);
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--cor-borda);
+      font-size: 14px;
+    }
+    .valor-linha:last-child { border-bottom: none; }
+
+    .fgts-var.pos { color: var(--cor-verde); font-weight: 600; }
+    .fgts-var.neg { color: var(--cor-vermelho); font-weight: 600; }
+
+    .fgts-historico {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+    .fgts-historico-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--espacamento-sm);
+    }
+    .fgts-historico-head h4 { margin: 0; font-size: 15px; }
+
+    .fgts-snap { padding: var(--espacamento-sm) 0; border-bottom: 1px solid var(--cor-borda); }
+    .fgts-snap:last-child { border-bottom: none; }
+    .fgts-snap-topo { display: flex; justify-content: space-between; font-size: 14px; }
+    .fgts-snap-data { color: var(--cor-texto-leve); }
+    .fgts-snap-valor { font-weight: 600; }
+    .fgts-bar { background-color: #e2e2e2; border-radius: 3px; height: 6px; margin: 4px 0; overflow: hidden; }
+    .fgts-bar-fill { background-color: var(--cor-primaria); height: 100%; }
+    .fgts-snap-rodape { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--cor-texto-leve); }
+
+    .lista-vazia { color: var(--cor-texto-leve); font-style: italic; margin: var(--espacamento-sm) 0; }
+
+    button.btn-pagar, button.btn-editar, button.btn-deletar, button.btn-remover {
+      border: 1px solid var(--cor-borda);
+      background-color: #fff;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: var(--fonte-sistema);
+    }
+    button.btn-pagar { background-color: var(--cor-primaria); color: #fff; border-color: var(--cor-primaria); }
+    button.btn-deletar { color: var(--cor-vermelho); }
+    button.btn-remover { padding: 2px 8px; color: var(--cor-vermelho); }
+    .divida-acoes { display: flex; gap: var(--espacamento-sm); flex-wrap: wrap; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+    .modal[hidden] { display: none; }
+    .modal-content {
+      background-color: #fff;
+      border-radius: var(--border-radius-md);
+      max-width: 460px;
+      width: 100%;
+      padding: var(--espacamento-lg);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--espacamento-md); }
+    .modal-header h2 { margin: 0; font-size: 18px; }
+    .btn-fechar { border: none; background: none; font-size: 24px; cursor: pointer; line-height: 1; color: var(--cor-texto-leve); }
+    .modal-footer { display: flex; gap: var(--espacamento-md); margin-top: var(--espacamento-lg); }
+    .btn-salvar, .btn-cancelar {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: var(--fonte-sistema);
+    }
+    .btn-salvar { background-color: var(--cor-primaria); color: #fff; border: none; }
+    .btn-cancelar { background-color: var(--cor-cinza-leve); border: 1px solid var(--cor-borda); }
+
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .resumo-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> &rsaquo; Acompanhamento &rsaquo; FGTS</p>
+    <h1>FGTS</h1>
+
+    <div class="intro-fgts">
+      <p>
+        O <strong>FGTS</strong> (Fundo de Garantia do Tempo de Serviço) é dinheiro seu, depositado
+        todo mês pelo empregador (8% do salário), mas com <strong>liquidez travada</strong>: só é possível
+        sacar em situações específicas — demissão sem justa causa, aposentadoria, compra da casa própria,
+        saque-aniversário ou doença grave.
+      </p>
+      <p>
+        Por isso ele não é reserva de emergência nem investimento líquido. Rende
+        <strong>3% ao ano + TR</strong> mais a distribuição anual de resultados do fundo. Aqui você
+        registra o <strong>saldo do extrato</strong> (app FGTS ou <a href="https://www.fgts.gov.br" target="_blank" rel="noopener">fgts.gov.br</a>)
+        de tempos em tempos e acompanha a evolução. O total entra como ativo no
+        <a href="./balanco-patrimonial.html">Balanço Patrimonial</a>.
+      </p>
+      <p>
+        Cada vínculo de emprego (ou troca de código de estabelecimento) gera uma <strong>conta
+        vinculada</strong> própria na Caixa — cadastre uma para cada uma.
+      </p>
+    </div>
+
+    <section class="form-card">
+      <h2 id="titulo-form-conta">Adicionar conta de FGTS</h2>
+      <div class="form-grid">
+        <div class="form-group linha-cheia">
+          <label for="input-apelido">Nome / identificação *</label>
+          <input type="text" id="input-apelido" placeholder="Ex: PRODAM (conta 122980)">
+        </div>
+        <div class="form-group">
+          <label for="input-empregador">Empregador</label>
+          <input type="text" id="input-empregador" placeholder="Ex: PRODAM Process Dados AM SA">
+        </div>
+        <div class="form-group">
+          <label for="input-numero-conta">Nº da conta vinculada</label>
+          <input type="text" id="input-numero-conta" placeholder="Ex: 5540200005959/122980">
+        </div>
+        <div class="form-group">
+          <label for="input-admissao">Data de admissão</label>
+          <input type="date" id="input-admissao">
+        </div>
+        <div class="form-group">
+          <label for="select-modalidade">Modalidade de saque</label>
+          <select id="select-modalidade">
+            <option value="rescisao">Saque-rescisão (padrão)</option>
+            <option value="aniversario">Saque-aniversário</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="input-deposito-mensal">Depósito mensal médio (R$)</label>
+          <input type="text" id="input-deposito-mensal" data-moeda placeholder="Ex: 900,00">
+        </div>
+        <div class="form-group inline-check">
+          <input type="checkbox" id="check-ativa" checked>
+          <label for="check-ativa">Conta ativa (ainda recebe depósitos)</label>
+        </div>
+      </div>
+      <div class="divida-acoes">
+        <button class="btn-salvar" style="flex:0 0 auto;padding:10px 20px;" id="btn-salvar-conta" onclick="salvarConta()">Adicionar conta</button>
+        <button class="btn-cancelar" style="flex:0 0 auto;padding:10px 20px;" onclick="limparFormularioConta()">Limpar</button>
+      </div>
+    </section>
+
+    <section id="resumo-container" hidden>
+      <h2>Resumo</h2>
+      <div class="resumo-cards">
+        <div class="card-info">
+          <p>Saldo total do FGTS</p>
+          <p class="valor" id="valor-saldo-total">R$ 0,00</p>
+        </div>
+        <div class="card-info">
+          <p>Valor para fins rescisórios</p>
+          <p class="valor" id="valor-rescisorio-total">R$ 0,00</p>
+        </div>
+        <div class="card-info">
+          <p>Multa de 40% inclusa</p>
+          <p class="valor" id="valor-multa-total">R$ 0,00</p>
+        </div>
+      </div>
+      <p class="resumo-obs" id="resumo-obs"></p>
+
+      <details class="fgts-explica">
+        <summary>Entenda: saldo &times; valor para fins rescisórios</summary>
+
+        <h4>Saldo</h4>
+        <p>É o dinheiro que está na conta hoje. Ele é formado por:</p>
+        <ul>
+          <li><strong>+ Depósitos mensais</strong> do empregador (8% do salário) — linhas <code>115-DEPOSITO</code> no extrato</li>
+          <li><strong>+ Rendimento</strong> — linhas <code>CREDITO DE JAM</code> (Juros de 3% ao ano + TR)</li>
+          <li><strong>+ Distribuição de lucros</strong> do fundo — linhas <code>AC CRED DIST RESULTADO</code></li>
+          <li><strong>&minus; Saques</strong> que você já fez — linhas <code>SAQUE DEP</code> / <code>SAQUE JAM</code></li>
+        </ul>
+
+        <h4>Valor para fins rescisórios</h4>
+        <p>
+          É uma simulação: quanto entraria pra você <strong>se fosse demitido sem justa causa hoje</strong>.
+          A conta é <strong>saldo atual + multa de 40%</strong> (a multa é paga pelo empregador, não sai do seu saldo).
+        </p>
+        <p>
+          A base da multa de 40% <strong>não é o saldo atual</strong> — é a soma de tudo que o empregador
+          depositou naquela conta durante o contrato, corrigido, mesmo o que você já sacou. Por isso,
+          numa conta da qual você já sacou bastante, o valor rescisório pode ser bem maior que 1,4&times; o saldo.
+        </p>
+
+        <div class="aviso">
+          <p>
+            <strong>Atenção ao saque-aniversário.</strong> Se a conta está na modalidade
+            <em>saque-aniversário</em> e você for demitido sem justa causa, você recebe
+            <strong>só a multa de 40%</strong> — o saldo fica preso e é liberado aos poucos, todo ano,
+            no mês do seu aniversário.
+          </p>
+          <p>
+            O "valor para fins rescisórios" do extrato assume o cenário do <em>saque-rescisão</em>
+            (modalidade padrão). Confira o campo "modalidade de saque" de cada conta abaixo.
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <section>
+      <div id="lista-contas"></div>
+      <p id="sem-contas" class="lista-vazia">Nenhuma conta de FGTS cadastrada ainda. Adicione a primeira acima.</p>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><a href="./balanco-patrimonial.html">Balanço Patrimonial</a> — veja o FGTS somado ao seu patrimônio.</li>
+        <li><a href="./investimentos.html">Investimentos</a> — o dinheiro líquido que você aplica por conta própria.</li>
+        <li><a href="./glossario.html">Glossário</a> — termos de planejamento financeiro.</li>
+      </ul>
+    </section>
+  </main>
+
+  <div id="modal-snapshot" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-snapshot-titulo">Registrar saldo do extrato</h2>
+        <button class="btn-fechar" onclick="fecharModalSnapshot()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-snap-data">Data do extrato *</label>
+          <input type="date" id="input-snap-data">
+        </div>
+        <div class="form-group">
+          <label for="input-snap-saldo">Saldo total (R$) *</label>
+          <input type="text" id="input-snap-saldo" data-moeda placeholder="Ex: 22.773,67">
+        </div>
+        <div class="form-group">
+          <label for="input-snap-rescisorio">Valor para fins rescisórios (R$)</label>
+          <input type="text" id="input-snap-rescisorio" data-moeda placeholder="Ex: 39.176,99">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" onclick="salvarSnapshot()">Salvar</button>
+        <button class="btn-cancelar" onclick="fecharModalSnapshot()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/fgts.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof configurarTodosCamposMoeda === 'function') configurarTodosCamposMoeda();
+    });
+  </script>
+</body>
+</html>

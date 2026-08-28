@@ -25,6 +25,56 @@ const NATUREZA_PADRAO = {
   'outro': 'curto-prazo'
 };
 
+// ---------------------------------------------------------------------------
+// Dívidas fixas (seed) — registros reais do dono do site, embutidos no código.
+// Cada uma tem id fixo. Uma vez semeada, fica marcada em `seedsAplicados` e
+// não volta se o usuário editar ou deletar.
+// ---------------------------------------------------------------------------
+const SEEDS_DIVIDAS = [
+  {
+    id: 20250928001,
+    credor: 'Nubank (Nu Financeira S.A.)',
+    tipo: 'consignado',
+    natureza: 'onerosa',
+    taxa: 1.66,
+    debitoAutomatico: true,
+    parcelado: true,
+    numParcelas: 2,
+    valorParcela: 2376.98,
+    parcelasPagas: 0,
+    diaVencimento: 1,
+    saldoDevedor: 3463.48,
+    observacoes: 'Emprestimo Saque-Aniversario FGTS. Contrato 0139367810901469775693848100453159712012 - '
+      + 'Emitido 28/09/2025 - Liberado R$ 3.346,66 - IOF R$ 116,82 - CET 1,844% a.m. / 24,509% a.a. - '
+      + 'Pagamento anual no 1o dia util do mes do aniversario - Total a pagar R$ 4.753,95.'
+  }
+];
+
+function semearDividasFixas() {
+  const dados = obterDados();
+  const aplicados = Array.isArray(dados.seedsAplicados) ? dados.seedsAplicados : [];
+  let mudou = false;
+
+  SEEDS_DIVIDAS.forEach(seed => {
+    if (aplicados.includes(seed.id)) return;
+    if (!dados.dividas.some(d => d.id === seed.id)) {
+      dados.dividas.push({
+        ...seed,
+        valorPago: undefined,
+        dataCriacao: new Date().toISOString(),
+        pagamentos: []
+      });
+    }
+    aplicados.push(seed.id);
+    mudou = true;
+  });
+
+  if (mudou) {
+    dados.seedsAplicados = aplicados;
+    salvarDados(dados);
+  }
+}
+
 function escaparHtml(texto) {
   const div = document.createElement('div');
   div.textContent = texto == null ? '' : String(texto);
@@ -237,6 +287,7 @@ function limparFormulario() {
 // Visualização
 // ---------------------------------------------------------------------------
 function inicializarDividas() {
+  semearDividasFixas();
   const dados = obterDados();
   if (dados.dividas.length > 0) {
     document.getElementById('resumo-container').removeAttribute('hidden');

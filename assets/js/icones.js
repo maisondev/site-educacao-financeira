@@ -16,6 +16,7 @@ const ICONES = {
   'seta-externa': '<path d="M7 17 17 7M8 7h9v9"/>',
   olho: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
   'olho-fechado': '<path d="M2 12s3.5-7 10-7c1.7 0 3.2.4 4.6 1.1M22 12s-3.5 7-10 7c-1.7 0-3.2-.4-4.6-1.1"/><path d="M3 3l18 18"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  carteira: '<rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M16 15h2"/>',
 };
 
 // Retorna a string SVG de um ícone. tamanho em px (largura = altura).

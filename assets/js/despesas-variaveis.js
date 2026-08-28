@@ -9,11 +9,29 @@ const CATEGORIAS = {
   internet: 'Internet',
   telefone: 'Telefone / Celular',
   streaming: 'Streaming / Assinaturas',
+  alimentacao: 'Alimentação',
   combustivel: 'Combustível',
   manutencao: 'Manutenção / Consertos',
   cartao: 'Cartão de Crédito',
   outro: 'Outro'
 };
+
+// Mescla categorias personalizadas dos Cadastros Gerais, se disponíveis.
+if (typeof Cadastros !== 'undefined') {
+  Object.assign(CATEGORIAS, Cadastros.categorias());
+}
+
+// Reconstrói o <select> de categoria com a lista atual (padrão + personalizadas).
+function popularSelectCategoriasVariaveis() {
+  const select = document.getElementById('var-categoria');
+  if (!select) return;
+  const atual = select.value;
+  const opcoes = ['<option value="">Selecione uma categoria</option>']
+    .concat(Object.keys(CATEGORIAS).map(chave =>
+      `<option value="${chave}">${CATEGORIAS[chave]}</option>`));
+  select.innerHTML = opcoes.join('');
+  if (atual) select.value = atual;
+}
 
 let despesaVariavelEmEdicaoId = null;
 
@@ -373,11 +391,17 @@ function carregarDespesasVariaveis() {
         <div class="registros-categoria">
           ${despesasDaCategoria.map(d => {
             const nome = escaparTexto(d.descricao || CATEGORIAS[d.categoria] || d.categoria);
+            const FORMAS_PAG = { pix: 'Pix', debito: 'Débito', credito: 'Crédito', dinheiro: 'Dinheiro', boleto: 'Boleto' };
+            const extras = [
+              d.hora ? escaparTexto(d.hora) : '',
+              d.estabelecimento ? escaparTexto(d.estabelecimento) : '',
+              d.formaPagamento ? escaparTexto(FORMAS_PAG[d.formaPagamento] || d.formaPagamento) : ''
+            ].filter(Boolean).join(' · ');
             return `
             <div class="registro-item" data-id="${d.id}">
               <div class="registro-info">
                 <div>${nome}</div>
-                <div class="registro-data">${new Date(d.data + 'T00:00:00').toLocaleDateString('pt-BR')}</div>
+                <div class="registro-data">${new Date(d.data + 'T00:00:00').toLocaleDateString('pt-BR')}${extras ? ' · ' + extras : ''}</div>
               </div>
               <div class="registro-valor">${formatarMoedaBrasileira(d.valor)}</div>
               <div class="registro-acoes">
@@ -396,4 +420,7 @@ function carregarDespesasVariaveis() {
   }).join('');
 }
 
-document.addEventListener('DOMContentLoaded', carregarDespesasVariaveis);
+document.addEventListener('DOMContentLoaded', () => {
+  popularSelectCategoriasVariaveis();
+  carregarDespesasVariaveis();
+});

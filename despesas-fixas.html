@@ -314,6 +314,86 @@
       vertical-align: middle;
     }
 
+    .painel-provisionamento {
+      background-color: var(--cor-fundo-suave, #f7f7f7);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+    .prov-cabecalho {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--espacamento-sm);
+      flex-wrap: wrap;
+    }
+    .prov-cabecalho h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+    .prov-numeros {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--cor-texto-leve);
+    }
+    .prov-barra {
+      height: 8px;
+      background-color: var(--cor-borda);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0 6px;
+    }
+    .prov-barra-fill {
+      height: 100%;
+      background-color: var(--cor-secundaria, #1264a3);
+      transition: width 0.2s ease;
+    }
+    .prov-barra-fill.completo {
+      background-color: var(--cor-verde);
+    }
+    .prov-status {
+      margin: 0;
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+    }
+
+    .despesa-provisionada {
+      margin: 4px 0 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cor-secundaria, #1264a3);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .despesa-provisionada .icone {
+      width: 14px;
+      height: 14px;
+    }
+    .despesa-item.provisionada {
+      border-left-color: var(--cor-secundaria, #1264a3);
+    }
+    .btn-provisionar {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-provisionar.ativo {
+      color: var(--cor-secundaria, #1264a3);
+    }
+    .btn-provisionar:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
     .info-ocultas {
       margin: 0 0 var(--espacamento-md);
       padding: var(--espacamento-sm) var(--espacamento-md);
@@ -530,6 +610,17 @@
 
     .despesa-item.pago {
       border-left-color: var(--cor-verde);
+      opacity: 0.6;
+      background-color: var(--cor-fundo-suave, #f7f7f7);
+    }
+
+    .despesa-item.pago .despesa-info h3 {
+      text-decoration: line-through;
+      text-decoration-color: var(--cor-texto-leve);
+    }
+
+    .despesa-item.pago .despesa-valor-principal {
+      text-decoration: line-through;
     }
 
     .btn-pagar {
@@ -684,6 +775,8 @@
 
       <p id="info-ocultas" class="info-ocultas" hidden></p>
 
+      <div id="painel-provisionamento" class="painel-provisionamento" hidden></div>
+
       <div id="alerta-container"></div>
 
       <div class="progresso-despesas">
@@ -711,6 +804,7 @@
           <label class="campo-ordenar">
             Ordenar por
             <select id="select-ordem" onchange="alterarOrdemDespesas(this.value)">
+              <option value="proximas">Vencimento mais próximo</option>
               <option value="valor">Maior valor</option>
               <option value="vencimento">Dia de vencimento</option>
             </select>

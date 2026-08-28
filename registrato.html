@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrato (BCB) | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .reg-secao {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .reg-secao h2 { margin-top: 0; }
+
+    .reg-descricao {
+      color: var(--cor-texto-leve);
+      max-width: 72ch;
+    }
+
+    .reg-cabecalho {
+      display: flex;
+      gap: var(--espacamento-lg);
+      flex-wrap: wrap;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .reg-campo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+    }
+
+    .reg-form {
+      display: flex;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .reg-form input,
+    .reg-form select,
+    .reg-campo input {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+      background: var(--cor-fundo);
+      color: var(--cor-texto);
+    }
+
+    .reg-form input { flex: 1 1 180px; }
+    .reg-form input.reg-mini { flex: 0 1 130px; }
+
+    .reg-tabela-wrap { overflow-x: auto; }
+
+    .reg-tabela {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      min-width: 520px;
+    }
+
+    .reg-tabela th,
+    .reg-tabela td {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .reg-tabela tfoot th {
+      border-top: 2px solid var(--cor-borda);
+      border-bottom: none;
+      color: var(--cor-primaria);
+    }
+
+    .reg-tabela input,
+    .reg-tabela select {
+      width: 100%;
+      padding: 4px 6px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      background: transparent;
+      color: var(--cor-texto);
+    }
+
+    .reg-tabela input:focus,
+    .reg-tabela select:focus {
+      border-color: var(--cor-borda);
+      background: var(--cor-fundo);
+      outline: none;
+    }
+
+    .reg-th-ordenar {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .reg-th-ordenar:hover { text-decoration: underline; }
+
+    .reg-tabela input.reg-col-curta { max-width: 120px; }
+    .reg-tabela input.reg-col-valor { max-width: 140px; text-align: right; }
+
+    .reg-btn-remover {
+      background: none;
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--cor-texto);
+      white-space: nowrap;
+    }
+
+    .reg-btn-remover:hover {
+      border-color: var(--cor-vermelho);
+      color: var(--cor-vermelho);
+    }
+
+    .reg-ajuda {
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+      margin: var(--espacamento-md) 0 0;
+    }
+
+    .reg-vazio {
+      color: var(--cor-texto-leve);
+      font-style: italic;
+    }
+
+    .reg-acoes {
+      display: flex;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+      margin-bottom: var(--espacamento-xl);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Registrato (BCB)</p>
+
+    <h1>Registrato (Banco Central)</h1>
+    <p class="reg-descricao">
+      Resumo das informações essenciais dos relatórios baixados no
+      <a href="https://www.bcb.gov.br/cidadaniafinanceira/registrato" target="_blank" rel="noopener">Registrato</a>
+      do Banco Central: relacionamentos com instituições (CCS), chaves Pix e dívidas e limites (SCR).
+      Os dados já vêm preenchidos a partir dos relatórios; edite, remova ou adicione linhas.
+      Tudo fica salvo apenas neste navegador.
+    </p>
+
+    <div class="reg-cabecalho">
+      <label class="reg-campo">
+        Relatórios emitidos em
+        <input type="text" id="reg-emissao" placeholder="dd/mm/aaaa">
+      </label>
+      <label class="reg-campo">
+        SCR — mês de referência
+        <input type="text" id="reg-referencia" placeholder="mm/aaaa">
+      </label>
+    </div>
+
+    <section class="reg-secao">
+      <h2>Relacionamentos com instituições (CCS)</h2>
+      <p class="reg-descricao">Bancos e instituições com relacionamento registrado no seu CPF.</p>
+      <div class="reg-form">
+        <input type="text" id="reg-rel-inst" placeholder="Instituição" autocomplete="off">
+        <input type="text" id="reg-rel-inicio" class="reg-mini" placeholder="Início (dd/mm/aaaa)" autocomplete="off">
+        <input type="text" id="reg-rel-situacao" class="reg-mini" placeholder="Situação (Ativo)" autocomplete="off">
+        <button type="button" class="btn btn-primary" id="reg-add-relacionamento">Adicionar</button>
+      </div>
+      <div class="reg-tabela-wrap"><div id="reg-relacionamentos"></div></div>
+    </section>
+
+    <section class="reg-secao">
+      <h2>Chaves Pix</h2>
+      <p class="reg-descricao">Chaves Pix ativas por instituição. O valor da chave em si não é guardado — só o tipo.</p>
+      <div class="reg-form">
+        <select id="reg-pix-tipo">
+          <option>CPF</option><option>CNPJ</option><option>E-mail</option><option>Celular</option><option>Aleatória</option>
+        </select>
+        <input type="text" id="reg-pix-inst" placeholder="Instituição" autocomplete="off">
+        <select id="reg-pix-conta">
+          <option>Conta corrente</option><option>Conta de pagamento</option><option>Conta poupança</option><option>Conta salário</option>
+        </select>
+        <button type="button" class="btn btn-primary" id="reg-add-pix">Adicionar</button>
+      </div>
+      <div class="reg-tabela-wrap"><div id="reg-pix"></div></div>
+    </section>
+
+    <section class="reg-secao">
+      <h2>Dívidas e limites (SCR)</h2>
+      <p class="reg-descricao">Operações de crédito por instituição, com valor em dia, vencido e limite disponível.</p>
+      <p class="reg-descricao">
+        <button type="button" class="btn btn-primary" id="reg-enviar-dividas">Enviar dívidas para o Acompanhador</button>
+        <a href="./dividas.html" style="margin-left: var(--espacamento-md);">Abrir Acompanhador de Dívidas</a>
+      </p>
+      <div class="reg-form">
+        <input type="text" id="reg-div-inst" placeholder="Instituição" autocomplete="off">
+        <input type="text" id="reg-div-operacao" placeholder="Operação (ex.: Cartão de crédito)" autocomplete="off">
+        <input type="text" id="reg-div-emdia" class="reg-mini" placeholder="Em dia (R$)" autocomplete="off">
+        <input type="text" id="reg-div-vencida" class="reg-mini" placeholder="Vencida (R$)" autocomplete="off">
+        <input type="text" id="reg-div-limite" class="reg-mini" placeholder="Limite disp. (R$)" autocomplete="off">
+        <button type="button" class="btn btn-primary" id="reg-add-divida">Adicionar</button>
+      </div>
+      <div class="reg-tabela-wrap"><div id="reg-dividas"></div></div>
+    </section>
+
+    <div class="reg-acoes">
+      <button type="button" class="btn btn-secondary" id="reg-restaurar">Restaurar dados iniciais</button>
+      <button type="button" class="btn btn-secondary" id="reg-limpar">Limpar tudo</button>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><a href="./dividas.html">Detalhar e acompanhar o pagamento das dívidas</a></li>
+        <li><a href="./balanco-patrimonial.html">Lançar essas dívidas no balanço patrimonial</a></li>
+        <li><a href="./links-uteis.html">Abrir o Registrato para baixar relatórios atualizados</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/registrato.js"></script>
+</body>
+</html>

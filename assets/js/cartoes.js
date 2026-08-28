@@ -259,7 +259,23 @@ function salvarCartoes(cartoes) {
 function limparFormularioCartao() {
   const campos = ['input-cartao-id', 'input-cartao-titular', 'input-cartao-nome', 'input-cartao-ultimos', 'select-cartao-bandeira', 'select-cartao-tipo', 'input-cartao-limite', 'input-cartao-fechamento', 'input-cartao-vencimento', 'input-cartao-saldo-aberto'];
   campos.forEach(id => document.getElementById(id).value = '');
+  limparCorCartao();
 }
+
+// Cor personalizada do cartão: o input color sempre tem um valor; usamos
+// data-cor-definida para saber se o usuario realmente escolheu uma cor.
+function limparCorCartao() {
+  const campo = document.getElementById('input-cartao-cor');
+  if (!campo) return;
+  campo.value = '#4a154b';
+  campo.removeAttribute('data-cor-definida');
+}
+
+document.addEventListener('input', function (e) {
+  if (e.target && e.target.id === 'input-cartao-cor') {
+    e.target.setAttribute('data-cor-definida', '1');
+  }
+});
 
 function abrirModalCartao() {
   document.getElementById('modal-titulo').textContent = 'Novo Cartão';
@@ -288,6 +304,13 @@ function abrirModalCartaoEdicao(id) {
   document.getElementById('input-cartao-fechamento').value = cartao.fechamento || '';
   document.getElementById('input-cartao-vencimento').value = cartao.vencimento || '';
   document.getElementById('input-cartao-saldo-aberto').value = cartao.saldoAberto ? formatarMoedaBrasileira(cartao.saldoAberto) : '';
+  const campoCor = document.getElementById('input-cartao-cor');
+  if (cartao.cor) {
+    campoCor.value = cartao.cor;
+    campoCor.setAttribute('data-cor-definida', '1');
+  } else {
+    limparCorCartao();
+  }
   document.getElementById('btn-gerenciar-datas').removeAttribute('hidden');
   document.getElementById('modal-cartao').removeAttribute('hidden');
   document.getElementById('input-cartao-nome').focus();
@@ -470,6 +493,8 @@ function salvarCartao() {
   const ultimos = document.getElementById('input-cartao-ultimos').value.trim();
   const bandeira = document.getElementById('select-cartao-bandeira').value;
   const tipo = document.getElementById('select-cartao-tipo').value;
+  const campoCor = document.getElementById('input-cartao-cor');
+  const cor = campoCor.hasAttribute('data-cor-definida') ? campoCor.value : null;
   const fechamento = document.getElementById('input-cartao-fechamento').value.trim();
   const vencimento = document.getElementById('input-cartao-vencimento').value.trim();
   let limite = parseValorBrasileiro(document.getElementById('input-cartao-limite').value);
@@ -516,6 +541,7 @@ function salvarCartao() {
         ultimos,
         bandeira,
         tipo,
+        cor,
         limite,
         fechamento,
         vencimento,
@@ -531,6 +557,7 @@ function salvarCartao() {
       ultimos,
       bandeira,
       tipo,
+      cor,
       limite,
       fechamento,
       vencimento,
@@ -673,7 +700,8 @@ function atualizarVisualizacao() {
       `;
       }).join('');
 
-      return `<div style="margin-bottom: var(--espacamento-lg);"><h3 style="margin: var(--espacamento-md) 0; color: var(--cor-primaria); font-size: 16px; text-transform: capitalize;">${banco}</h3><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--espacamento-md);">${htmlCartoes}</div></div>`;
+      const nomeBanco = NOMES_BANCOS[banco] || banco;
+      return `<div style="margin-bottom: var(--espacamento-lg);"><h3 style="margin: var(--espacamento-md) 0; color: var(--cor-primaria); font-size: 16px; display: flex; align-items: center; gap: 8px;">${nomeBanco}<span style="background: var(--cor-primaria); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: 12px;">${cartoes.length}</span></h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--espacamento-md);">${htmlCartoes}</div></div>`;
     }).join('');
 
     document.getElementById('total-saldos-abertos').textContent = formatarMoedaBrasileira(totalSaldosAbertos);
@@ -689,9 +717,10 @@ function atualizarVisualizacao() {
   container.innerHTML = agruparCartoesPorBanco(cartoes);
 }
 
-const ORDEM_BANCOS = ['nubank', 'bradesco', 'picpay', 'itau', 'santander', 'caixa', 'bb'];
+const ORDEM_BANCOS = ['nubank', 'inter', 'bradesco', 'picpay', 'itau', 'santander', 'caixa', 'bb'];
 const NOMES_BANCOS = {
   nubank: 'Nubank',
+  inter: 'Inter',
   bradesco: 'Bradesco',
   picpay: 'PicPay',
   itau: 'Itaú',
@@ -734,8 +763,9 @@ function montarCardCartao(cartao) {
   const mesReferencia = ultimaFatura?.mes;
   const banco = obterBancoPorNome(cartao.nome);
   const databancoAttr = banco ? ` data-banco="${banco}"` : '';
+  const corAttr = cartao.cor ? ` style="background: linear-gradient(135deg, ${cartao.cor} 0%, ${cartao.cor} 100%)"` : '';
   return `
-    <div class="card-cartao"${databancoAttr}>
+    <div class="card-cartao"${databancoAttr}${corAttr}>
       <div class="card-cartao-botoes">
         <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário" aria-label="Exportar para calendário">${icone('calendario')}</button>
         <button class="btn-acao-cartao" onclick="abrirModalCartaoEdicao(${cartao.id})" title="Editar cartão" aria-label="Editar cartão">${icone('lapis')}</button>
@@ -861,6 +891,7 @@ function obterBancoPorNome(nomeCartao) {
   const nome = (nomeCartao || '').toLowerCase();
 
   if (nome.includes('nubank')) return 'nubank';
+  if (nome.includes('inter')) return 'inter';
   if (nome.includes('bradesco')) return 'bradesco';
   if (nome.includes('picpay')) return 'picpay';
   if (nome.includes('itau') || nome.includes('itaú')) return 'itau';
