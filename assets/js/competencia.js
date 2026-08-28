@@ -123,10 +123,17 @@ function fecharMes(competencia) {
     ? calcularSaldoDoMes(competencia)
     : null;
 
+  const balanco = Store.ler(Store.CHAVES.BALANCO, null);
+  const patrimonio = balanco
+    ? (balanco.ativos || []).reduce((s, a) => s + (Number(a.valor) || 0), 0)
+      - (balanco.passivos || []).reduce((s, p) => s + (Number(p.valor) || 0), 0)
+    : null;
+
   const envelopes = Store.ler(Store.CHAVES.ENVELOPES, []);
   historico[competencia] = {
     fechadoEm: new Date().toISOString(),
     resumo,
+    patrimonio,
     envelopes: envelopes.map(e => ({
       nome: e.nome,
       percentual: e.percentual,

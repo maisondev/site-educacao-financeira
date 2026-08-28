@@ -247,6 +247,130 @@
         width: 100%;
       }
     }
+    .cmp-seletor {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .cmp-label { font-weight: 500; }
+
+    .cmp-select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+      text-transform: capitalize;
+    }
+
+    .cmp-fechado {
+      background: var(--cor-cinza-leve);
+      color: var(--cor-texto-leve);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 13px;
+    }
+
+    .graf-bloco {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .graf-bloco h3 { margin-top: 0; }
+
+    .graf-legenda {
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+      margin-top: 0;
+    }
+
+    .graf-chave {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: var(--espacamento-md);
+    }
+
+    .graf-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .graf-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+
+    .graf-eixo {
+      font-size: 12px;
+      fill: var(--cor-texto-leve);
+    }
+
+    .graf-rotulo {
+      font-size: 13px;
+      font-weight: 600;
+      fill: var(--cor-texto);
+    }
+
+    .graf-marca { cursor: default; }
+
+    .graf-marca:hover { opacity: 0.85; }
+
+    .graf-vazio {
+      color: var(--cor-texto-leve);
+      max-width: 70ch;
+    }
+
+    .graf-tabela {
+      margin-top: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .graf-tabela summary {
+      cursor: pointer;
+      color: var(--cor-azul);
+    }
+
+    .graf-tabela table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--espacamento-sm);
+    }
+
+    .graf-tabela th,
+    .graf-tabela td {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .graf-tooltip {
+      position: fixed;
+      z-index: 20;
+      background: var(--cor-texto);
+      color: #fff;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-width: 260px;
+    }
+
+    .graf-tooltip[hidden] { display: none; }
+
+    .graf-tooltip-extra { opacity: 0.75; }
   </style>
 </head>
 <body>
@@ -278,7 +402,13 @@
       </div>
     </div>
 
+    <div id="container-competencia" class="cmp-seletor">
+      <!-- Renderizado por competencia.js -->
+    </div>
+
     <div id="resumo-geral-container"></div>
+
+    <div id="container-graficos"></div>
 
     <div class="secoes-relatorio">
       <div id="secao-despesas-fixas"></div>
@@ -308,11 +438,17 @@
   <script src="./assets/js/config.js"></script>
   <script src="./assets/js/formatacao.js"></script>
   <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/competencia.js"></script>
+  <script src="./assets/js/saldo-mes.js"></script>
+  <script src="./assets/js/graficos.js"></script>
   <script src="./assets/js/relatorios.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       renderizarMenu();
+      migrarCompetencias();
+      renderizarSeletorCompetencia('container-competencia', renderizarGraficos);
       gerarRelatorio();
+      renderizarGraficos();
     });
   </script>
 </body>

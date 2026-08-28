@@ -128,11 +128,11 @@ Um único campo no dashboard — `45,90 mercado` — que cria a despesa variáve
 
 `manifest.json` + service worker mínimo para cache dos estáticos. Permite instalar o site na tela inicial do celular e lançar a despesa no momento da compra. **Atenção:** `localStorage` é por dispositivo — o celular teria base separada da do desktop, então isso só faz sentido depois do item 1 (backup/importação como sincronização manual), ou aceitando o celular como base principal.
 
-### 11. Gráficos nos relatórios (≈2h)
+### 11. ✅ Gráficos nos relatórios (≈2h) — feito em 2026-08-28
 
 Hoje os relatórios são numéricos. Com a competência mensal (item 4) resolvida, valem três gráficos em SVG puro (sem CDN, respeitando a regra de zero dependências): evolução do saldo mensal, pizza de gastos por categoria e evolução do patrimônio líquido.
 
-### 12. Simulador de quitação de dívidas (≈2h)
+### 12. ✅ Simulador de quitação de dívidas (≈2h) — feito em 2026-08-28 (commit dc886e2)
 
 Em `dividas.html`, comparar as estratégias **avalanche** (maior juros primeiro) e **bola de neve** (menor saldo primeiro), mostrando data de quitação e juros totais economizados em cada uma, dado um valor extra mensal disponível. É a página com maior retorno financeiro direto por hora de implementação.
 

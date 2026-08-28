@@ -29,12 +29,15 @@ function smSomar(lista, campo) {
   return lista.reduce((total, item) => total + (Number(item[campo]) || 0), 0);
 }
 
-// Receitas lançadas no mês; sem lançamentos, cai para a renda mensal configurada.
+// Receitas lançadas no mês. Sem lançamentos, a renda configurada cobre o mês
+// corrente e os futuros; para um mês passado ela seria histórico inventado,
+// então o resultado é zero.
 function smReceitasDoMes(competencia) {
   const receitas = Store.ler(Store.CHAVES.RECEITAS, [])
     .filter(r => smRegistroNaCompetencia(r, competencia));
 
   if (receitas.length > 0) return smSomar(receitas, 'valor');
+  if (competencia < smCompetenciaAtual()) return 0;
 
   const renda = parseFloat(Store.lerTexto(Store.CHAVES.RENDA, '0'));
   return isNaN(renda) ? 0 : renda;
