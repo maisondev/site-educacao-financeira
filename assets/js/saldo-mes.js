@@ -205,19 +205,22 @@ function smIndicador(rotulo, texto, estado) {
 function smIndicadores(r) {
   const itens = [];
 
+  // rotuloGlossario: usa linkGlossario quando disponível; senão, texto puro.
+  const g = (slug, texto) => (typeof linkGlossario === 'function' ? linkGlossario(slug, texto) : texto);
+
   if (r.taxaEconomia !== null) {
     const estado = r.taxaEconomia >= 20 ? 'bom' : (r.taxaEconomia >= 0 ? 'atencao' : 'ruim');
-    itens.push(smIndicador('Taxa de economia', `${r.taxaEconomia.toFixed(0)}%`, estado));
+    itens.push(smIndicador(`Taxa de ${g('economia', 'economia')}`, `${r.taxaEconomia.toFixed(0)}%`, estado));
   }
 
   if (r.comprometimentoDividas !== null) {
     const estado = r.comprometimentoDividas > 30 ? 'ruim' : (r.comprometimentoDividas > 0 ? 'atencao' : 'bom');
-    itens.push(smIndicador('Renda comprometida com dívidas', `${r.comprometimentoDividas.toFixed(0)}%`, estado));
+    itens.push(smIndicador(`${g('renda', 'Renda')} comprometida com ${g('divida', 'dívidas')}`, `${r.comprometimentoDividas.toFixed(0)}%`, estado));
   }
 
   if (r.mesesReserva !== null) {
     const estado = r.mesesReserva >= 6 ? 'bom' : (r.mesesReserva >= 3 ? 'atencao' : 'ruim');
-    itens.push(smIndicador('Meses de reserva', r.mesesReserva.toFixed(1), estado));
+    itens.push(smIndicador(`Meses de ${g('reserva-de-emergencia', 'reserva')}`, r.mesesReserva.toFixed(1), estado));
   }
 
   return itens.length ? `<div class="sm-indicadores">${itens.join('')}</div>` : '';

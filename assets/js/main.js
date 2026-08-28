@@ -84,3 +84,10 @@ function closeMenu() {
 function toggleSubmenu(parent) {
   parent.classList.toggle('active');
 }
+
+// Gera um link para a definição de um termo no glossário.
+// `prefixo` ajusta o caminho relativo (páginas em subpastas passam '../' ou '../../').
+function linkGlossario(slug, texto, prefixo) {
+  const base = prefixo || './';
+  return `<a class="link-glossario" href="${base}glossario.html#termo-${slug}" title="Ver no glossário">${texto}</a>`;
+}

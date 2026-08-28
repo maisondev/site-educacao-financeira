@@ -829,6 +829,31 @@ hr {
   line-height: 1.5;
 }
 
+/* Link para a definição de um termo no glossário */
+.link-glossario {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+.link-glossario:hover,
+.link-glossario:focus {
+  color: var(--cor-primaria);
+  text-decoration-style: solid;
+}
+
+/* Alvo de âncora do glossário não fica escondido sob o cabeçalho fixo */
+.termo-card {
+  scroll-margin-top: 90px;
+}
+
+.termo-card:target {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.15);
+}
+
 /* Responsivo */
 @media (min-width: 640px) {
   main {
