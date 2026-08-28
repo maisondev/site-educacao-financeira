@@ -447,9 +447,9 @@ function atualizarVisualizacao() {
     const saldoVisivel = ultimaFatura?.saldo || cartao.saldoAberto;
     const mesReferencia = ultimaFatura?.mes;
     const banco = obterBancoPorNome(cartao.nome);
-    const classeBanco = banco ? `card-cartao--${banco}` : '';
+    const databancoAttr = banco ? ` data-banco="${banco}"` : '';
     return `
-    <div class="card-cartao ${classeBanco}">
+    <div class="card-cartao"${databancoAttr}>
       <div class="card-cartao-botoes">
         <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário">📅</button>
         <button class="btn-acao-cartao" onclick="abrirModalCartaoEdicao(${cartao.id})" title="Editar cartão">✎</button>

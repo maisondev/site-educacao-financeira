@@ -26,76 +26,28 @@
       justify-content: space-between;
     }
 
-    .card-cartao--nubank {
+    .card-cartao[data-banco="nubank"] {
       background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      color: white;
     }
 
-    .card-cartao--nubank .card-cartao-titulo,
-    .card-cartao--nubank .card-cartao-numero,
-    .card-cartao--nubank .card-cartao-label,
-    .card-cartao--nubank .card-cartao-bandeira {
-      color: white;
-    }
-
-    .card-cartao--bradesco {
+    .card-cartao[data-banco="bradesco"] {
       background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
-      color: white;
     }
 
-    .card-cartao--bradesco .card-cartao-titulo,
-    .card-cartao--bradesco .card-cartao-numero,
-    .card-cartao--bradesco .card-cartao-label,
-    .card-cartao--bradesco .card-cartao-bandeira {
-      color: white;
-    }
-
-    .card-cartao--itau {
+    .card-cartao[data-banco="itau"] {
       background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
-      color: white;
     }
 
-    .card-cartao--itau .card-cartao-titulo,
-    .card-cartao--itau .card-cartao-numero,
-    .card-cartao--itau .card-cartao-label,
-    .card-cartao--itau .card-cartao-bandeira {
-      color: white;
-    }
-
-    .card-cartao--santander {
+    .card-cartao[data-banco="santander"] {
       background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-      color: white;
     }
 
-    .card-cartao--santander .card-cartao-titulo,
-    .card-cartao--santander .card-cartao-numero,
-    .card-cartao--santander .card-cartao-label,
-    .card-cartao--santander .card-cartao-bandeira {
-      color: white;
-    }
-
-    .card-cartao--caixa {
+    .card-cartao[data-banco="caixa"] {
       background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
-      color: white;
     }
 
-    .card-cartao--caixa .card-cartao-titulo,
-    .card-cartao--caixa .card-cartao-numero,
-    .card-cartao--caixa .card-cartao-label,
-    .card-cartao--caixa .card-cartao-bandeira {
-      color: white;
-    }
-
-    .card-cartao--bb {
+    .card-cartao[data-banco="bb"] {
       background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);
-      color: white;
-    }
-
-    .card-cartao--bb .card-cartao-titulo,
-    .card-cartao--bb .card-cartao-numero,
-    .card-cartao--bb .card-cartao-label,
-    .card-cartao--bb .card-cartao-bandeira {
-      color: white;
     }
 
     @media (min-width: 768px) {
@@ -352,6 +304,58 @@
       opacity: 0.9;
       font-weight: 600;
     }
+
+    .form-sublabel {
+      font-size: 0.85rem;
+      color: #666;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .form-hint {
+      color: #666;
+      margin-top: 4px;
+      display: block;
+      font-size: 0.85rem;
+    }
+
+    .grid-2-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--espacamento-md);
+    }
+
+    .button-group {
+      margin-bottom: var(--espacamento-lg);
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .stats-box {
+      background: var(--cor-primaria);
+      color: white;
+      border-radius: 8px;
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      text-align: center;
+      min-width: 120px;
+    }
+
+    .stats-box-value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .stats-box-label {
+      font-size: 12px;
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -370,18 +374,18 @@
   <main>
     <p class="breadcrumb"><a href="./index.html">Início</a> / Meus Cartões</p>
 
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="section-header">
       <div>
         <h1>Meus Cartões</h1>
         <p>Cadastre e organize seus cartões de crédito. Mantenha registro dos últimos dígitos e limites para melhor controle.</p>
       </div>
-      <div style="background: var(--cor-primaria); color: white; border-radius: 8px; padding: var(--espacamento-md) var(--espacamento-lg); text-align: center; min-width: 120px;">
-        <div style="font-size: 28px; font-weight: bold;" id="contador-cartoes">0</div>
-        <div style="font-size: 12px; opacity: 0.9;">Cartões</div>
+      <div class="stats-box">
+        <div class="stats-box-value" id="contador-cartoes">0</div>
+        <div class="stats-box-label">Cartões</div>
       </div>
     </div>
 
-    <div style="margin-bottom: var(--espacamento-lg); display: flex; gap: var(--espacamento-md);">
+    <div class="button-group">
       <button class="btn btn-primary" onclick="abrirModalCartao()">+ Adicionar Cartão</button>
     </div>
 
@@ -475,7 +479,7 @@
       <div class="form-group">
         <label for="input-cartao-saldo-aberto">Saldo da Fatura Aberta (R$) - Opcional</label>
         <input type="text" id="input-cartao-saldo-aberto" placeholder="ex: 1.500,00" class="campo-moeda">
-        <small style="color: #666; margin-top: 4px; display: block;">Quanto já foi gasto neste mês antes do fechamento</small>
+        <small class="form-hint">Quanto já foi gasto neste mês antes do fechamento</small>
       </div>
 
       <div style="text-align: center; margin: var(--espacamento-lg) 0;">
@@ -503,14 +507,14 @@
         </div>
         <div class="form-group">
           <label for="input-fechamento-mes">Fechamento (Dia/Mês)</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--espacamento-md);">
+          <div class="grid-2-cols">
             <div>
-              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Dia</label>
+              <label class="form-sublabel">Dia</label>
               <input type="number" id="input-fechamento-dia" min="1" max="31" placeholder="27">
             </div>
             <div>
-              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Mês</label>
-              <select id="input-fechamento-mes-select" style="width: 100%; padding: var(--espacamento-sm) var(--espacamento-md); border: 1px solid var(--cor-borda); border-radius: 4px; font-size: 16px;">
+              <label class="form-sublabel">Mês</label>
+              <select id="input-fechamento-mes-select">
                 <option value="">Mesmo mês</option>
                 <option value="1">Janeiro</option>
                 <option value="2">Fevereiro</option>
@@ -530,14 +534,14 @@
         </div>
         <div class="form-group">
           <label for="input-vencimento-mes">Vencimento (Dia/Mês)</label>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--espacamento-md);">
+          <div class="grid-2-cols">
             <div>
-              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Dia</label>
+              <label class="form-sublabel">Dia</label>
               <input type="number" id="input-vencimento-dia" min="1" max="31" placeholder="05">
             </div>
             <div>
-              <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 4px;">Mês</label>
-              <select id="input-vencimento-mes-select" style="width: 100%; padding: var(--espacamento-sm) var(--espacamento-md); border: 1px solid var(--cor-borda); border-radius: 4px; font-size: 16px;">
+              <label class="form-sublabel">Mês</label>
+              <select id="input-vencimento-mes-select">
                 <option value="">Mesmo mês</option>
                 <option value="1">Janeiro</option>
                 <option value="2">Fevereiro</option>
