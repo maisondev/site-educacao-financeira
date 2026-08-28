@@ -1,3 +1,12 @@
+let despesaEmEdicaoId = null;
+
+// Escapa texto do usuário antes de injetar via innerHTML
+function escaparTexto(texto) {
+  const div = document.createElement('div');
+  div.textContent = texto == null ? '' : texto;
+  return div.innerHTML;
+}
+
 function inicializarDespesasFixas() {
   const dados = obterDados();
   const rendaCentralizada = obterRendaMensal();
@@ -72,6 +81,9 @@ function exibirSalario() {
 }
 
 function abrirModalDespesa() {
+  despesaEmEdicaoId = null;
+  document.getElementById('modal-despesa-titulo').textContent = 'Adicionar Despesa Fixa';
+  document.getElementById('btn-salvar-despesa').textContent = 'Adicionar';
   document.getElementById('input-nome').value = '';
   document.getElementById('select-categoria').value = '';
   document.getElementById('input-valor').value = '';
@@ -79,8 +91,24 @@ function abrirModalDespesa() {
   document.getElementById('input-nome').focus();
 }
 
+function abrirModalDespesaEdicao(id) {
+  const dados = obterDados();
+  const despesa = dados.despesas.find(d => d.id === id);
+  if (!despesa) return;
+
+  despesaEmEdicaoId = id;
+  document.getElementById('modal-despesa-titulo').textContent = 'Editar Despesa Fixa';
+  document.getElementById('btn-salvar-despesa').textContent = 'Salvar';
+  document.getElementById('input-nome').value = despesa.nome;
+  document.getElementById('select-categoria').value = despesa.categoria;
+  document.getElementById('input-valor').value = formatarNumeroBrasileiro(despesa.valor);
+  document.getElementById('modal-despesa').removeAttribute('hidden');
+  document.getElementById('input-nome').focus();
+}
+
 function fecharModalDespesa() {
   document.getElementById('modal-despesa').setAttribute('hidden', '');
+  despesaEmEdicaoId = null;
 }
 
 function salvarDespesa() {
@@ -106,13 +134,23 @@ function salvarDespesa() {
   valor = Math.round(valor * 100) / 100;
 
   const dados = obterDados();
-  dados.despesas.push({
-    id: Date.now(),
-    nome,
-    categoria,
-    valor,
-    dataCriacao: new Date().toISOString()
-  });
+
+  if (despesaEmEdicaoId !== null) {
+    const despesa = dados.despesas.find(d => d.id === despesaEmEdicaoId);
+    if (despesa) {
+      despesa.nome = nome;
+      despesa.categoria = categoria;
+      despesa.valor = valor;
+    }
+  } else {
+    dados.despesas.push({
+      id: Date.now(),
+      nome,
+      categoria,
+      valor,
+      dataCriacao: new Date().toISOString()
+    });
+  }
 
   salvarDados(dados);
   atualizarVisualizacao();
@@ -212,29 +250,32 @@ function atualizarListaDespesas() {
   // Ordenar por valor (maior primeiro)
   const despesasOrdenadas = [...dados.despesas].sort((a, b) => b.valor - a.valor);
 
-  lista.innerHTML = despesasOrdenadas.map((despesa, index) => {
+  lista.innerHTML = despesasOrdenadas.map((despesa) => {
     const percentualDespesa = dados.salario > 0 ? (despesa.valor / dados.salario) * 100 : 0;
 
     return `
       <div class="despesa-item">
         <div class="despesa-info">
-          <h3>${despesa.nome}</h3>
+          <h3>${escaparTexto(despesa.nome)}</h3>
           <p class="despesa-categoria">${obterNomeCategoria(despesa.categoria)}</p>
         </div>
         <div class="despesa-valor">
           <div class="despesa-valor-principal">${formatarMoedaBrasileira(despesa.valor)}</div>
           <div class="despesa-percentual">${percentualDespesa.toFixed(1)}% do salário</div>
         </div>
-        <button class="btn-remover" onclick="removerDespesa(${index})" title="Remover despesa">×</button>
+        <div class="despesa-acoes">
+          <button class="btn-editar" onclick="abrirModalDespesaEdicao(${despesa.id})" title="Editar despesa">✎</button>
+          <button class="btn-remover" onclick="removerDespesa(${despesa.id})" title="Remover despesa">×</button>
+        </div>
       </div>
     `;
   }).join('');
 }
 
-function removerDespesa(index) {
+function removerDespesa(id) {
   if (confirm('Tem certeza que deseja remover esta despesa?')) {
     const dados = obterDados();
-    dados.despesas.splice(index, 1);
+    dados.despesas = dados.despesas.filter(d => d.id !== id);
     salvarDados(dados);
     atualizarVisualizacao();
   }
@@ -243,11 +284,20 @@ function removerDespesa(index) {
 function obterNomeCategoria(categoria) {
   const nomes = {
     'moradia': 'Moradia',
+    'mercado': 'Mercado / Alimentação',
     'utilidades': 'Utilidades',
     'transporte': 'Transporte',
     'saude': 'Saúde',
     'educacao': 'Educação',
     'assinatura': 'Assinaturas',
+    'seguros': 'Seguros',
+    'financiamento': 'Empréstimos / Financiamentos',
+    'cartao': 'Cartão de Crédito',
+    'impostos': 'Impostos / Taxas',
+    'pets': 'Pets',
+    'cuidados': 'Cuidados Pessoais',
+    'lazer': 'Lazer',
+    'doacoes': 'Doações / Dízimo',
     'outro': 'Outro'
   };
   return nomes[categoria] || categoria;

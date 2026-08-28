@@ -137,7 +137,7 @@ function criarCardMeta(meta) {
           <div>
             ${progressoLimitado.toFixed(0)}%
           </div>
-          ${atingiu ? '<div style="color: #2d7e3c; font-weight: bold;">✓ Atingida!</div>' : ''}
+          ${atingiu ? `<div style="color: #2d7e3c; font-weight: bold;">${icone('check', 14)} Atingida!</div>` : ''}
         </div>
 
         <div class="meta-progresso">

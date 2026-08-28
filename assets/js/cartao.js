@@ -22,8 +22,8 @@ function carregarCartoes() {
       <div class="card-header">
         <div class="card-nome">${cartao.nome}</div>
         <div class="card-acoes">
-          <button class="btn-editar-card" onclick="abrirModalEdicaoCartao('${cartao.id}')" title="Editar">✎</button>
-          <button class="btn-deletar-card" onclick="deletarCartao('${cartao.id}')" title="Deletar">×</button>
+          <button class="btn-editar-card" onclick="abrirModalEdicaoCartao('${cartao.id}')" title="Editar" aria-label="Editar">${icone('lapis')}</button>
+          <button class="btn-deletar-card" onclick="deletarCartao('${cartao.id}')" title="Deletar" aria-label="Deletar">${icone('lixeira')}</button>
         </div>
       </div>
 
@@ -75,7 +75,7 @@ function carregarCartoes() {
           font-weight: 500;
           transition: all 0.2s;
         " onmouseover="this.style.backgroundColor='rgba(255,255,255,0.3)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.2)'" title="Exportar para Google Calendar ou Outlook">
-          📅 Exportar
+          ${icone('calendario')} Exportar
         </button>
       </div>
     `;
@@ -343,7 +343,7 @@ END:VCALENDAR`;
   link.click();
   document.body.removeChild(link);
 
-  alert(`Arquivo de calendário gerado! 📅\n\nImporte "${cartao.nome}.ics" no seu:\n• Google Calendar\n• Outlook\n• Apple Calendar\n\nA Alexa lerá seus lembretes!`);
+  alert(`Arquivo de calendário gerado!\n\nImporte "${cartao.nome}.ics" no seu:\n- Google Calendar\n- Outlook\n- Apple Calendar\n\nA Alexa lerá seus lembretes!`);
 }
 
 document.addEventListener('DOMContentLoaded', carregarCartoes);

@@ -1,16 +1,16 @@
 const CHAVE_DESPESAS_VARIAVEIS = 'despesas_variaveis';
 
 const CATEGORIAS = {
-  agua: '💧 Água',
-  luz: '💡 Luz / Energia',
-  gas: '🔥 Gás',
-  internet: '📡 Internet',
-  telefone: '📱 Telefone',
-  streaming: '🎬 Streaming',
-  combustivel: '⛽ Combustível',
-  manutencao: '🔧 Manutenção',
-  cartao: '💳 Cartão',
-  outro: '📝 Outro'
+  agua: 'Água',
+  luz: 'Luz / Energia',
+  gas: 'Gás',
+  internet: 'Internet',
+  telefone: 'Telefone',
+  streaming: 'Streaming',
+  combustivel: 'Combustível',
+  manutencao: 'Manutenção',
+  cartao: 'Cartão',
+  outro: 'Outro'
 };
 
 function obterDespesasVariaveis() {

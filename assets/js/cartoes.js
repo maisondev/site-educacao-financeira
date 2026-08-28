@@ -4,11 +4,6 @@ const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Se
 const MESES_COMPLETOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const MESES_MINUSCULOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
-// Ícones dos botões de ação (SVG monocromático, herda a cor do texto do cartão)
-const SVG_ATTRS = 'viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
-const ICONE_CALENDARIO = `<svg ${SVG_ATTRS}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
-const ICONE_LAPIS = `<svg ${SVG_ATTRS}><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
-const ICONE_LIXEIRA = `<svg ${SVG_ATTRS}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>`;
 
 // Escapa texto do usuário antes de injetar via innerHTML (evita HTML injection)
 function escaparTextoCartao(texto) {
@@ -552,23 +547,24 @@ function montarCardCartao(cartao) {
   return `
     <div class="card-cartao"${databancoAttr}>
       <div class="card-cartao-botoes">
-        <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário">📅</button>
-        <button class="btn-acao-cartao" onclick="abrirModalCartaoEdicao(${cartao.id})" title="Editar cartão">✎</button>
-        <button class="btn-acao-cartao" onclick="removerCartao(${cartao.id})" title="Remover cartão">×</button>
+        <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário" aria-label="Exportar para calendário">${icone('calendario')}</button>
+        <button class="btn-acao-cartao" onclick="abrirModalCartaoEdicao(${cartao.id})" title="Editar cartão" aria-label="Editar cartão">${icone('lapis')}</button>
+        <button class="btn-acao-cartao" onclick="removerCartao(${cartao.id})" title="Remover cartão" aria-label="Remover cartão">${icone('lixeira')}</button>
       </div>
 
       <div class="card-cartao-header">
-        <div>
-          <h3 class="card-cartao-titulo">${escaparTextoCartao(cartao.nome)}</h3>
-          ${cartao.titular ? `<div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Titular: ${escaparTextoCartao(cartao.titular)}</div>` : ''}
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          ${cartao.bandeira ? `<span class="card-cartao-bandeira">${obterNomeBandeira(cartao.bandeira)}</span>` : ''}
-          ${cartao.tipo ? `<span class="card-cartao-bandeira" style="background: rgba(255,255,255,0.15);">${cartao.tipo === 'fisico' ? 'Físico' : 'Virtual'}</span>` : ''}
-        </div>
+        <h3 class="card-cartao-titulo">${escaparTextoCartao(cartao.nome)}</h3>
+        ${cartao.titular ? `<div class="card-cartao-titular">Titular: ${escaparTextoCartao(cartao.titular)}</div>` : ''}
       </div>
 
       <div class="card-cartao-numero">●●●● ${cartao.ultimos}</div>
+
+      ${cartao.bandeira || cartao.tipo ? `
+      <div class="card-cartao-tags">
+        ${cartao.bandeira ? `<span class="card-cartao-bandeira">${obterNomeBandeira(cartao.bandeira)}</span>` : ''}
+        ${cartao.tipo ? `<span class="card-cartao-bandeira">${cartao.tipo === 'fisico' ? 'Físico' : 'Virtual'}</span>` : ''}
+      </div>
+      ` : ''}
 
       <div class="card-cartao-info">
         <div class="card-cartao-info-item">
@@ -584,7 +580,7 @@ function montarCardCartao(cartao) {
       ${saldoVisivel ? `
       <div style="margin-top: var(--espacamento-sm); padding: var(--espacamento-sm); background: rgba(255,255,255,0.15); border-radius: 6px; border-top: 1px solid rgba(255,255,255,0.3);">
         <div style="font-size: 11px; opacity: 0.85; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; font-weight: 600;">
-          ${mesReferencia ? `📅 Fatura ${formatarMesPtBr(mesReferencia)}` : 'Saldo Aberto'}
+          ${mesReferencia ? `Fatura ${formatarMesPtBr(mesReferencia)}` : 'Saldo Aberto'}
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <span style="font-size: 16px; font-weight: bold;">${formatarMoedaBrasileira(saldoVisivel)}</span>
@@ -600,7 +596,7 @@ function montarCardCartao(cartao) {
 
       ${cartao.historicoUtilizacao && cartao.historicoUtilizacao.length > 1 ? `
       <div class="historico-utilizacao-container">
-        <div class="historico-titulo">📊 Utilização Mensal</div>
+        <div class="historico-titulo">Utilização Mensal</div>
         <div class="chart-barras-horizontal">
           ${cartao.historicoUtilizacao
             .sort((a, b) => a.mes.localeCompare(b.mes))
@@ -624,7 +620,7 @@ function montarCardCartao(cartao) {
         </div>
 
         <div style="margin-top: var(--espacamento-lg); padding-top: var(--espacamento-md); border-top: 1px solid rgba(255,255,255,0.2);">
-          <div class="historico-titulo">📋 Histórico de Faturas</div>
+          <div class="historico-titulo">Histórico de Faturas</div>
           <div style="font-size: 12px; display: grid; gap: 6px;">
             ${cartao.historicoUtilizacao
               .sort((a, b) => b.mes.localeCompare(a.mes))
@@ -633,7 +629,7 @@ function montarCardCartao(cartao) {
                 const mesNome = MESES_ABREV[parseInt(mes) - 1];
                 const statusPagamento = cartao.datasPorMes?.find(d => d.mes === h.mes)?.foiPaga;
                 const statusColor = statusPagamento ? '#10b981' : h.percentual > 80 ? '#ef4444' : h.percentual > 60 ? '#fbbf24' : '#f59e0b';
-                const statusLabel = statusPagamento ? '✓ Pago' : h.percentual > 80 ? '⚠️ Crítico' : h.percentual > 60 ? '⚠️ Alerta' : '📌 Pendente';
+                const statusLabel = statusPagamento ? 'Pago' : h.percentual > 80 ? 'Crítico' : h.percentual > 60 ? 'Alerta' : 'Pendente';
                 return `
                   <div style="display: grid; grid-template-columns: 60px 1fr 80px 100px; gap: 8px; align-items: center; padding: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; border-left: 3px solid ${statusColor}; ${statusPagamento ? 'opacity: 0.6;' : ''}">
                     <div style="font-weight: 600; ${statusPagamento ? 'text-decoration: line-through;' : ''}">${mesNome} ${ano.slice(2)}</div>
@@ -791,7 +787,7 @@ END:VCALENDAR`;
   link.click();
   document.body.removeChild(link);
 
-  alert(`Arquivo de calendário gerado! 📅\n\nImporte "${cartao.nome}.ics" no seu:\n• Google Calendar\n• Outlook\n• Apple Calendar\n\nA Alexa lerá seus lembretes!`);
+  alert(`Arquivo de calendário gerado!\n\nImporte "${cartao.nome}.ics" no seu:\n- Google Calendar\n- Outlook\n- Apple Calendar\n\nA Alexa lerá seus lembretes!`);
 }
 
 function marcarFaturaPaga(cartaoId, mes) {

@@ -742,6 +742,18 @@ code {
   font-size: 14px;
 }
 
+/* Ícones do sistema (SVG de traço, padrão único) */
+.icone {
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+
+button .icone,
+a .icone {
+  vertical-align: middle;
+}
+
 /* Botões Reutilizáveis */
 .btn {
   display: inline-block;

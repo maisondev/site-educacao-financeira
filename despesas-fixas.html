@@ -244,6 +244,30 @@
       color: #c53030;
     }
 
+    .despesa-acoes {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-editar {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-editar:hover {
+      color: var(--cor-primaria);
+    }
+
     .btn-adicionar {
       padding: var(--espacamento-md) var(--espacamento-lg);
       background-color: var(--cor-primaria);
@@ -404,7 +428,7 @@
         width: 100%;
       }
 
-      .btn-remover {
+      .despesa-acoes {
         position: absolute;
         right: var(--espacamento-lg);
         top: var(--espacamento-lg);
@@ -518,7 +542,7 @@
   <div id="modal-despesa" class="modal" hidden>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Adicionar Despesa Fixa</h2>
+        <h2 id="modal-despesa-titulo">Adicionar Despesa Fixa</h2>
         <button class="btn-fechar" onclick="fecharModalDespesa()">&times;</button>
       </div>
       <div class="modal-body">
@@ -531,11 +555,20 @@
           <select id="select-categoria" required>
             <option value="">Selecione</option>
             <option value="moradia">Moradia (Aluguel/Hipoteca)</option>
+            <option value="mercado">Mercado / Alimentação</option>
             <option value="utilidades">Utilidades (Água, Luz, Internet)</option>
             <option value="transporte">Transporte (Combustível, Carro)</option>
             <option value="saude">Saúde (Seguro, Medicamentos)</option>
             <option value="educacao">Educação (Cursos, Materiais)</option>
             <option value="assinatura">Assinaturas (Netflix, Academia)</option>
+            <option value="seguros">Seguros (Vida, Residencial)</option>
+            <option value="financiamento">Empréstimos / Financiamentos</option>
+            <option value="cartao">Cartão de Crédito</option>
+            <option value="impostos">Impostos / Taxas</option>
+            <option value="pets">Pets</option>
+            <option value="cuidados">Cuidados Pessoais</option>
+            <option value="lazer">Lazer</option>
+            <option value="doacoes">Doações / Dízimo</option>
             <option value="outro">Outro</option>
           </select>
         </div>
@@ -545,7 +578,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-salvar" onclick="salvarDespesa()">Adicionar</button>
+        <button class="btn-salvar" id="btn-salvar-despesa" onclick="salvarDespesa()">Adicionar</button>
         <button class="btn-cancelar" onclick="fecharModalDespesa()">Cancelar</button>
       </div>
     </div>
@@ -555,6 +588,7 @@
     <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
   </footer>
 
+  <script src="./assets/js/icones.js"></script>
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/formatacao.js"></script>
   <script src="./assets/js/config.js"></script>

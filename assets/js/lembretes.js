@@ -92,7 +92,7 @@ function renderizarLembretes() {
     const ehAmanha = lembrete.data.toDateString() === amanha.toDateString();
     const corFundo = lembrete.tipo === 'fechamento' ? '#e3f2fd' : '#fff3e0';
     const corBorda = lembrete.tipo === 'fechamento' ? '#90caf9' : '#ffb74d';
-    const icone = lembrete.tipo === 'fechamento' ? '📋' : '⏰';
+    const iconeHtml = lembrete.tipo === 'fechamento' ? icone('prancheta', 14) : icone('relogio', 14);
     const label = lembrete.tipo === 'fechamento' ? 'Fechamento' : 'Vencimento';
     const dataTexto = ehHoje ? 'Hoje' : ehAmanha ? 'Amanhã' : formatarDataLembrete(lembrete.data);
 
@@ -100,7 +100,7 @@ function renderizarLembretes() {
       <div style="background: ${corFundo}; border-left: 4px solid ${corBorda}; padding: var(--espacamento-md); margin-bottom: var(--espacamento-md); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
         <div>
           <div style="font-size: 14px; color: #666; margin-bottom: 4px;">
-            <strong>${icone} ${label}</strong>
+            <strong>${iconeHtml} ${label}</strong>
           </div>
           <div style="font-size: 16px; font-weight: bold; color: #333;">
             ${lembrete.cartao}${lembrete.ultimos ? ` ●●●● ${lembrete.ultimos}` : ''}

@@ -76,7 +76,7 @@ function importarSalarios() {
       salvarReceitas(receitas);
       renderizarReceitas();
       const msg = document.getElementById('msg-importacao');
-      msg.innerHTML = `<span style="color: #2e7d32; font-weight: bold;">✓ ${importados} salário(s) importado(s) com sucesso!</span>`;
+      msg.innerHTML = `<span style="color: #2e7d32; font-weight: bold;">${icone('check', 14)} ${importados} salário(s) importado(s) com sucesso!</span>`;
       setTimeout(() => { msg.innerHTML = ''; }, 5000);
     } else {
       const msg = document.getElementById('msg-importacao');

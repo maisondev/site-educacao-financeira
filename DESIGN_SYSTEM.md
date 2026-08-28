@@ -23,6 +23,17 @@ Design system inspirado na paleta Slack Design System, adaptado para um site de 
 - **Amarelo**: `#c88c00` (badges intermediário, aviso)
 - **Vermelho**: `#a63030` (badges avançado, erro)
 
+## 🔣 Ícones
+
+Padrão único: **SVG de traço monocromático**, grade 24×24, `stroke-width` 2, `stroke="currentColor"` (herda a cor do texto). **Nunca usar emoji.**
+
+- Biblioteca: `assets/js/icones.js` — carregada antes de qualquer outro script em todas as páginas.
+- Em JS: `icone('nome', tamanho)` retorna a string `<svg>`. Ex.: `icone('lapis')`, `icone('sino', 20)`.
+- Em HTML estático: colar o `<svg class="icone" ...>` com o mesmo traçado da biblioteca.
+- Ícones disponíveis: `calendario`, `lapis`, `lixeira`, `relogio`, `prancheta`, `sino`, `check`, `x`, `lampada`, `seta-externa`.
+- Em pseudo-elementos CSS (`::before`/`::after`): `background` com `url("data:image/svg+xml,...")` e `stroke` na cor fixa desejada.
+- A classe `.icone` (em `style.css`) cuida do alinhamento vertical.
+
 ## 📏 Tipografia
 
 ### Escalas

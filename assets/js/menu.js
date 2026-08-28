@@ -109,7 +109,7 @@ function adicionarIconeNotificacoes(nav) {
   container.className = 'notificacoes-container';
   container.innerHTML = `
     <button class="btn-notificacoes" id="btn-notificacoes" aria-label="Notificações">
-      🔔
+      ${icone('sino', 20)}
       <span class="badge-notificacoes" id="badge-notificacoes" style="display: none;">0</span>
     </button>
     <div class="dropdown-notificacoes" id="dropdown-notificacoes" hidden>
@@ -180,14 +180,14 @@ function atualizarNotificacoes() {
     const ehHoje = lembrete.data.toDateString() === hoje.toDateString();
     const ehAmanha = lembrete.data.toDateString() === amanha.toDateString();
     const corBorda = lembrete.tipo === 'fechamento' ? '#90caf9' : '#ffb74d';
-    const icone = lembrete.tipo === 'fechamento' ? '📋' : '⏰';
+    const iconeHtml = lembrete.tipo === 'fechamento' ? icone('prancheta', 14) : icone('relogio', 14);
     const label = lembrete.tipo === 'fechamento' ? 'Fechamento' : 'Vencimento';
     const dataTexto = ehHoje ? 'Hoje' : ehAmanha ? 'Amanhã' : formatarDataLembrete(lembrete.data);
 
     return `
       <div style="border-left: 3px solid ${corBorda}; padding: 8px var(--espacamento-md); margin-bottom: 8px; font-size: 13px;">
         <div style="font-weight: bold; color: #333;">
-          ${icone} ${lembrete.cartao}${lembrete.ultimos ? ` ●●●● ${lembrete.ultimos}` : ''}
+          ${iconeHtml} ${lembrete.cartao}${lembrete.ultimos ? ` ●●●● ${lembrete.ultimos}` : ''}
         </div>
         <div style="color: #666; font-size: 12px; margin-top: 2px;">
           ${label} • Dia ${lembrete.dia} • ${dataTexto}

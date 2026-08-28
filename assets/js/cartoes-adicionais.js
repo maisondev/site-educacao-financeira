@@ -79,7 +79,7 @@ class GerenciadorCartoesAdicionais {
     this.definirDataHoje();
 
     // Mostrar mensagem de sucesso
-    console.log(`✓ Cartão de ${nome} com saldo R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado!`);
+    console.log(`Cartão de ${nome} com saldo R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado!`);
   }
 
   renderizar() {
