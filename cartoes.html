@@ -433,6 +433,8 @@
 
     <div class="button-group">
       <button class="btn btn-primary" onclick="abrirModalCartao()">+ Adicionar Cartão</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('input-importar-cartao').click()">Importar de fatura</button>
+      <input type="file" id="input-importar-cartao" accept="application/json,.json" hidden>
     </div>
 
     <div id="resumo-saldos" style="display: none; background-color: var(--cor-fundo-alt); border: 2px solid var(--cor-primaria); border-radius: 8px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-lg);">

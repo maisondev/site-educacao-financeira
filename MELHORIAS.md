@@ -106,6 +106,20 @@ Mais três indicadores de saúde: **taxa de poupança** (% da renda que sobrou),
 
 ---
 
+### 6b. ✅ Importar cartão a partir da análise de fatura (≈1h) — feito em 2026-08-28
+
+**Problema:** a rotina de análise de fatura (pasta do Google Drive) gera HTML + CSV, mas o cartão continuava tendo que ser digitado à mão em `cartoes.html`.
+
+**O que foi feito:**
+- A análise passa a gerar também um `cartao-<mes>-<ano>.json` na pasta da fatura (manifesto: dados do cartão + fatura do mês).
+- Botão **"Importar de fatura"** em `cartoes.html` → abre seletor de arquivo → lê o JSON, mostra confirmação e cadastra/atualiza o cartão (dedup por últimos 4 dígitos + banco).
+- Se o manifesto trouxer a fatura do mês, ela entra em `datasPorMes` e é lançada em Despesas Variáveis pela sincronização já existente.
+- Funções em `assets/js/cartoes.js`: `validarManifestoCartao`, `aplicarManifestoCartao`, `importarCartaoDeFatura`.
+
+**Limite conhecido:** o navegador não lê o caminho do Drive sozinho — o usuário seleciona o `.json` manualmente pelo seletor de arquivo.
+
+---
+
 ### 7. Fluxo de caixa futuro completo (≈1h30)
 
 **Problema:** `fluxo-caixa-futuro.js` projeta despesas fixas + compras parceladas, mas não considera as **faturas de cartão em aberto** (`cartoes_financeiros`), as **dívidas** (`dividas`) nem as receitas recorrentes. A projeção de 12 meses fica otimista demais para servir de decisão.

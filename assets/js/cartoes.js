@@ -12,9 +12,199 @@ function escaparTextoCartao(texto) {
   return div.innerHTML;
 }
 
+// Fallback: em paginas que carregam cartoes.js sem despesas-variaveis.js
+// (ex.: cartoes.html), garante que a fatura seja lancada como despesa variavel.
+// Quando despesas-variaveis.js tambem esta na pagina, a implementacao de la
+// (declaracao de funcao) sobrescreve esta e prevalece.
+if (typeof adicionarDespesaDeCartao !== 'function') {
+  window.adicionarDespesaDeCartao = function (descricao, valor, data, ultimosDigitos) {
+    const CHAVE = 'despesas_variaveis';
+    let despesas;
+    try {
+      despesas = JSON.parse(localStorage.getItem(CHAVE)) || [];
+    } catch (e) {
+      despesas = [];
+    }
+
+    const chaveDoCartao = (d) => {
+      if (d['ultimosDígitos']) return 'd:' + d['ultimosDígitos'];
+      const m = (d.descricao || '').match(/●●●●\s*(\d{3,4})/);
+      if (m) return 'd:' + m[1];
+      const nome = (d.descricao || '').split(' - ')[0]
+        .replace(/\s*●●●●\s*\d+\s*$/, '').trim().toLowerCase();
+      return 'n:' + (nome || 'cartao');
+    };
+
+    const obj = {
+      id: Date.now() + Math.random(),
+      categoria: 'cartao',
+      descricao: descricao,
+      valor: valor,
+      data: data,
+      competencia: (data || '').slice(0, 7),
+      dataCriacao: new Date().toISOString()
+    };
+    if (ultimosDigitos) {
+      obj['ultimosDígitos'] = ultimosDigitos;
+    }
+
+    const chave = chaveDoCartao(obj);
+    const filtradas = despesas.filter(function (d) {
+      return d.categoria !== 'cartao' || chaveDoCartao(d) !== chave;
+    });
+    filtradas.push(obj);
+    localStorage.setItem(CHAVE, JSON.stringify(filtradas));
+  };
+}
+
 function inicializarCartoes() {
   atualizarVisualizacao();
   sincronizarFaturasExistentes();
+
+  const inputImportar = document.getElementById('input-importar-cartao');
+  if (inputImportar) {
+    inputImportar.addEventListener('change', (e) => {
+      importarCartaoDeFatura(e.target.files[0]);
+      e.target.value = '';
+    });
+  }
+}
+
+// --- Importar cartão a partir do manifesto gerado na análise de fatura ---
+// Lê o cartao-<mes>-<ano>.json salvo na pasta da fatura (Google Drive) e
+// cadastra/atualiza o cartão aqui, opcionalmente registrando a fatura do mês.
+
+const CARTAO_MANIFESTO_TIPO = 'cartao-financas';
+const CARTAO_MANIFESTO_VERSAO = 1;
+
+function validarManifestoCartao(obj) {
+  if (!obj || typeof obj !== 'object') return 'Arquivo não é um manifesto de cartão válido.';
+  if (obj.tipo !== CARTAO_MANIFESTO_TIPO) return 'Este arquivo não é um manifesto de cartão (campo "tipo" diferente).';
+  if (obj.versao !== CARTAO_MANIFESTO_VERSAO) {
+    return `Manifesto na versão ${obj.versao || '?'}; este site lê a versão ${CARTAO_MANIFESTO_VERSAO}.`;
+  }
+  if (!obj.cartao || typeof obj.cartao !== 'object') return 'Manifesto sem a seção "cartao".';
+  if (!/^\d{4}$/.test(String(obj.cartao.ultimos || ''))) return 'Manifesto sem os últimos 4 dígitos do cartão.';
+  return null;
+}
+
+// dia "05" ou "05/08" -> mantém como está (formato aceito por datasPorMes)
+function normalizarDiaMes(valor) {
+  if (valor == null || valor === '') return '';
+  return String(valor).trim();
+}
+
+function aplicarManifestoCartao(obj) {
+  const m = obj.cartao;
+  const bancoManifesto = m.banco || obterBancoPorNome(m.nome) || null;
+  const cartoes = obterCartoes();
+
+  let cartao = cartoes.find(c =>
+    c.ultimos === String(m.ultimos) &&
+    (!bancoManifesto || (obterBancoPorNome(c.nome) || null) === bancoManifesto)
+  );
+
+  const novo = !cartao;
+  if (novo) {
+    cartao = { id: Date.now(), dataCriacao: new Date().toISOString() };
+    cartoes.push(cartao);
+  }
+
+  // Só sobrescreve com valores presentes no manifesto; mantém o resto.
+  if (m.titular) cartao.titular = String(m.titular).trim();
+  if (m.nome) cartao.nome = String(m.nome).trim();
+  cartao.ultimos = String(m.ultimos);
+  if (m.bandeira) cartao.bandeira = String(m.bandeira).toLowerCase();
+  if (m.tipo) cartao.tipo = String(m.tipo).toLowerCase();
+  if (m.limite != null && m.limite !== '') cartao.limite = Math.round(Number(m.limite) * 100) / 100;
+  if (m.fechamento) cartao.fechamento = normalizarDiaMes(m.fechamento);
+  if (m.vencimento) cartao.vencimento = normalizarDiaMes(m.vencimento);
+
+  // Fatura do mês (opcional): registra em datasPorMes para aparecer o saldo
+  // e ser lançada em Despesas Variáveis pela sincronização já existente.
+  let faturaRegistrada = null;
+  const f = obj.fatura;
+  if (f && f.competencia && f.saldo != null && Number(f.saldo) > 0) {
+    if (!cartao.datasPorMes) cartao.datasPorMes = [];
+    const idx = cartao.datasPorMes.findIndex(d => d.mes === f.competencia);
+    const existente = idx !== -1 ? cartao.datasPorMes[idx] : {};
+    const entrada = {
+      ...existente,
+      mes: f.competencia,
+      fechamento: normalizarDiaMes(f.fechamento || cartao.fechamento || ''),
+      vencimento: normalizarDiaMes(f.vencimento || cartao.vencimento || ''),
+      saldo: Math.round(Number(f.saldo) * 100) / 100
+    };
+    if (idx !== -1) {
+      cartao.datasPorMes[idx] = entrada;
+    } else {
+      cartao.datasPorMes.push(entrada);
+    }
+    faturaRegistrada = entrada;
+
+    if (cartao.limite) {
+      if (!cartao.historicoUtilizacao) cartao.historicoUtilizacao = [];
+      const percentual = (entrada.saldo / cartao.limite) * 100;
+      const reg = { mes: f.competencia, percentual, saldo: entrada.saldo, data: new Date().toISOString() };
+      const iHist = cartao.historicoUtilizacao.findIndex(h => h.mes === f.competencia);
+      if (iHist !== -1) cartao.historicoUtilizacao[iHist] = reg;
+      else cartao.historicoUtilizacao.push(reg);
+    }
+  }
+
+  salvarCartoes(cartoes);
+  return { novo, cartao, faturaRegistrada };
+}
+
+function importarCartaoDeFatura(arquivo) {
+  if (!arquivo) return;
+
+  const leitor = new FileReader();
+  leitor.onload = () => {
+    let obj;
+    try {
+      obj = JSON.parse(leitor.result);
+    } catch (e) {
+      alert('Não foi possível ler o arquivo: JSON inválido.');
+      return;
+    }
+
+    const erro = validarManifestoCartao(obj);
+    if (erro) {
+      alert('Manifesto de cartão não pôde ser importado.\n\n' + erro);
+      return;
+    }
+
+    const m = obj.cartao;
+    const linhas = [
+      `${m.nome || 'Cartão'} ●●●● ${m.ultimos}`,
+      m.titular ? `Titular: ${m.titular}` : null,
+      m.limite != null && m.limite !== '' ? `Limite: ${formatarMoedaBrasileira(Number(m.limite))}` : null
+    ];
+    if (obj.fatura && obj.fatura.competencia && obj.fatura.saldo != null) {
+      const [ano, mes] = String(obj.fatura.competencia).split('-');
+      const nomeMes = formatarMesCompletoDeAnoMes(parseInt(ano), parseInt(mes));
+      linhas.push(`Fatura ${nomeMes}: ${formatarMoedaBrasileira(Number(obj.fatura.saldo))} (será lançada em Despesas Variáveis)`);
+    }
+
+    if (!confirm('Importar este cartão?\n\n' + linhas.filter(Boolean).join('\n'))) return;
+
+    let resultado;
+    try {
+      resultado = aplicarManifestoCartao(obj);
+    } catch (e) {
+      alert('Falha ao gravar o cartão: ' + e.message);
+      return;
+    }
+
+    atualizarVisualizacao();
+    sincronizarFaturasExistentes();
+
+    const acao = resultado.novo ? 'cadastrado' : 'atualizado';
+    alert(`Cartão ${acao} com sucesso.`);
+  };
+  leitor.onerror = () => alert('Não foi possível ler o arquivo selecionado.');
+  leitor.readAsText(arquivo);
 }
 
 function obterAnoMesDeMesStr(mesStr) {
