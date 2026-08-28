@@ -279,6 +279,76 @@
     .sm-indicador-ruim {
       border-left-color: var(--cor-erro);
     }
+    .secao-alertas {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .secao-alertas h2 {
+      margin-top: 0;
+    }
+
+    .alt-contador {
+      background: var(--cor-primaria);
+      color: #fff;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    .alt-vazio {
+      color: var(--cor-texto-leve);
+    }
+
+    .alt-lista {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .alt-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+      border: 1px solid var(--cor-borda);
+      border-left-width: 4px;
+      border-radius: 6px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .alt-texto {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .alt-texto span {
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .alt-link {
+      white-space: nowrap;
+    }
+
+    .alt-critico {
+      border-left-color: var(--cor-erro);
+    }
+
+    .alt-atencao {
+      border-left-color: var(--cor-aviso);
+    }
+
+    .alt-info {
+      border-left-color: var(--cor-info);
+    }
   </style>
 </head>
 <body>
@@ -299,6 +369,10 @@
     <p style="color: var(--cor-texto-leve); font-size: 16px;">
       Veja um resumo consolidado de todas as suas finanças em um único lugar.
     </p>
+
+    <section id="container-alertas" class="secao-alertas">
+      <!-- Renderizado por alertas.js -->
+    </section>
 
     <section id="container-saldo-mes" class="secao-saldo-mes">
       <!-- Renderizado por saldo-mes.js -->
@@ -330,6 +404,7 @@
   <script src="./assets/js/menu.js"></script>
   <script src="./assets/js/backup.js"></script>
   <script src="./assets/js/saldo-mes.js"></script>
+  <script src="./assets/js/alertas.js"></script>
   <script src="./assets/js/dashboard.js"></script>
 </body>
 </html>

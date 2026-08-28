@@ -411,6 +411,9 @@ function renderizarDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  if (typeof renderizarAlertas === 'function') {
+    renderizarAlertas();
+  }
   if (typeof renderizarSaldoDoMes === 'function') {
     renderizarSaldoDoMes();
   }

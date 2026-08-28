@@ -69,6 +69,21 @@ function diasAteVencimento(dia) {
   return Math.round((alvo - hoje) / 86400000);
 }
 
+// Data de hoje no formato YYYY-MM-DD (horário local)
+function hojeISO() {
+  const d = new Date();
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const dia = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mes}-${dia}`;
+}
+
+// Formata YYYY-MM-DD para dd/mm/aaaa
+function formatarDataBR(iso) {
+  if (!iso) return '';
+  const [ano, mes, dia] = iso.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
 function salvarDados(dados) {
   localStorage.setItem('despesas_fixas', JSON.stringify(dados));
 }
@@ -310,6 +325,35 @@ function atualizarVisualizacao() {
   atualizarListaDespesas();
 }
 
+function marcarPagoDespesa(id) {
+  const dados = obterDados();
+  const despesa = dados.despesas.find(d => d.id === id);
+  if (!despesa) return;
+
+  if (despesa.pagoEm) {
+    despesa.pagoEm = null;
+  } else {
+    const padrao = hojeISO();
+    const entrada = prompt('Data do pagamento (dd/mm/aaaa):', formatarDataBR(padrao));
+    if (entrada === null) return;
+
+    const texto = entrada.trim();
+    let iso = padrao;
+    if (texto) {
+      const m = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!m) {
+        alert('Data inválida. Use o formato dd/mm/aaaa.');
+        return;
+      }
+      iso = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    }
+    despesa.pagoEm = iso;
+  }
+
+  salvarDados(dados);
+  atualizarVisualizacao();
+}
+
 function toggleOcultarDespesa(id) {
   const dados = obterDados();
   const despesa = dados.despesas.find(d => d.id === id);
@@ -347,18 +391,26 @@ function atualizarListaDespesas() {
       vencimentoHtml = `<p class="despesa-vencimento${urgente ? ' urgente' : ''}">${icone('calendario')} Vence dia ${despesa.vencimentoDia}${sufixo}</p>`;
     }
 
+    const pago = !!despesa.pagoEm;
+    const pagoHtml = pago
+      ? `<p class="despesa-pago">${icone('check')} Pago em ${formatarDataBR(despesa.pagoEm)}</p>`
+      : '';
+    const acaoPagar = pago ? 'Desmarcar pagamento' : 'Marcar como pago';
+
     return `
-      <div class="despesa-item${oculta ? ' oculta' : ''}">
+      <div class="despesa-item${oculta ? ' oculta' : ''}${pago ? ' pago' : ''}">
         <div class="despesa-info">
           <h3>${escaparTexto(despesa.nome)}${oculta ? ' <span class="despesa-badge-oculta">fora do cálculo</span>' : ''}</h3>
           <p class="despesa-categoria">${obterNomeCategoria(despesa.categoria)}</p>
           ${vencimentoHtml}
+          ${pagoHtml}
         </div>
         <div class="despesa-valor">
           <div class="despesa-valor-principal">${formatarMoedaBrasileira(despesa.valor)}</div>
           <div class="despesa-percentual">${percentualDespesa.toFixed(1)}% do salário</div>
         </div>
         <div class="despesa-acoes">
+          <button class="btn-pagar${pago ? ' ativo' : ''}" onclick="marcarPagoDespesa('${despesa.id}')" title="${acaoPagar}" aria-label="${acaoPagar}">${icone('check')}</button>
           <button class="btn-ocultar${oculta ? ' ativo' : ''}" onclick="toggleOcultarDespesa('${despesa.id}')" title="${acaoOcultar}" aria-label="${acaoOcultar}">${icone(oculta ? 'olho-fechado' : 'olho')}</button>
           <button class="btn-editar" onclick="abrirModalDespesaEdicao('${despesa.id}')" title="Editar despesa" aria-label="Editar despesa">${icone('lapis')}</button>
           <button class="btn-remover" onclick="removerDespesa('${despesa.id}')" title="Remover despesa" aria-label="Remover despesa">${icone('lixeira')}</button>

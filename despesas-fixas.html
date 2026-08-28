@@ -487,6 +487,43 @@
       font-weight: 600;
     }
 
+    .despesa-pago {
+      margin: 4px 0 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cor-verde);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .despesa-pago .icone {
+      width: 14px;
+      height: 14px;
+    }
+
+    .despesa-item.pago {
+      border-left-color: var(--cor-verde);
+    }
+
+    .btn-pagar {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-pagar:hover,
+    .btn-pagar.ativo {
+      color: var(--cor-verde);
+    }
+
     .resumo-categorias {
       background-color: white;
       border: 1px solid var(--cor-borda);

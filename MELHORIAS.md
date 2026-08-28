@@ -116,7 +116,7 @@ Mais três indicadores de saúde: **taxa de poupança** (% da renda que sobrou),
 
 ## P2 — Melhoram bastante a rotina
 
-### 8. Central de alertas no dashboard (≈1h)
+### 8. ✅ Central de alertas no dashboard (≈1h) — feito em 2026-08-28
 
 `lembretes.js` já gera eventos de fechamento/vencimento de cartão, mas ficam restritos à página de cartões. Levar para um card fixo no dashboard e ampliar o escopo: meta com prazo vencendo, envelope acima de 100%, reserva abaixo do alvo, dívida com vencimento próximo, mês sem backup.
 
