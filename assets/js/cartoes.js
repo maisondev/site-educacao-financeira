@@ -517,14 +517,15 @@ function atualizarVisualizacao() {
                 const [ano, mes] = h.mes.split('-');
                 const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
                 const mesNome = meses[parseInt(mes) - 1];
-                const statusColor = h.percentual > 80 ? '#ef4444' : h.percentual > 60 ? '#fbbf24' : '#10b981';
-                const statusLabel = h.percentual > 80 ? '⚠️ Crítico' : h.percentual > 60 ? '⚠️ Alerta' : '✓ Normal';
+                const statusPagamento = cartao.datasPorMes?.find(d => d.mes === h.mes)?.foiPaga;
+                const statusColor = statusPagamento ? '#10b981' : h.percentual > 80 ? '#ef4444' : h.percentual > 60 ? '#fbbf24' : '#f59e0b';
+                const statusLabel = statusPagamento ? '✓ Pago' : h.percentual > 80 ? '⚠️ Crítico' : h.percentual > 60 ? '⚠️ Alerta' : '📌 Pendente';
                 return `
-                  <div style="display: grid; grid-template-columns: 60px 1fr 80px 80px; gap: 8px; align-items: center; padding: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; border-left: 3px solid ${statusColor};">
-                    <div style="font-weight: 600;">${mesNome} ${ano.slice(2)}</div>
+                  <div style="display: grid; grid-template-columns: 60px 1fr 80px 100px; gap: 8px; align-items: center; padding: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; border-left: 3px solid ${statusColor}; ${statusPagamento ? 'opacity: 0.6;' : ''}">
+                    <div style="font-weight: 600; ${statusPagamento ? 'text-decoration: line-through;' : ''}">${mesNome} ${ano.slice(2)}</div>
                     <div>${formatarMoedaBrasileira(h.saldo)}</div>
                     <div style="text-align: center; color: ${statusColor}; font-weight: 600;">${Math.round(h.percentual)}%</div>
-                    <div style="text-align: right; font-size: 11px; opacity: 0.8;">${statusLabel}</div>
+                    <div style="text-align: right; font-size: 11px; color: ${statusColor}; font-weight: 600;">${statusLabel}</div>
                   </div>
                 `;
               }).join('')}
