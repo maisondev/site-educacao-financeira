@@ -355,10 +355,7 @@ function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   if (datas.length === 0) return null;
 
-  const comSaldo = datas.filter(d => d.saldo && d.saldo > 0);
-  const ultimas = comSaldo.length > 0 ? comSaldo : datas;
-
-  return ultimas.reduce((max, d) => {
+  return datas.reduce((max, d) => {
     if (!max || d.mes > max.mes) return d;
     return max;
   }, null);
