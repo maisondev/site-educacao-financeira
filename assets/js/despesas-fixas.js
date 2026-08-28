@@ -1,4 +1,5 @@
 let despesaEmEdicaoId = null;
+let ordemDespesas = 'valor';
 
 // Escapa texto do usuário antes de injetar via innerHTML
 function escaparTexto(texto) {
@@ -10,6 +11,10 @@ function escaparTexto(texto) {
 function inicializarDespesasFixas() {
   const dados = obterDados();
   const rendaCentralizada = obterRendaMensal();
+
+  ordemDespesas = dados.ordem === 'vencimento' ? 'vencimento' : 'valor';
+  const selectOrdem = document.getElementById('select-ordem');
+  if (selectOrdem) selectOrdem.value = ordemDespesas;
 
   // Pré-preencher com renda centralizada
   if (rendaCentralizada) {
@@ -363,6 +368,14 @@ function toggleOcultarDespesa(id) {
   atualizarVisualizacao();
 }
 
+function alterarOrdemDespesas(valor) {
+  ordemDespesas = valor === 'vencimento' ? 'vencimento' : 'valor';
+  const dados = obterDados();
+  dados.ordem = ordemDespesas;
+  salvarDados(dados);
+  atualizarListaDespesas();
+}
+
 function atualizarListaDespesas() {
   const dados = obterDados();
   const lista = document.getElementById('lista-despesas');
@@ -372,8 +385,14 @@ function atualizarListaDespesas() {
     return;
   }
 
-  // Ordenar por valor (maior primeiro)
-  const despesasOrdenadas = [...dados.despesas].sort((a, b) => b.valor - a.valor);
+  const despesasOrdenadas = [...dados.despesas].sort((a, b) => {
+    if (ordemDespesas === 'vencimento') {
+      const diaA = a.vencimentoDia || 99;
+      const diaB = b.vencimentoDia || 99;
+      if (diaA !== diaB) return diaA - diaB;
+    }
+    return b.valor - a.valor;
+  });
 
   lista.innerHTML = despesasOrdenadas.map((despesa) => {
     const percentualDespesa = dados.salario > 0 ? (despesa.valor / dados.salario) * 100 : 0;

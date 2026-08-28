@@ -339,6 +339,32 @@
       background-color: var(--cor-primaria-hover);
     }
 
+    .barra-lista-despesas {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--espacamento-md);
+    }
+
+    .campo-ordenar {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-sm);
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .campo-ordenar select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: var(--fonte-sistema);
+      background-color: white;
+    }
+
     .lista-vazia {
       text-align: center;
       padding: var(--espacamento-xl);
@@ -679,7 +705,16 @@
 
       <section>
         <h2>Suas Despesas Fixas</h2>
-        <button class="btn-adicionar" onclick="abrirModalDespesa()">Adicionar Despesa Fixa</button>
+        <div class="barra-lista-despesas">
+          <button class="btn-adicionar" onclick="abrirModalDespesa()">Adicionar Despesa Fixa</button>
+          <label class="campo-ordenar">
+            Ordenar por
+            <select id="select-ordem" onchange="alterarOrdemDespesas(this.value)">
+              <option value="valor">Maior valor</option>
+              <option value="vencimento">Dia de vencimento</option>
+            </select>
+          </label>
+        </div>
 
         <div id="lista-despesas" class="lista-despesas">
           <div class="lista-vazia">

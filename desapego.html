@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desapego | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .resumo-desapego {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .card-info {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-info p {
+      margin: 0 0 var(--espacamento-sm) 0;
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .card-info .valor {
+      font-size: 26px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin: 0;
+    }
+
+    .card-info.sucesso .valor {
+      color: var(--cor-verde);
+    }
+
+    .barra-acoes-desapego {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .btn-adicionar {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-adicionar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .campo-filtro {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-sm);
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+    }
+
+    .campo-filtro select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: var(--fonte-sistema);
+      background-color: white;
+    }
+
+    .lista-desapego {
+      display: grid;
+      gap: var(--espacamento-md);
+    }
+
+    .item-desapego {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--espacamento-md);
+    }
+
+    .item-desapego.status-concluido {
+      border-left-color: var(--cor-verde);
+      opacity: 0.75;
+    }
+
+    .item-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .item-info h3 {
+      margin: 0 0 6px 0;
+      font-size: 16px;
+    }
+
+    .item-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .badge-acao,
+    .badge-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-acao {
+      background: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      color: var(--cor-texto-leve);
+    }
+
+    .badge-status {
+      color: white;
+      background: var(--cor-texto-leve);
+    }
+
+    .badge-parado { background: #9e9e9e; }
+    .badge-preparando { background: #1264a3; }
+    .badge-anunciado { background: #b8860b; }
+    .badge-negociando { background: #c05621; }
+    .badge-concluido { background: var(--cor-verde); }
+
+    .item-descricao {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: var(--cor-texto);
+    }
+
+    .item-detalhes {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+    }
+
+    .item-acoes {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-avancar {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-avancar:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-editar,
+    .btn-remover {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-editar:hover { color: var(--cor-primaria); }
+    .btn-remover:hover { color: #c53030; }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+    }
+
+    .lista-vazia p { margin: 0; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] { display: none; }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 { margin: 0; font-size: 20px; }
+
+    .btn-fechar {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body { padding: var(--espacamento-lg); }
+
+    .form-group { margin-bottom: var(--espacamento-md); }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: var(--espacamento-sm);
+      color: var(--cor-texto);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .form-group textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar { background-color: var(--cor-primaria); color: white; }
+    .btn-salvar:hover { background-color: var(--cor-primaria-hover); }
+    .btn-cancelar {
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+    }
+
+    @media (max-width: 640px) {
+      .resumo-desapego { grid-template-columns: 1fr; }
+
+      .item-desapego { flex-direction: column; }
+
+      .item-acoes {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+      }
+
+      .modal-content { width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Desapego</p>
+
+    <h1>Desapego</h1>
+
+    <p>
+      Registre os objetos parados em casa que poderiam virar dinheiro, troca ou espaço livre:
+      o ar-condicionado da casa antiga, a impressora que precisa de conserto, aquilo que
+      "um dia eu resolvo". A ideia é dar rotatividade — cada item avança de <em>Parado</em>
+      até <em>Concluído</em>. Tudo fica salvo só neste navegador.
+    </p>
+
+    <section id="resumo-desapego" class="resumo-desapego" hidden></section>
+
+    <div class="barra-acoes-desapego">
+      <button class="btn-adicionar" onclick="abrirModalNovo()">Adicionar item</button>
+      <label class="campo-filtro">
+        Mostrar
+        <select id="filtro-status">
+          <option value="todos">Todos</option>
+          <option value="parado">Parados</option>
+          <option value="preparando">Preparando</option>
+          <option value="anunciado">Anunciados</option>
+          <option value="negociando">Negociando</option>
+          <option value="concluido">Concluídos</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="lista-desapego" class="lista-desapego">
+      <div class="lista-vazia">
+        <p>Nenhum item registrado. Comece adicionando aquilo que está parado em casa.</p>
+      </div>
+    </div>
+
+    <section class="proximos-passos">
+      <h2>Dicas para dar rotatividade</h2>
+      <ul>
+        <li>Defina uma ação para cada item: vender, trocar, doar, consertar ou descartar — indecisão é o que trava</li>
+        <li>Itens de conserto: some o custo do reparo antes de decidir se compensa vender ou descartar</li>
+        <li>Fotografe e anuncie em lote num fim de semana; itens anunciados vendem, itens "na garagem" não</li>
+        <li>Sem venda em 30 dias, baixe o preço ou passe direto para doação — o objetivo é o espaço livre</li>
+        <li>O dinheiro que entrar pode ir direto para <a href="./reserva-emergencia.html">a reserva</a> ou <a href="./metas.html">uma meta</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <div id="modal-item" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-titulo">Novo item para desapegar</h2>
+        <button class="btn-fechar" onclick="fecharModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="campo-nome">Item *</label>
+          <input type="text" id="campo-nome" placeholder="Ex: Ar-condicionado de janela" required>
+        </div>
+        <div class="form-group">
+          <label for="campo-acao">O que fazer com ele</label>
+          <select id="campo-acao">
+            <option value="vender">Vender</option>
+            <option value="trocar">Trocar</option>
+            <option value="doar">Doar</option>
+            <option value="consertar">Consertar (e depois vender/usar)</option>
+            <option value="descartar">Descartar</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="campo-descricao">Detalhes / o que falta</label>
+          <textarea id="campo-descricao" placeholder="Ex: precisa trocar o cartucho e testar; sobrou da casa anterior"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="campo-valor">Valor estimado (R$)</label>
+          <input type="text" id="campo-valor" data-moeda placeholder="Ex: 350,00">
+        </div>
+        <div class="form-group">
+          <label for="campo-local">Onde está (opcional)</label>
+          <input type="text" id="campo-local" placeholder="Ex: garagem, armário do quarto">
+        </div>
+        <div class="form-group">
+          <label for="campo-status">Situação</label>
+          <select id="campo-status">
+            <option value="parado">Parado</option>
+            <option value="preparando">Preparando (limpando, consertando, fotografando)</option>
+            <option value="anunciado">Anunciado</option>
+            <option value="negociando">Negociando</option>
+            <option value="concluido">Concluído</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" id="btn-salvar-item" onclick="salvarItem()">Adicionar</button>
+        <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/desapego.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      renderizarMenu();
+      configurarTodosCamposMoeda();
+    });
+  </script>
+</body>
+</html>

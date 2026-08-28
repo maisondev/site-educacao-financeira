@@ -12,6 +12,17 @@ function obterCartoes() {
   }
 }
 
+function obterDespesasFixasLembrete() {
+  try {
+    const bruto = localStorage.getItem('despesas_fixas');
+    const dados = bruto ? JSON.parse(bruto) : null;
+    return dados && Array.isArray(dados.despesas) ? dados.despesas : [];
+  } catch (e) {
+    console.error('Erro ao obter despesas fixas:', e);
+    return [];
+  }
+}
+
 function gerarLembretesProximos30Dias() {
   const cartoes = obterCartoes();
   const hoje = new Date();
@@ -19,6 +30,26 @@ function gerarLembretesProximos30Dias() {
   dataLimite.setDate(dataLimite.getDate() + 30);
 
   const lembretes = [];
+
+  // Vencimento das despesas fixas
+  const mesAtual = hoje.toISOString().slice(0, 7);
+  obterDespesasFixasLembrete().forEach(despesa => {
+    if (despesa.oculta || !despesa.vencimentoDia) return;
+
+    const proximoVenc = calcularProximaDataDoMês(parseInt(despesa.vencimentoDia, 10), hoje);
+    if (proximoVenc > dataLimite) return;
+
+    const pago = typeof despesa.pagoEm === 'string' && despesa.pagoEm.slice(0, 7) === mesAtual;
+    lembretes.push({
+      data: proximoVenc,
+      tipo: 'despesa-fixa',
+      cartao: despesa.nome,
+      dia: parseInt(despesa.vencimentoDia, 10),
+      valor: despesa.valor,
+      pago,
+      pagoEm: pago ? despesa.pagoEm : null
+    });
+  });
 
   cartoes.forEach(cartao => {
     // Lembretes de fechamento
@@ -90,11 +121,33 @@ function renderizarLembretes() {
   const html = lembretes.map(lembrete => {
     const ehHoje = lembrete.data.toDateString() === hoje.toDateString();
     const ehAmanha = lembrete.data.toDateString() === amanha.toDateString();
-    const corFundo = lembrete.tipo === 'fechamento' ? '#e3f2fd' : '#fff3e0';
-    const corBorda = lembrete.tipo === 'fechamento' ? '#90caf9' : '#ffb74d';
-    const iconeHtml = lembrete.tipo === 'fechamento' ? icone('prancheta', 14) : icone('relogio', 14);
-    const label = lembrete.tipo === 'fechamento' ? 'Fechamento' : 'Vencimento';
+
+    let corFundo, corBorda, iconeHtml, label;
+    if (lembrete.tipo === 'fechamento') {
+      corFundo = '#e3f2fd'; corBorda = '#90caf9';
+      iconeHtml = icone('prancheta', 14); label = 'Fechamento';
+    } else if (lembrete.tipo === 'despesa-fixa') {
+      corFundo = lembrete.pago ? '#e8f5e9' : '#f3e5f5';
+      corBorda = lembrete.pago ? '#81c784' : '#ce93d8';
+      iconeHtml = icone('calendario', 14); label = 'Despesa fixa';
+    } else {
+      corFundo = '#fff3e0'; corBorda = '#ffb74d';
+      iconeHtml = icone('relogio', 14); label = 'Vencimento';
+    }
     const dataTexto = ehHoje ? 'Hoje' : ehAmanha ? 'Amanhã' : formatarDataLembrete(lembrete.data);
+
+    const linhaValor = lembrete.tipo === 'despesa-fixa' && typeof formatarMoedaBrasileira === 'function' && lembrete.valor != null
+      ? ` • ${formatarMoedaBrasileira(lembrete.valor)}`
+      : '';
+
+    let selo = '';
+    if (lembrete.tipo === 'despesa-fixa' && lembrete.pago) {
+      selo = `<span style="background: #4caf50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">${icone('check', 12)} PAGO</span>`;
+    } else if (ehHoje) {
+      selo = '<span style="background: #f44336; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">HOJE</span>';
+    } else if (ehAmanha) {
+      selo = '<span style="background: #ff9800; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">AMANHÃ</span>';
+    }
 
     return `
       <div style="background: ${corFundo}; border-left: 4px solid ${corBorda}; padding: var(--espacamento-md); margin-bottom: var(--espacamento-md); border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
@@ -106,12 +159,11 @@ function renderizarLembretes() {
             ${lembrete.cartao}${lembrete.ultimos ? ` ●●●● ${lembrete.ultimos}` : ''}
           </div>
           <div style="font-size: 13px; color: #999; margin-top: 4px;">
-            Dia ${lembrete.dia} • ${dataTexto}
+            Dia ${lembrete.dia} • ${dataTexto}${linhaValor}
           </div>
         </div>
         <div style="text-align: right;">
-          ${ehHoje ? '<span style="background: #f44336; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">HOJE</span>' : ''}
-          ${ehAmanha ? '<span style="background: #ff9800; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">AMANHÃ</span>' : ''}
+          ${selo}
         </div>
       </div>
     `;
