@@ -387,15 +387,18 @@ function atualizarVisualizacao() {
     contadorDiv.textContent = cartoes.length;
   }
 
-  // Calcular resumo de saldos abertos (última fatura disponível)
+  // Calcular resumo de saldos abertos (última fatura disponível ou saldoAberto)
   const cartoesComSaldo = cartoes.map(c => {
     const ultimaFatura = obterUltimaFaturaDisponivel(c);
-    if (!ultimaFatura) return null;
-    const saldo = ultimaFatura.saldo || 0;
+    const saldo = ultimaFatura?.saldo ?? c.saldoAberto ?? 0;
+
+    // Mostrar cartão se tem última fatura OU tem saldoAberto
+    if (!ultimaFatura && !c.saldoAberto) return null;
+
     return {
       ...c,
       saldoVisivel: saldo,
-      mesReferencia: ultimaFatura.mes,
+      mesReferencia: ultimaFatura?.mes,
       ultimaFatura
     };
   }).filter(c => c !== null);
