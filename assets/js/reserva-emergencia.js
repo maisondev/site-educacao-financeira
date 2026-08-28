@@ -17,9 +17,26 @@ function inicializarReserva() {
   }
 }
 
+// Guarda o id do aporte em edição (null quando é um novo aporte)
+let aporteEditandoId = null;
+
 function obterDados() {
   const dados = localStorage.getItem('reserva_emergencia');
-  return dados ? JSON.parse(dados) : { salario: 0, meses: 0, aportes: [] };
+  const parsed = dados ? JSON.parse(dados) : { salario: 0, meses: 0, aportes: [] };
+
+  // Garantir que todo aporte tenha um id (aportes antigos podem não ter)
+  let precisaSalvar = false;
+  parsed.aportes.forEach((a, i) => {
+    if (a.id === undefined || a.id === null) {
+      a.id = Date.now() + i;
+      precisaSalvar = true;
+    }
+  });
+  if (precisaSalvar) {
+    localStorage.setItem('reserva_emergencia', JSON.stringify(parsed));
+  }
+
+  return parsed;
 }
 
 function salvarDados(dados) {
@@ -146,44 +163,119 @@ function atualizarListaAportes() {
 
   if (dados.aportes.length === 0) {
     lista.innerHTML = `<div class="lista-vazia"><p>Nenhum aporte registrado. Comece adicionando seu primeiro depósito!</p></div>`;
+    const distrib = document.getElementById('distribuicao-local');
+    if (distrib) distrib.setAttribute('hidden', '');
     return;
   }
 
   // Ordenar aportes por data (mais recentes primeiro)
   const aportesSorted = [...dados.aportes].sort((a, b) => new Date(b.data) - new Date(a.data));
 
-  lista.innerHTML = aportesSorted.map((aporte, index) => `
+  lista.innerHTML = aportesSorted.map((aporte) => `
     <div class="aporte-item">
       <div class="aporte-info">
         <h4>${aporte.descricao || 'Aporte'}</h4>
         <p class="aporte-data">${new Date(aporte.data).toLocaleDateString('pt-BR')}</p>
+        ${aporte.onde ? `<span class="aporte-onde">${aporte.onde}</span>` : ''}
       </div>
-      <div style="display: flex; align-items: center; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
         <span class="aporte-valor">${formatarMoeda(aporte.valor)}</span>
-        <button class="btn-remover" onclick="removerAporte(${index})" title="Remover aporte">×</button>
+        <button class="btn-editar" onclick="editarAporte(${aporte.id})" title="Editar aporte">Editar</button>
+        <button class="btn-remover" onclick="removerAporte(${aporte.id})" title="Remover aporte">×</button>
       </div>
     </div>
   `).join('');
+
+  atualizarDistribuicaoPorLocal();
+}
+
+function atualizarDistribuicaoPorLocal() {
+  const dados = obterDados();
+  const container = document.getElementById('distribuicao-local');
+  const lista = document.getElementById('lista-distribuicao');
+  if (!container || !lista) return;
+
+  const porLocal = {};
+  dados.aportes.forEach(a => {
+    const nome = (a.onde && a.onde.trim()) || 'Não informado';
+    porLocal[nome] = (porLocal[nome] || 0) + a.valor;
+  });
+
+  const nomes = Object.keys(porLocal);
+  const total = nomes.reduce((sum, n) => sum + porLocal[n], 0);
+
+  // Só mostrar quando houver pelo menos um local informado
+  const temLocalInformado = nomes.some(n => n !== 'Não informado');
+  if (!temLocalInformado || total <= 0) {
+    container.setAttribute('hidden', '');
+    return;
+  }
+
+  container.removeAttribute('hidden');
+  lista.innerHTML = nomes
+    .sort((a, b) => porLocal[b] - porLocal[a])
+    .map(nome => {
+      const valor = porLocal[nome];
+      const pct = Math.round((valor / total) * 100);
+      return `
+        <div class="distribuicao-linha">
+          <span class="distribuicao-local-nome">${nome}</span>
+          <span>
+            <span class="distribuicao-local-valor">${formatarMoeda(valor)}</span>
+            <span class="distribuicao-local-pct">${pct}%</span>
+          </span>
+        </div>
+      `;
+    }).join('');
 }
 
 function abrirModalAporte() {
+  aporteEditandoId = null;
+  document.getElementById('modal-aporte-titulo').textContent = 'Adicionar Aporte';
+  document.getElementById('btn-salvar-aporte').textContent = 'Adicionar';
+
   const hoje = new Date().toISOString().split('T')[0];
   document.getElementById('input-aporte-data').value = hoje;
   document.getElementById('input-aporte-valor').value = '';
+  document.getElementById('input-aporte-onde').value = '';
   document.getElementById('input-aporte-descricao').value = '';
   document.getElementById('modal-aporte').removeAttribute('hidden');
 }
 
+function editarAporte(id) {
+  const dados = obterDados();
+  const aporte = dados.aportes.find(a => a.id === id);
+  if (!aporte) return;
+
+  aporteEditandoId = id;
+  document.getElementById('modal-aporte-titulo').textContent = 'Editar Aporte';
+  document.getElementById('btn-salvar-aporte').textContent = 'Salvar';
+
+  document.getElementById('input-aporte-data').value = aporte.data;
+  document.getElementById('input-aporte-valor').value =
+    typeof formatarNumeroBrasileiro === 'function'
+      ? formatarNumeroBrasileiro(aporte.valor)
+      : aporte.valor;
+  document.getElementById('input-aporte-onde').value = aporte.onde || '';
+  document.getElementById('input-aporte-descricao').value = aporte.descricao || '';
+  document.getElementById('modal-aporte').removeAttribute('hidden');
+}
+
 function fecharModalAporte() {
+  aporteEditandoId = null;
   document.getElementById('modal-aporte').setAttribute('hidden', '');
 }
 
 function salvarAporte() {
-  const valor = parseFloat(document.getElementById('input-aporte-valor').value);
+  const valorBruto = document.getElementById('input-aporte-valor').value;
+  const valor = typeof parseValorBrasileiro === 'function'
+    ? parseValorBrasileiro(valorBruto)
+    : parseFloat(valorBruto);
   const data = document.getElementById('input-aporte-data').value;
+  const onde = document.getElementById('input-aporte-onde').value.trim();
   const descricao = document.getElementById('input-aporte-descricao').value;
 
-  if (!valor || valor <= 0) {
+  if (!valor || isNaN(valor) || valor <= 0) {
     alert('Por favor, insira um valor válido');
     return;
   }
@@ -193,23 +285,36 @@ function salvarAporte() {
     return;
   }
 
+  const valorArredondado = Math.round(valor * 100) / 100;
   const dados = obterDados();
-  dados.aportes.push({
-    valor,
-    data,
-    descricao,
-    id: Date.now()
-  });
+
+  if (aporteEditandoId !== null) {
+    const aporte = dados.aportes.find(a => a.id === aporteEditandoId);
+    if (aporte) {
+      aporte.valor = valorArredondado;
+      aporte.data = data;
+      aporte.onde = onde;
+      aporte.descricao = descricao;
+    }
+  } else {
+    dados.aportes.push({
+      valor: valorArredondado,
+      data,
+      onde,
+      descricao,
+      id: Date.now()
+    });
+  }
 
   salvarDados(dados);
   atualizarVisualizacao();
   fecharModalAporte();
 }
 
-function removerAporte(index) {
+function removerAporte(id) {
   if (confirm('Tem certeza que deseja remover este aporte?')) {
     const dados = obterDados();
-    dados.aportes.splice(index, 1);
+    dados.aportes = dados.aportes.filter(a => a.id !== id);
     salvarDados(dados);
     atualizarVisualizacao();
   }
@@ -222,6 +327,7 @@ function limparDados() {
     document.getElementById('select-meses').value = '';
     document.getElementById('resumo-container').setAttribute('hidden', '');
     document.getElementById('lista-aportes').innerHTML = `<div class="lista-vazia"><p>Nenhum aporte registrado.</p></div>`;
+    document.getElementById('distribuicao-local').setAttribute('hidden', '');
   }
 }
 

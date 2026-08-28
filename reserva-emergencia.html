@@ -310,6 +310,21 @@
       color: #c53030;
     }
 
+    .btn-editar {
+      background: none;
+      border: 1px solid var(--cor-borda);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .btn-editar:hover {
+      background-color: #f0e6ff;
+    }
+
     .lista-vazia {
       text-align: center;
       padding: var(--espacamento-xl);
@@ -729,7 +744,7 @@
   <div id="modal-aporte" class="modal" hidden>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Adicionar Aporte</h2>
+        <h2 id="modal-aporte-titulo">Adicionar Aporte</h2>
         <button class="btn-fechar" onclick="fecharModalAporte()">&times;</button>
       </div>
       <div class="modal-body">
@@ -759,7 +774,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-salvar" onclick="salvarAporte()">Adicionar</button>
+        <button class="btn-salvar" id="btn-salvar-aporte" onclick="salvarAporte()">Adicionar</button>
         <button class="btn-cancelar" onclick="fecharModalAporte()">Cancelar</button>
       </div>
     </div>
