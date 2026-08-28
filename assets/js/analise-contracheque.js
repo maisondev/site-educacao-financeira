@@ -760,19 +760,35 @@ function carregarHistorico() {
   const mediaDescontos = totalDescontos / meses;
   const mediaLiquido = totalLiquido / meses;
 
+  // Variação percentual de cada mês em relação ao mês anterior (sempre cronológico).
+  const cronologico = [...historico].sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0));
+  const variacaoPorMes = {};
+  cronologico.forEach((c, i) => {
+    const anterior = cronologico[i - 1];
+    const pct = (atual, prev) => (prev ? ((atual - prev) / prev) * 100 : null);
+    variacaoPorMes[c.competencia] = anterior ? {
+      bruto: pct(c.totalBruto || 0, anterior.totalBruto || 0),
+      descontos: pct(c.totalDescontos || 0, anterior.totalDescontos || 0),
+      liquido: pct(c.salarioLiquido || 0, anterior.salarioLiquido || 0)
+    } : { bruto: null, descontos: null, liquido: null };
+  });
+
   const ordenado = [...historico].sort((a, b) => {
     const cmp = compararHistorico(a, b, ordemHistorico.campo);
     return ordemHistorico.dir === 'asc' ? cmp : -cmp;
   });
 
-  tbody.innerHTML = ordenado.map(contrato => `
+  tbody.innerHTML = ordenado.map(contrato => {
+    const v = variacaoPorMes[contrato.competencia] || {};
+    return `
     <tr class="linha-historico" style="cursor: pointer;" onclick="verDetalheHistorico('${contrato.competencia}')" title="Clique para ver o detalhamento">
       <td>${contrato.competencia || 'Desconhecida'}</td>
-      <td>${formatarMoeda(contrato.totalBruto || 0)}</td>
-      <td>${formatarMoeda(contrato.totalDescontos || 0)}</td>
-      <td><strong>${formatarMoeda(contrato.salarioLiquido || 0)}</strong></td>
+      <td>${formatarMoeda(contrato.totalBruto || 0)}${formatarVariacao(v.bruto, true)}</td>
+      <td>${formatarMoeda(contrato.totalDescontos || 0)}${formatarVariacao(v.descontos, false)}</td>
+      <td><strong>${formatarMoeda(contrato.salarioLiquido || 0)}</strong>${formatarVariacao(v.liquido, true)}</td>
     </tr>
-  `).join('') + `
+  `;
+  }).join('') + `
     <tr style="font-weight: bold; border-top: 2px solid var(--cor-borda); background-color: var(--cor-fundo-hover);">
       <td>Total (${meses} ${meses === 1 ? 'mês' : 'meses'})</td>
       <td>${formatarMoeda(totalBruto)}</td>
@@ -789,6 +805,25 @@ function carregarHistorico() {
 
   atualizarSetasOrdenacao();
   desenharGraficoEvolucao(historico);
+}
+
+// Selo de variação percentual vs. o mês anterior. favoravelSeSobe define a cor:
+// para bruto/líquido subir é bom (verde); para descontos subir é ruim (vermelho).
+function formatarVariacao(pct, favoravelSeSobe) {
+  if (pct === null || pct === undefined || !isFinite(pct)) return '';
+
+  const neutro = Math.abs(pct) < 0.05;
+  const seta = neutro ? '' : (pct > 0 ? '▲ ' : '▼ ');
+  const sinal = pct > 0 ? '+' : '';
+  const texto = `${sinal}${pct.toFixed(1).replace('.', ',')}%`;
+
+  let cor = 'var(--cor-texto-leve)';
+  if (!neutro) {
+    const favoravel = (pct > 0) === favoravelSeSobe;
+    cor = favoravel ? 'var(--cor-sucesso)' : 'var(--cor-erro)';
+  }
+
+  return `<span class="hist-var" style="color: ${cor};">${seta}${texto}</span>`;
 }
 
 // Comparador base (crescente) para as colunas do histórico.
