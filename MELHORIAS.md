@@ -1,170 +1,206 @@
 # Oportunidades de Melhoria — Site de Finanças
 
-Levantamento feito em 2026-08-28 sobre o estado atual do projeto (29 páginas, 30 scripts, ~8.100 linhas de JS, tudo em `localStorage`).
-
-O critério de ordenação é **utilidade real no gerenciamento das finanças ÷ esforço**. As P0 são as que eu faria amanhã.
+> **Estado em 2026-08-28 (fim do dia):** 48 páginas HTML (36 na raiz + 9 artigos em `temas/` + 3 calculadoras), 46 scripts, ~15.000 linhas de JS, 100% em `localStorage`.
+>
+> Critério de ordenação: **utilidade real no gerenciamento das finanças ÷ esforço**. As P0 são as que eu faria amanhã.
 
 ---
 
-## P0 — Fazer amanhã
+## Registro do que foi entregue em 2026-08-28
 
-### 1. ✅ Backup / Exportar / Importar todos os dados (≈1h) — feito em 2026-08-28
+Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
-**Problema:** hoje 100% dos dados vivem no `localStorage` do navegador. Limpar cache, trocar de máquina, usar o celular ou o Chrome resetar o site = perda total do histórico financeiro. Não existe nenhuma saída de dados no projeto.
+### Infraestrutura de dados
+- **Backup completo** (`assets/js/backup.js`): exporta todo o `localStorage` num `.json` (`financas-backup-AAAA-MM-DD.json`) e restaura com confirmação. Aviso de "sem backup há 30+ dias" no Painel.
+- **Camada `Store`** (`assets/js/storage.js`): catálogo único de chaves (`Store.CHAVES`), leitura tolerante a JSON corrompido (`Store.ler` devolve o padrão em vez de quebrar a página) e tratamento de `QuotaExceededError` na escrita. Migração **iniciada** por `dashboard.js`, `relatorios.js`, `saldo-mes.js`, `competencia.js`, `backup.js`.
+- **Competência mensal** (`assets/js/competencia.js`): campo `competencia: "AAAA-MM"` em despesas variáveis e receitas, migração idempotente (`migrarCompetencias`), seletor de mês reutilizável (`renderizarSeletorCompetencia`) e ação **"Fechar mês"** — arquiva o retrato em `historico_mensal`, zera os envelopes e mantém tudo reabrível.
+- **Envelopes com competência** (`envelopes.html` + `envelopes.js`, *no working tree, ainda não commitado*): seletor de mês, botão "Fechar mês", meses fechados renderizados como retrato **somente leitura** a partir de `historico_mensal`, e bloqueio de lançamento fora do mês corrente. Link "Ver lançamentos do dia" para o lançamento rápido do Painel.
+
+### Painel (dashboard)
+- **Saldo projetado do mês** (`saldo-mes.js`): `receitas − despesas fixas − variáveis − faturas − parcelas − dívidas + ajustes = saldo`, com indicadores de **taxa de economia**, **comprometimento com dívidas** e **meses de reserva**.
+- **Central de alertas**: cartões (fechamento/vencimento), dívidas, metas com prazo, envelope acima de 100%, reserva abaixo do alvo e mês sem backup — num card fixo.
+- **Lançamento rápido**: um único campo (`45,90 mercado`) cria a despesa variável na hora; a lista abre no mês vigente com navegação por mês (setas + "mês atual") e total do mês.
+
+### Novas áreas de acompanhamento
+- **Carro** (`carro.html`): histórico de manutenções, plano preventivo por km/tempo, fundo de reserva mensal, custo por km, consumo e dicas de priorização/economia.
+- **FGTS** (`fgts.html`): contas de FGTS, registro de saldo por extrato (snapshot) e resumo consolidado.
+- **Desapego** (`desapego.html`): itens para vender, com valor esperado.
+- **Dívidas** reformulada (`dividas.js`): separa dívidas onerosas de contas de curto prazo, modo parcelado, saldo devedor, débito automático, faturas de cartão read-only, **simulador avalanche × bola de neve** e edição.
+- **Cadastros Gerais** (`cadastros.html`): categorias de despesa, formas de pagamento e estabelecimentos reutilizáveis (chave `cadastros_gerais`).
+- **Registrato (BCB)** (`registrato.html`): relacionamentos com instituições (CCS), chaves Pix, dívidas e limites (SCR), com envio das dívidas do SCR para o Acompanhador de Dívidas.
+- **Saldo Projetado** (`saldo-projetado.html`): página própria com seletor de mês e **ajustes manuais avulsos** por competência (entradas/saídas pontuais que também entram no cálculo do Painel).
+
+### Análise
+- **Relatórios** (`relatorios.html` + `graficos.js`): gráficos **SVG puro, sem CDN** de saldo mensal, gasto por categoria e evolução do patrimônio líquido.
+- **Análise de fatura** (`analise-fatura.html`): página por categoria; gera manifesto `cartao-<mes>-<ano>.json` na pasta da fatura.
+- **Importar cartão de fatura** (`cartoes.html`): botão que lê o manifesto JSON e cadastra/atualiza o cartão (dedup por últimos 4 dígitos + banco).
+- **Histórico de contracheques** (`analise-contracheque.html`): ordenação por coluna (competência, bruto, descontos, líquido), linha de média mensal e variação % vs. mês anterior.
+
+### Conteúdo e navegação
+- **Roadmap de Estudos** (`roadmap.html`): 14 módulos em 3 etapas (fundamentos → fazer render → construir/proteger patrimônio).
+- **Renda Fixa** (`temas/juros-e-investimentos/renda-fixa-para-comecar.html`): artigo comparando ativos e indicando os melhores para reserva e para começar.
+- **Glossário** (`glossario.html`): contador fixo de termos, cadastro/edição em `localStorage`, deep-link por âncora e links das páginas de acompanhamento para as definições.
+- **Cabeçalho**: data atual + calendário do mês no header; correção do menu hambúrguer nas páginas com nav dinâmico (religa `initMenu` após `menu.js` montar o `.site-nav`).
+- **Reserva de emergência** (`reserva-emergencia.html`): campo "onde aportou" com distribuição por local e edição de aportes; guia de onde e como juntar (CDB, conta rendendo, Tesouro Selic).
+
+---
+
+## Backlog anterior — o que sobrou
+
+| # | Item | Status |
+|---|------|--------|
+| 1 | Backup exportar/importar | ✅ feito |
+| 2 | Camada única de storage | ◑ **parcial** — `Store` existe, mas **24 scripts** ainda usam `localStorage` direto → ver **N1** |
+| 3 | Saldo do mês no dashboard | ✅ feito |
+| 4 | Competência mensal | ✅ base feita — só `despesas_variaveis` e `receitas_lista` têm competência → ampliação em **N8** |
+| 5 | Categorias unificadas | ◑ **parcial** — `cadastros.html` cadastra as listas, mas os formulários não as consomem → ver **N3** |
+| 6 | Análise de fatura → lançamento automático | ✗ pendente (só o 6b, importar cartão, foi feito) → detalhado em **N2** |
+| 7 | Fluxo de caixa futuro completo | ✗ pendente → detalhado em **N7** |
+| 8 | Central de alertas | ✅ feito |
+| 9 | Lançamento rápido | ✅ feito |
+| 10 | PWA + uso no celular | ✗ pendente → ver **N10** |
+| 11 | Gráficos nos relatórios | ✅ feito |
+| 12 | Simulador de quitação de dívidas | ✅ feito |
+
+---
+
+## Novo scan — oportunidades (levantadas em 2026-08-28)
+
+### P0 — Fazer amanhã
+
+#### N1. Fechar a migração para `Store` + chaves fora do catálogo (≈1h30)
+
+**Problema:**
+- `Store.CHAVES` **não inclui** `cadastros_gerais` (`assets/js/cadastros-dados.js:6`) nem `registrato_bcb` (`assets/js/registrato.js:6`). O `backup.js` só as pega no *sweep* do `localStorage` se já existirem no momento da exportação — não estão declaradas em lugar nenhum.
+- **24 scripts** ainda fazem `localStorage.getItem` + `JSON.parse` sem `try/catch`. Um único JSON corrompido (dado truncado, aba fechada no meio de uma escrita) deixa a página **em branco**. `Store.ler` já resolve isso devolvendo o padrão.
+- `const CHAVE_*` como string literal ainda em ~12 arquivos (`despesas-variaveis.js:1-2`, `envelopes.js:3`, `carro.js:4`, `cursos.js:1`, `fluxo-caixa-futuro.js:3`, `lembretes.js:3`, `analise-contracheque.js:3`, `competencia.js:5-6`…), duplicando o catálogo.
 
 **O que fazer:**
-- Criar `assets/js/backup.js` com:
-  - `exportarTudo()` — varre a lista de chaves conhecidas e gera um `.json` para download (`financas-backup-AAAA-MM-DD.json`).
-  - `importarTudo(arquivo)` — lê o JSON, valida a versão, pede confirmação e restaura.
-- Adicionar a seção "Backup" em `dashboard.html` (ou uma página `configuracoes.html`) com dois botões: **Exportar dados** e **Importar backup**.
-- Guardar `backup_ultima_data` e mostrar aviso no dashboard quando passar de 30 dias sem backup.
+- Adicionar `CADASTROS: 'cadastros_gerais'` e `REGISTRATO: 'registrato_bcb'` ao `Store.CHAVES`.
+- Migrar por lote os leitores mais críticos para `Store.ler`/`Store.gravar`: `despesas-fixas.js`, `despesas-variaveis.js`, `dividas.js`, `cartoes.js`, `reserva-emergencia.js`, `investimentos.js`, `balanco-patrimonial.js`, `fgts.js`.
+- Onde não migrar agora, ao menos apontar `const CHAVE_X = Store.CHAVES.X` (uma linha) em vez da string literal — igual `fgts.js:18` já faz.
 
-**Chaves a incluir no backup** (levantadas do código):
-
-```
-renda_mensal, renda_mensal_competencia, receitas_lista, contracheques_historico,
-rendas_extras, despesas_fixas, despesas_variaveis, envelopes_financeiros,
-metas_financeiras, dividas, investimentos, balanco_patrimonial, reserva_emergencia,
-cartoes, cartoes_financeiros, cartao_credito, cartoes_adicionais_dados,
-compras_parceladas, hacks_nubank_dados, cursos_lista
-```
-
-> Isso é pré-requisito para quase todo o resto — sem backup, qualquer refatoração de formato de dados vira risco.
+**Ganho:** encerra o item 2 do backlog (marcado ✅ sem estar), elimina a classe "página branca por dado ruim" e garante que o backup declara 100% das chaves.
 
 ---
 
-### 2. ✅ Camada única de storage (`assets/js/storage.js`) (≈1h) — feito em 2026-08-28
+#### N2. Análise de fatura → "Lançar em Despesas Variáveis" (≈2h)
 
-**Problema:** cada script reimplementa `getItem` + `JSON.parse` + `try/catch`, e três arquivos diferentes declaram a **mesma global `CHAVE_STORAGE`** (`assets/js/metas.js:3`, `assets/js/envelopes.js:3`, `assets/js/renda-extra.js:3`). Como não há módulos ES, se duas dessas páginas carregarem o mesmo par de scripts, ocorre conflito de declaração. As chaves também estão espalhadas como strings soltas (`assets/js/relatorios.js:282-297`, `assets/js/dashboard.js:11-71`).
+**Problema:** `analise-fatura.js` categoriza cada linha (`afCategorizar`, `afAlterarCategoria`) e salva a análise em `analise_faturas` (`afGravarTodas:302`), mas **nunca cria despesas**. Todo o trabalho de ler e classificar a fatura é jogado fora e as compras precisam ser redigitadas em `despesas-variaveis.html`. É o maior desperdício de tempo da rotina mensal de faturas registrada na memória (`analise-faturas-cartao.md`).
 
 **O que fazer:**
-- `storage.js` com `Store.ler(chave, padrao)`, `Store.gravar(chave, valor)` e `Store.CHAVES = {...}` (catálogo único de nomes).
-- Migrar os módulos para usar `Store` — pode ser incremental, começando por `dashboard.js` e `relatorios.js`, que são os que mais leem dados de terceiros.
-- Tratar JSON corrompido devolvendo o padrão em vez de quebrar a página, e capturar `QuotaExceededError` na escrita com aviso ao usuário.
+- Botão **"Lançar em Despesas Variáveis"** perto do `af-salvar` (`analise-fatura.html:484`): cria um lançamento por linha incluída, já com `categoria` escolhida e `competencia` = mês de vencimento da fatura.
+- Dedup por `origem: 'fatura'` + hash (cartão + data + valor + descrição) — reimportar a mesma fatura não duplica.
+- Detectar parcela no descritivo (`"03/10"`) e mandar para `compras_parceladas` (alimenta o fluxo de caixa futuro) em vez de lançar 1×.
+- Guardar cada correção manual de categoria como regra em `regras_categorizacao` (trecho do descritivo → categoria) e aplicar nas próximas análises — `afCategorizar` já é o ponto de entrada.
 
-**Ganho:** habilita backup, competência mensal e dashboard consolidado sem retrabalho.
-
----
-
-### 3. ✅ Dashboard com o número que importa: saldo do mês (≈1h30) — feito em 2026-08-28
-
-**Problema:** `dashboard.js` só lê metas, envelopes, cartões, despesas fixas, despesas variáveis, reserva e cursos. Ele **ignora receitas, rendas extras, dívidas, investimentos e parcelas de cartão**. Ou seja, a tela inicial não responde à pergunta mais útil: *"sobra ou falta dinheiro este mês?"*
-
-**O que fazer:** um bloco no topo do dashboard com:
-
-```
-  Receitas do mês (renda + rendas extras)        R$ x
-– Despesas fixas do mês                          R$ x
-– Despesas variáveis lançadas no mês             R$ x
-– Faturas de cartão que vencem no mês            R$ x
-– Parcelas de compras parceladas do mês          R$ x
-– Dívidas com vencimento no mês                  R$ x
-= SALDO PROJETADO DO MÊS                         R$ x   (verde/vermelho)
-```
-
-Mais três indicadores de saúde: **taxa de poupança** (% da renda que sobrou), **comprometimento com dívidas** (% da renda — alerta acima de 30%) e **meses de reserva** (reserva ÷ despesa mensal média).
+**Ganho:** a fatura vira lançamento com um clique. Alinha com a rotina: finais 3616/3614, organizado por categoria, HTML+CSV na pasta do mês.
 
 ---
 
-## P1 — Alto valor, exige um pouco mais de desenho
+#### N3. Categorias unificadas de verdade: formulários lendo `cadastros_gerais` (≈1h30)
 
-### 4. ✅ Competência mensal (fechamento de mês) (≈3h) — feito em 2026-08-28
-
-**Problema:** o modelo de dados é "estado atual", não série temporal. Despesas variáveis, envelopes e receitas não têm um mês de referência consistente, então não dá para responder *"quanto gastei em julho vs agosto?"* nem gerar tendência. Só `renda_mensal_competencia` e `contracheques_historico` têm noção de tempo.
+**Problema:** `cadastros.html` grava categorias de despesa, formas de pagamento e estabelecimentos em `cadastros_gerais`, mas `despesas-fixas.js`, `despesas-variaveis.js` e `analise-fatura.js` (`afOpcoesCategoria:458`) mantêm listas próprias. Resultado: `relatorios.html` não soma "Alimentação" das três fontes e a análise de fatura sugere categorias que não batem com as das despesas.
 
 **O que fazer:**
-- Padronizar um campo `competencia: "AAAA-MM"` em todo lançamento novo (despesas variáveis, receitas, rendas extras, aportes).
-- Seletor de mês global (no header ou no dashboard) que filtra as páginas.
-- Ação "Fechar mês": congela o mês, arquiva em `historico_mensal`, zera os envelopes e replica as despesas fixas para o mês seguinte.
-- Migração: lançamentos sem `competencia` herdam o mês da `dataCriacao`.
+- `cadastros-dados.js` expõe `Cadastros.categorias()`, `Cadastros.formasPagamento()`, `Cadastros.estabelecimentos()`.
+- Todo `<select>` de categoria passa a montar as opções a partir daí, com *fallback* para uma lista canônica (Moradia, Alimentação, Transporte, Saúde, Educação, Lazer, Assinaturas, Dívidas, Investimentos, Outros) quando `cadastros_gerais` estiver vazio. *Seed* inicial com as categorias que já existem espalhadas.
+- Relatório novo em `relatorios.html`: **"gasto por categoria no mês"** somando despesas fixas + variáveis + fatura, com comparação com o mês anterior (agora possível pela competência).
 
-**Ganho:** desbloqueia gráficos de evolução, comparação mês a mês e média móvel de gastos — hoje impossíveis.
+**Ganho:** destrava a pergunta "quanto gastei com X somando tudo?" e para de fragmentar o vocabulário a cada página nova.
 
 ---
 
-### 5. Categorias unificadas (≈2h)
+#### N4. "Quanto posso gastar" — disponível ÷ dias restantes (≈40min)
 
-**Problema:** despesas fixas, despesas variáveis e a análise de fatura usam vocabulários de categoria independentes. Por isso `relatorios.html` não consegue dizer *"gastei R$ X com alimentação somando tudo"*.
+**Problema:** o Painel mostra o saldo do mês inteiro, mas não responde a pergunta mais usada no dia a dia: *"posso gastar quanto hoje?"*
+
+**O que fazer:** uma linha no card de saldo: `(saldo projetado positivo − o que já está reservado) ÷ dias que faltam no mês` → *"R$ 87/dia até 31/ago"*. Reutiliza `calcularSaldoDoMes` (`saldo-mes.js:167`), que já existe. "Reservado" = envelopes de metas + aporte de reserva planejado.
+
+**Ganho:** o número mais prático possível, quase de graça.
+
+---
+
+### P1 — Alto valor, exige um pouco mais de desenho
+
+#### N5. Contracheque do mês vira a renda daquela competência (≈1h)
+
+**Problema:** `analise-contracheque.js` guarda o histórico em `contracheques_historico`, mas o líquido **não** vira a renda da competência. `saldo-mes.js:42` cai no `renda_mensal` (valor único) como *fallback*, então meses com hora extra, 13º ou falta ficam errados no saldo.
+
+**O que fazer:** ao salvar um contracheque com competência AAAA-MM, gravar `renda_mensal_competencia[AAAA-MM] = liquido`; `smReceitasDoMes` passa a preferir esse valor. Remove a redigitação e deixa o saldo correto em meses de salário variável.
+
+---
+
+#### N6. Auditoria de navegação + home com hierarquia (≈1h)
+
+**Problema:**
+- Páginas **fora do menu** mas linkadas na home: `parcelas-cartao.html`, `links-uteis.html`, `cartao.html` (esta parece órfã — substituída por `cartoes.html`, mas ainda referenciada por 5 páginas). `ferramentas/calculadora-inflacao.html` não está no menu nem na home. Isso viola a regra do `CLAUDE.md`: "toda página → link no menu **e** card na home".
+- `index.html` "Seções Principais" tem ~28 cards planos, sem agrupamento — difícil achar no uso diário.
 
 **O que fazer:**
-- `assets/js/categorias.js` com lista canônica (Moradia, Alimentação, Transporte, Saúde, Educação, Lazer, Assinaturas, Dívidas, Investimentos, Outros), cada uma com ícone e cor.
-- Usar o mesmo `<select>` em todos os formulários de lançamento.
-- Relatório novo: **gasto por categoria no mês**, com barra de participação e comparação com o mês anterior.
+- Decidir para cada órfã: linkar no `menu.js` ou remover. `cartao.html` provavelmente sai (migrar os 5 links para `cartoes.html`).
+- Agrupar os cards da home em **Planejar / Acompanhar / Analisar / Aprender / Referência**, espelhando `menu.js`. Só HTML + um `<h3>` por grupo.
 
 ---
 
-### 6. Análise de fatura → lançamento automático (≈2h)
+#### N7. Fluxo de caixa futuro completo (item 7) (≈1h30)
 
-**Problema:** `analise-fatura.html` analisa, mas não persiste o resultado — o trabalho de ler a fatura é jogado fora e as compras precisam ser redigitadas.
+**Problema:** `fluxo-caixa-futuro.js` projeta despesas fixas + compras parceladas (`CHAVE_COMPRAS:3`), mas ignora `cartoes_financeiros` (faturas em aberto), `dividas` e receitas recorrentes. A projeção de 12 meses fica otimista demais para decidir.
 
-**O que fazer:**
-- Ao final da análise, botão **"Lançar em despesas variáveis"**, criando os lançamentos já com categoria sugerida e competência.
-- Regras de categorização automática por trecho do descritivo (ex.: contém "IFOOD"/"IFD" → Alimentação), guardadas em `regras_categorizacao` e editáveis — cada correção manual vira uma regra nova.
-- Detectar compras parceladas no texto ("03/10") e empurrar para `compras_parceladas`, alimentando o fluxo de caixa futuro.
-
-> Alinha com a rotina já registrada: só cartões finais 3616/3614, organizado por categoria.
+**O que fazer:** somar as três fontes na linha do tempo e pintar de vermelho os meses com saldo projetado negativo — exatamente onde a decisão precisa ser antecipada.
 
 ---
 
-### 6b. ✅ Importar cartão a partir da análise de fatura (≈1h) — feito em 2026-08-28
+#### N8. Competência para envelopes, rendas extras e aportes de reserva (≈2h)
 
-**Problema:** a rotina de análise de fatura (pasta do Google Drive) gera HTML + CSV, mas o cartão continuava tendo que ser digitado à mão em `cartoes.html`.
+**Problema:** `competencia.js` só migra `COMPETENCIA_FONTES` = despesas variáveis + receitas (linhas 9-12). Envelopes (`registros[]`), `rendas_extras` e aportes de reserva não têm competência, então a comparação mês a mês desses só existe no *snapshot* de `fecharMes`.
 
-**O que foi feito:**
-- A análise passa a gerar também um `cartao-<mes>-<ano>.json` na pasta da fatura (manifesto: dados do cartão + fatura do mês).
-- Botão **"Importar de fatura"** em `cartoes.html` → abre seletor de arquivo → lê o JSON, mostra confirmação e cadastra/atualiza o cartão (dedup por últimos 4 dígitos + banco).
-- Se o manifesto trouxer a fatura do mês, ela entra em `datasPorMes` e é lançada em Despesas Variáveis pela sincronização já existente.
-- Funções em `assets/js/cartoes.js`: `validarManifestoCartao`, `aplicarManifestoCartao`, `importarCartaoDeFatura`.
-
-**Limite conhecido:** o navegador não lê o caminho do Drive sozinho — o usuário seleciona o `.json` manualmente pelo seletor de arquivo.
+**O que fazer:** adicionar `rendas_extras` e os `registros` de envelope às fontes; dar competência aos aportes de reserva. Completa a série temporal e destrava as linhas que faltam nos gráficos de evolução.
 
 ---
 
-### 7. Fluxo de caixa futuro completo (≈1h30)
+### P2 — Melhoram a rotina / reduzem risco
 
-**Problema:** `fluxo-caixa-futuro.js` projeta despesas fixas + compras parceladas, mas não considera as **faturas de cartão em aberto** (`cartoes_financeiros`), as **dívidas** (`dividas`) nem as receitas recorrentes. A projeção de 12 meses fica otimista demais para servir de decisão.
+#### N9. `registrato.js` e `dividas.js` compartilhando um construtor de dívida (≈1h)
 
-**O que fazer:** somar as três fontes na linha do tempo e destacar visualmente os meses com saldo projetado negativo — exatamente onde a decisão precisa ser tomada com antecedência.
+`registrato.js:400 regEnviarParaDividas()` monta objetos de dívida à mão (linhas 433-449) e grava **direto** em `localStorage['dividas']` (linha 454), sem passar por `Store` nem por nenhuma função de `dividas.js`. Se o schema de dívida mudar, o Registrato grava registros desatualizados sem erro. **Fazer:** `dividas.js` expõe `upsertDividasExternas(lista)`; o Registrato chama isso e grava via `Store`.
 
----
+#### N10. PWA (item 10) (≈1h30)
 
-## P2 — Melhoram bastante a rotina
+`manifest.json` + service worker mínimo cacheando os estáticos. Com o backup pronto, o celular pode ser base e restaurar no desktop. Sem framework, ~40 linhas de SW.
 
-### 8. ✅ Central de alertas no dashboard (≈1h) — feito em 2026-08-28
+#### N11. Página de verificação / testes de fumaça sem framework (≈2h)
 
-`lembretes.js` já gera eventos de fechamento/vencimento de cartão, mas ficam restritos à página de cartões. Levar para um card fixo no dashboard e ampliar o escopo: meta com prazo vencendo, envelope acima de 100%, reserva abaixo do alvo, dívida com vencimento próximo, mês sem backup.
+`verificacao.html` que carrega todos os módulos e roda *asserts* no navegador (verde/vermelho): migrações idempotentes (rodar 2× não muda nada), `calcularSaldoDoMes` bate com a soma manual de um *fixture*, todas as `Store.CHAVES` legíveis, nenhum `const CHAVE_*` divergente do catálogo. Com 46 scripts, cada refactor de storage hoje arrisca quebrar algo em silêncio.
 
-### 9. ✅ Lançamento rápido (≈1h) — feito em 2026-08-28
+#### N12. Resumo do mês para impressão / PDF (≈1h)
 
-Um único campo no dashboard — `45,90 mercado` — que cria a despesa variável na hora, com categoria sugerida. A maior parte das despesas some do controle porque anotar dá trabalho; reduzir isso a um campo é o que mais aumenta a adesão na prática.
+`@media print` decente em `relatorios.html` e `saldo-projetado.html` + botão "Imprimir resumo do mês". Fecha o ciclo mensal — guardar o PDF na pasta do mês no Drive, como já é a rotina das faturas.
 
-### 10. PWA + uso no celular (≈1h30)
+#### N13. Limpeza de repo (≈15min)
 
-`manifest.json` + service worker mínimo para cache dos estáticos. Permite instalar o site na tela inicial do celular e lançar a despesa no momento da compra. **Atenção:** `localStorage` é por dispositivo — o celular teria base separada da do desktop, então isso só faz sentido depois do item 1 (backup/importação como sincronização manual), ou aceitando o celular como base principal.
+`http.log` (0 bytes) está versionado e o `.gitignore` não cobre. Remover + adicionar `*.log`.
 
-### 11. ✅ Gráficos nos relatórios (≈2h) — feito em 2026-08-28
+#### N14. Foco / Esc / aria nos modais (≈1h)
 
-Hoje os relatórios são numéricos. Com a competência mensal (item 4) resolvida, valem três gráficos em SVG puro (sem CDN, respeitando a regra de zero dependências): evolução do saldo mensal, pizza de gastos por categoria e evolução do patrimônio líquido.
-
-### 12. ✅ Simulador de quitação de dívidas (≈2h) — feito em 2026-08-28 (commit dc886e2)
-
-Em `dividas.html`, comparar as estratégias **avalanche** (maior juros primeiro) e **bola de neve** (menor saldo primeiro), mostrando data de quitação e juros totais economizados em cada uma, dado um valor extra mensal disponível. É a página com maior retorno financeiro direto por hora de implementação.
+Modais (`abrirModalDespesa` em envelopes, snapshot em `fgts.html`, etc.) sem *trap* de foco, sem fechar no Esc, sem `aria-modal`. Um par `abrirModal(el)` / `fecharModal(el)` compartilhado resolve para todos de uma vez.
 
 ---
 
-## Sugestão de ordem para amanhã
+## Ordem sugerida para amanhã
 
-1. **Item 1 (backup)** — protege tudo que já existe.
-2. **Item 2 (storage.js)** — base técnica, elimina o conflito de `CHAVE_STORAGE`.
-3. **Item 3 (saldo do mês no dashboard)** — o ganho de utilidade mais visível do dia.
+1. **N1 (migração `Store`)** — remove o risco que o item 2 deixou pela metade e declara todas as chaves no catálogo.
+2. **N2 (fatura → despesas variáveis)** — o maior ganho de rotina, direto na análise mensal de faturas.
+3. **N3 (categorias unificadas)** — fecha o loop do `cadastros.html` e destrava o relatório "gasto por categoria somando tudo".
 
-Se sobrar tempo: item 8 (alertas) ou item 9 (lançamento rápido), ambos curtos e independentes.
+Se sobrar tempo: **N4** (quanto posso gastar) ou **N13** (limpeza) — ambos curtos e independentes.
 
 ---
 
 ## Notas técnicas a respeitar
 
-- Nada de build step, framework ou CDN — JS vanilla, conforme `CLAUDE.md`.
+- Nada de build step, framework ou CDN — JS vanilla, conforme `CLAUDE.md` / `AGENTS.md`.
 - Cores sempre via variáveis CSS; sem emoji na navegação.
-- Toda página nova: link no menu (`assets/js/menu.js`) **e** card na home.
-- Mudança de formato de dados exige função de migração idempotente + backup antes.
+- Toda página nova: link no menu (`assets/js/menu.js`) **e** card na home (`index.html`).
+- Mudança de formato de dados exige função de migração **idempotente** + backup antes.
+- Novos acessos a `localStorage` passam por `Store` (`assets/js/storage.js`); registrar a chave em `Store.CHAVES`.
