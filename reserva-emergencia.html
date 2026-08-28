@@ -236,6 +236,55 @@
       color: var(--cor-texto-leve);
     }
 
+    .aporte-onde {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background-color: #f0e6ff;
+      color: var(--cor-primaria);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .distribuicao-local {
+      margin-top: var(--espacamento-xl);
+    }
+
+    .distribuicao-local h3 {
+      font-size: 16px;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .distribuicao-linha {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: var(--espacamento-sm) 0;
+      border-bottom: 1px solid var(--cor-borda);
+      font-size: 14px;
+    }
+
+    .distribuicao-linha:last-child {
+      border-bottom: none;
+    }
+
+    .distribuicao-local-nome {
+      font-weight: 500;
+      color: var(--cor-texto);
+    }
+
+    .distribuicao-local-valor {
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .distribuicao-local-pct {
+      color: var(--cor-texto-leve);
+      font-size: 13px;
+      margin-left: var(--espacamento-sm);
+    }
+
     .aporte-valor {
       font-size: 20px;
       font-weight: bold;
@@ -381,9 +430,37 @@
       font-size: 14px;
     }
 
+    .onde-guardar {
+      margin-top: var(--espacamento-xl);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .onde-guardar h3 {
+      margin-top: var(--espacamento-xl);
+      font-size: 17px;
+    }
+
+    .onde-guardar ol {
+      padding-left: var(--espacamento-xl);
+    }
+
+    .onde-guardar ol li {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .onde-guardar table td:nth-child(2),
+    .onde-guardar table td:nth-child(3) {
+      white-space: nowrap;
+    }
+
     @media (max-width: 640px) {
       .form-row {
         grid-template-columns: 1fr;
+      }
+
+      .onde-guardar table {
+        display: block;
+        overflow-x: auto;
       }
 
       .resumo-reserva {
@@ -536,16 +613,113 @@
             <p>Nenhum aporte registrado. Comece adicionando seu primeiro depósito!</p>
           </div>
         </div>
+
+        <div id="distribuicao-local" class="distribuicao-local" hidden>
+          <h3>Onde está sua reserva</h3>
+          <div id="lista-distribuicao"></div>
+        </div>
       </section>
     </section>
 
+    <section class="onde-guardar">
+      <h2>Qual é a melhor forma de juntar a reserva?</h2>
+
+      <p>
+        A reserva de emergência tem três exigências, <strong>nessa ordem</strong>:
+        <strong>liquidez</strong> (sacar no mesmo dia, sem carência),
+        <strong>segurança</strong> (risco próximo de zero) e só depois <strong>rendimento</strong>.
+        Rentabilidade alta não compensa se o dinheiro demora a cair na conta ou pode perder valor
+        justo no dia em que você precisa dele.
+      </p>
+
+      <div class="maxima">
+        <p>A reserva não é investimento para ganhar dinheiro — é seguro. O objetivo dela é estar lá, inteira, no pior dia.</p>
+      </div>
+
+      <h3>Onde deixar</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Opção</th>
+            <th>Rende</th>
+            <th>Liquidez</th>
+            <th>Vale a pena?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="table-highlight-success">
+            <td><strong>CDB de liquidez diária</strong> (100% do CDI ou mais), banco com FGC</td>
+            <td>~100% do CDI</td>
+            <td>No mesmo dia (D+0)</td>
+            <td>Melhor opção para a maior parte da reserva</td>
+          </tr>
+          <tr class="table-highlight-success">
+            <td><strong>Conta que rende sozinha</strong> a 100% do CDI (Nubank "Caixinha", PicPay, Inter etc.)</td>
+            <td>~100% do CDI</td>
+            <td>Imediata</td>
+            <td>Ótima para a parte que você talvez use no mês</td>
+          </tr>
+          <tr class="table-highlight-primary">
+            <td><strong>Tesouro Selic</strong></td>
+            <td>Selic (≈ CDI)</td>
+            <td>D+1 (cai no dia útil seguinte)</td>
+            <td>Boa ideia — com as ressalvas abaixo</td>
+          </tr>
+          <tr class="table-highlight-warning">
+            <td><strong>Poupança</strong></td>
+            <td>~70% do CDI</td>
+            <td>Imediata</td>
+            <td>Só se for o único jeito de você não gastar; rende bem menos</td>
+          </tr>
+          <tr class="table-highlight-danger">
+            <td>Ações, fundos multimercado, cripto, CDB longo, previdência</td>
+            <td>Variável</td>
+            <td>Ruim / pode dar prejuízo</td>
+            <td>Não — nunca use para reserva</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Colocar aportes no Tesouro Selic é uma boa ideia?</h3>
+      <p>
+        <strong>Sim, é uma opção segura e adequada.</strong> O Tesouro Selic é o título mais
+        conservador que existe (garantido pelo Governo Federal) e acompanha a taxa Selic, então
+        rende praticamente o mesmo que um bom CDB de liquidez diária. Diferente de outros títulos
+        do Tesouro, ele quase não sofre "marcação a mercado" — o valor não cai se você precisar
+        resgatar antes do vencimento.
+      </p>
+      <p>Pontos de atenção antes de usar como reserva:</p>
+      <ul>
+        <li><strong>Liquidez é D+1:</strong> você pede o resgate e o dinheiro cai na conta no dia útil seguinte. Para uma emergência de verdade (médica, carro), 1 dia de espera pode incomodar — por isso o ideal é <strong>manter 1 mês de gastos numa conta com liquidez imediata</strong> e o restante no Tesouro Selic.</li>
+        <li><strong>IOF nos primeiros 30 dias:</strong> se resgatar antes de um mês, um IOF regressivo come parte do rendimento. Depois de 30 dias, zero.</li>
+        <li><strong>Imposto de Renda</strong> sobre o rendimento (não sobre o total): 22,5% até 180 dias, caindo até 15% após 2 anos. Um CDB tem a mesma tabela; a conta que rende e a poupança são diferentes (poupança é isenta).</li>
+        <li><strong>Taxa de custódia da B3:</strong> 0,20% ao ano, mas <strong>isenta para os primeiros R$ 10.000</strong> aplicados em Tesouro Selic. Reservas menores não pagam nada.</li>
+        <li><strong>Corretora:</strong> use uma com taxa zero de administração para o Tesouro Direto (a maioria hoje é).</li>
+      </ul>
+
+      <div class="maxima">
+        <p>Resumo: Tesouro Selic serve muito bem para a reserva. Só não deixe 100% dela lá — guarde cerca de um mês de despesas numa conta de saque imediato e o resto no Tesouro Selic ou num CDB de liquidez diária.</p>
+      </div>
+
+      <h3>Como juntar, na prática</h3>
+      <ol>
+        <li><strong>Defina a meta</strong> aqui em cima: de 3 a 6 meses de gasto se você é CLT estável; de 6 a 12 meses se é autônomo, PJ ou tem renda variável.</li>
+        <li><strong>Automatize o aporte</strong> para o dia seguinte ao do salário — pague a reserva antes de gastar o resto.</li>
+        <li><strong>Comece pequeno:</strong> R$ 100/mês já cria o hábito. Aumente quando sobrar.</li>
+        <li><strong>Acelere com dinheiro extra:</strong> 13º, restituição de IR, bônus e vendas de <a href="./desapego.html">desapego</a> vão inteiros para a reserva até ela fechar.</li>
+        <li><strong>Registre cada depósito</strong> no campo de aportes acima para acompanhar o progresso e a data estimada.</li>
+        <li><strong>Ao atingir 100%, pare de aportar</strong> e redirecione o valor para seus <a href="./investimentos.html">investimentos</a> de longo prazo. Só volte a aportar na reserva se precisar usá-la.</li>
+      </ol>
+    </section>
+
     <section class="proximos-passos">
-      <h2>Dicas para construir sua reserva</h2>
+      <h2>Dicas rápidas</h2>
       <ul>
         <li>Comece pequeno — R$ 100 por mês é melhor que nada</li>
-        <li>Automatize — configure um aporte automático da sua conta para uma conta poupança</li>
-        <li>3 a 6 meses é o ideal — escolha conforme sua estabilidade profissional</li>
-        <li>Não toque! — reserve a emergência apenas para verdadeiras emergências</li>
+        <li>Automatize — aporte automático logo após cair o salário</li>
+        <li>3 a 6 meses para CLT estável; 6 a 12 meses para renda variável</li>
+        <li>Não toque! — reserva é só para verdadeiras emergências</li>
+        <li>Quando fechar a meta, direcione os aportes para investimentos de longo prazo</li>
         <li><a href="./temas/reserva-de-emergencia/o-que-e-reserva-de-emergencia.html">Saiba mais sobre reserva de emergência</a></li>
       </ul>
     </section>
@@ -566,6 +740,18 @@
         <div class="form-group">
           <label for="input-aporte-data">Data do Aporte *</label>
           <input type="date" id="input-aporte-data" required>
+        </div>
+        <div class="form-group">
+          <label for="input-aporte-onde">Onde aportou (opcional)</label>
+          <input type="text" id="input-aporte-onde" list="opcoes-aporte-onde" placeholder="Ex: Tesouro Selic, Caixinha do Nubank">
+          <datalist id="opcoes-aporte-onde">
+            <option value="Tesouro Selic"></option>
+            <option value="Tesouro Direto"></option>
+            <option value="Caixinha do Nubank"></option>
+            <option value="CDB de liquidez diária"></option>
+            <option value="Conta que rende (100% CDI)"></option>
+            <option value="Poupança"></option>
+          </datalist>
         </div>
         <div class="form-group">
           <label for="input-aporte-descricao">Descrição (opcional)</label>

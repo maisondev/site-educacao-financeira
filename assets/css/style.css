@@ -908,3 +908,134 @@ hr {
   font-size: 16px;
   margin-bottom: var(--espacamento-lg);
 }
+
+/* ===== Data atual + Calendário no cabeçalho ===== */
+.data-container {
+  display: flex;
+  align-items: center;
+  margin-right: var(--espacamento-sm);
+  position: relative;
+}
+
+.btn-data {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-data:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.btn-data-texto {
+  text-transform: capitalize;
+}
+
+.dropdown-calendario {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 280px;
+  margin-top: 8px;
+  padding: var(--espacamento-md);
+  color: var(--cor-texto);
+}
+
+.dropdown-calendario[hidden] {
+  display: none;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--espacamento-sm);
+}
+
+.cal-titulo {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.cal-nav {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--cor-secundaria);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.cal-nav:hover {
+  background: var(--cor-fundo-alt, #f0f0f0);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.cal-semana span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--cor-texto-leve);
+  padding: 4px 0;
+}
+
+.cal-dia {
+  font-size: 13px;
+  padding: 6px 0;
+  border-radius: 50%;
+}
+
+.cal-dia.hoje {
+  background: var(--cor-primaria);
+  color: white;
+  font-weight: 700;
+}
+
+.cal-hoje {
+  margin-top: var(--espacamento-sm);
+  width: 100%;
+  background: none;
+  border: 1px solid var(--cor-borda);
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--cor-secundaria);
+}
+
+.cal-hoje:hover {
+  background: var(--cor-fundo-alt, #f0f0f0);
+}
+
+@media (max-width: 768px) {
+  .data-container {
+    margin-left: auto;
+  }
+  .btn-data-texto {
+    display: none;
+  }
+  .btn-data {
+    padding: 6px;
+  }
+}

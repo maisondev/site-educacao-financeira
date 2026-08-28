@@ -27,6 +27,7 @@ const MENU_ITEMS = [
       { label: 'Cartões', href: './cartoes.html' },
       { label: 'Despesas Fixas', href: './despesas-fixas.html' },
       { label: 'Despesas Variáveis', href: './despesas-variaveis.html' },
+      { label: 'Desapego', href: './desapego.html' },
       { label: 'Dívidas', href: './dividas.html' },
       { label: 'Cartões Adicionais', href: './cartoes-adicionais.html' },
       { label: 'Envelopes', href: './envelopes.html' },
@@ -102,6 +103,7 @@ function renderizarMenu() {
 
   // Adicionar ícone de notificações
   adicionarIconeNotificacoes(nav);
+  adicionarDataCalendario(nav);
 }
 
 function adicionarIconeNotificacoes(nav) {
@@ -224,3 +226,99 @@ document.addEventListener('DOMContentLoaded', function() {
     if (tentativas > 50) clearInterval(intervalo); // Parar após 5 segundos
   }, 50);
 });
+
+// ===== Data atual + Calendário no cabeçalho =====
+let _calMesOffset = 0;
+
+function adicionarDataCalendario(nav) {
+  if (nav.querySelector('.data-container')) return;
+
+  const container = document.createElement('div');
+  container.className = 'data-container';
+  container.innerHTML = `
+    <button class="btn-data" id="btn-data" aria-label="Data e calendário">
+      ${icone('calendario', 18) || ''}
+      <span class="btn-data-texto" id="btn-data-texto"></span>
+    </button>
+    <div class="dropdown-calendario" id="dropdown-calendario" hidden></div>
+  `;
+
+  const notif = nav.querySelector('.notificacoes-container');
+  if (notif) {
+    nav.insertBefore(container, notif);
+    container.style.marginLeft = 'auto';
+    notif.style.marginLeft = '0';
+  } else {
+    nav.appendChild(container);
+  }
+
+  atualizarBotaoData();
+
+  const btn = document.getElementById('btn-data');
+  const dropdown = document.getElementById('dropdown-calendario');
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dropdown.hasAttribute('hidden')) {
+      _calMesOffset = 0;
+      renderizarCalendario();
+      dropdown.removeAttribute('hidden');
+    } else {
+      dropdown.setAttribute('hidden', '');
+    }
+  });
+
+  dropdown.addEventListener('click', (e) => e.stopPropagation());
+  document.addEventListener('click', () => dropdown.setAttribute('hidden', ''));
+
+  // Manter a data atualizada (vira o dia à meia-noite)
+  setInterval(atualizarBotaoData, 60 * 1000);
+}
+
+function atualizarBotaoData() {
+  const el = document.getElementById('btn-data-texto');
+  if (!el) return;
+  const hoje = new Date();
+  el.textContent = hoje.toLocaleDateString('pt-BR', {
+    weekday: 'short', day: '2-digit', month: 'short'
+  }).replace('.', '');
+}
+
+function renderizarCalendario() {
+  const dropdown = document.getElementById('dropdown-calendario');
+  if (!dropdown) return;
+
+  const hoje = new Date();
+  const base = new Date(hoje.getFullYear(), hoje.getMonth() + _calMesOffset, 1);
+  const ano = base.getFullYear();
+  const mes = base.getMonth();
+
+  const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
+  const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+  const nomeMes = base.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+  const diasSemana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
+  let celulas = '';
+  for (let i = 0; i < primeiroDiaSemana; i++) celulas += '<span class="cal-dia vazio"></span>';
+  for (let d = 1; d <= diasNoMes; d++) {
+    const ehHoje = _calMesOffset === 0 && d === hoje.getDate();
+    celulas += `<span class="cal-dia${ehHoje ? ' hoje' : ''}">${d}</span>`;
+  }
+
+  dropdown.innerHTML = `
+    <div class="cal-header">
+      <button class="cal-nav" id="cal-prev" aria-label="Mês anterior">&lsaquo;</button>
+      <span class="cal-titulo">${nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1)}</span>
+      <button class="cal-nav" id="cal-next" aria-label="Próximo mês">&rsaquo;</button>
+    </div>
+    <div class="cal-grid cal-semana">${diasSemana.map(d => `<span>${d}</span>`).join('')}</div>
+    <div class="cal-grid cal-dias">${celulas}</div>
+    ${_calMesOffset !== 0 ? '<button class="cal-hoje" id="cal-hoje">Voltar para hoje</button>' : ''}
+  `;
+
+  document.getElementById('cal-prev').addEventListener('click', () => { _calMesOffset--; renderizarCalendario(); });
+  document.getElementById('cal-next').addEventListener('click', () => { _calMesOffset++; renderizarCalendario(); });
+  const btnHoje = document.getElementById('cal-hoje');
+  if (btnHoje) btnHoje.addEventListener('click', () => { _calMesOffset = 0; renderizarCalendario(); });
+}
