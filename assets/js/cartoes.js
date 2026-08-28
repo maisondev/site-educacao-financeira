@@ -371,13 +371,27 @@ function atualizarVisualizacao() {
 
     // Preencher lista de cartões com saldo
     const listaDiv = document.getElementById('lista-saldos-por-cartao');
-    listaDiv.innerHTML = cartoesComSaldo.map(c => `
+    listaDiv.innerHTML = cartoesComSaldo.map(c => {
+      // Obter mês de referência
+      const hoje = new Date();
+      const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+      const datas = c.datasPorMes || [];
+      const dataAtual = datas.find(d => d.mes === mesAtual);
+      const [ano, mes] = dataAtual ? dataAtual.mes.split('-') : mesAtual.split('-');
+      const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      const mesRef = `${meses[parseInt(mes) - 1]} ${ano.slice(2)}`;
+
+      return `
       <div style="background: rgba(255,255,255,0.7); padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid #856404;">
-        <p style="margin: 0 0 8px 0; font-weight: bold; font-size: 14px; color: #333;">${c.nome}</p>
-        <p style="margin: 0; font-size: 18px; font-weight: bold; color: #856404;">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
-        <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">●●●● ${c.ultimos}</p>
+        <div style="margin-bottom: 8px;">
+          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: #333;">${c.nome}</p>
+          ${c.titular ? `<p style="margin: 0; font-size: 11px; color: #666;">Titular: ${c.titular}</p>` : ''}
+        </div>
+        <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: #856404;">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
+        <p style="margin: 0; font-size: 11px; color: #999;">●●●● ${c.ultimos} • ${mesRef}</p>
       </div>
-    `).join('');
+    `;
+    }).join('');
 
     document.getElementById('total-saldos-abertos').textContent = formatarMoedaBrasileira(totalSaldosAbertos);
   } else {
