@@ -400,6 +400,28 @@
       font-size: 14px;
     }
 
+    .form-check {
+      justify-content: center;
+      gap: var(--espacamento-sm);
+    }
+
+    .form-check label {
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 0;
+    }
+
+    .nota-faturas {
+      background-color: #e6f0fa;
+      border: 1px solid var(--cor-secundaria);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      font-size: 14px;
+      color: var(--cor-texto);
+    }
+
     @media (max-width: 640px) {
       .form-row {
         grid-template-columns: 1fr;
@@ -487,7 +509,7 @@
     </p>
 
     <section class="formulario-divida">
-      <h2>Adicionar Nova Dívida</h2>
+      <h2 id="titulo-formulario">Adicionar Nova Dívida</h2>
 
       <div class="form-group">
         <label for="input-credor">Credor (banco, amigo, etc) *</label>
@@ -496,30 +518,76 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="input-valor-total">Valor Total (R$) *</label>
-          <input type="number" id="input-valor-total" min="0" step="0.01" placeholder="Ex: 5000" required>
+          <label for="select-tipo">Tipo de Dívida *</label>
+          <select id="select-tipo" required onchange="sugerirNatureza()">
+            <option value="">Selecione</option>
+            <option value="cartao">Cartão de Crédito (rotativo)</option>
+            <option value="parcelamento">Parcelamento sem juros</option>
+            <option value="consignado">Empréstimo consignado / FGTS</option>
+            <option value="emprestimo">Empréstimo pessoal</option>
+            <option value="financiamento">Financiamento</option>
+            <option value="cheque-especial">Cheque especial</option>
+            <option value="amigo">Empréstimo com amigo</option>
+            <option value="outro">Outro</option>
+          </select>
         </div>
         <div class="form-group">
-          <label for="input-taxa">Taxa de Juros (% a.m) - Opcional</label>
-          <input type="number" id="input-taxa" min="0" step="0.01" placeholder="Ex: 2.5">
+          <label for="select-natureza">Natureza *</label>
+          <select id="select-natureza" required onchange="this.dataset.tocado='1'">
+            <option value="onerosa">Onerosa (tem juros)</option>
+            <option value="curto-prazo">Curto prazo (sem juros na data)</option>
+          </select>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="input-vencimento">Data de Vencimento *</label>
-          <input type="date" id="input-vencimento" required>
+          <label for="input-taxa">Taxa de Juros (% a.m) - Opcional</label>
+          <input type="number" id="input-taxa" min="0" step="0.01" placeholder="Ex: 2.5">
+        </div>
+        <div class="form-group form-check">
+          <label><input type="checkbox" id="check-debito-auto"> Débito automático (folha / FGTS)</label>
+          <label><input type="checkbox" id="check-parcelado" onchange="alternarCamposParcela()"> Dívida parcelada</label>
+        </div>
+      </div>
+
+      <div id="campos-valor-unico">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-valor-total">Valor Total (R$) *</label>
+            <input type="number" id="input-valor-total" min="0" step="0.01" placeholder="Ex: 5000">
+          </div>
+          <div class="form-group">
+            <label for="input-vencimento">Data de Vencimento *</label>
+            <input type="date" id="input-vencimento">
+          </div>
+        </div>
+      </div>
+
+      <div id="campos-parcelado" hidden>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-num-parcelas">Nº de Parcelas *</label>
+            <input type="number" id="input-num-parcelas" min="1" step="1" placeholder="Ex: 48">
+          </div>
+          <div class="form-group">
+            <label for="input-valor-parcela">Valor da Parcela (R$) *</label>
+            <input type="number" id="input-valor-parcela" min="0" step="0.01" placeholder="Ex: 320,50">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="input-parcelas-pagas">Parcelas já pagas</label>
+            <input type="number" id="input-parcelas-pagas" min="0" step="1" value="0">
+          </div>
+          <div class="form-group">
+            <label for="input-dia-vencimento">Dia de vencimento (1–31) *</label>
+            <input type="number" id="input-dia-vencimento" min="1" max="31" step="1" placeholder="Ex: 10">
+          </div>
         </div>
         <div class="form-group">
-          <label for="select-tipo">Tipo de Dívida *</label>
-          <select id="select-tipo" required>
-            <option value="">Selecione</option>
-            <option value="cartao">Cartão de Crédito</option>
-            <option value="emprestimo">Empréstimo</option>
-            <option value="financiamento">Financiamento</option>
-            <option value="amigo">Empréstimo com Amigo</option>
-            <option value="outro">Outro</option>
-          </select>
+          <label for="input-saldo-devedor">Saldo devedor hoje (R$) - opcional</label>
+          <input type="number" id="input-saldo-devedor" min="0" step="0.01" placeholder="Valor para quitar antecipado; diferença = juros">
         </div>
       </div>
 
@@ -529,38 +597,52 @@
       </div>
 
       <div class="botoes-formulario">
-        <button class="btn-primario" onclick="adicionarDivida()">Adicionar Dívida</button>
+        <button class="btn-primario" id="btn-salvar-divida" onclick="adicionarDivida()">Adicionar Dívida</button>
         <button class="btn-secundario" onclick="limparFormulario()">Limpar</button>
       </div>
     </section>
 
     <section id="resumo-container" hidden>
-      <div class="resumo-dividas">
-        <div class="card-info">
-          <p>Dívida Total</p>
-          <p class="valor" id="valor-total">R$ 0,00</p>
-        </div>
-        <div class="card-info">
-          <p>Já Pago</p>
-          <p class="valor" id="valor-pago">R$ 0,00</p>
-        </div>
-        <div class="card-info">
-          <p>Falta Pagar</p>
-          <p class="valor" id="valor-faltante">R$ 0,00</p>
-        </div>
-      </div>
-
       <div id="alerta-container"></div>
 
-      <section>
-        <h2>Suas Dívidas</h2>
-        <div id="lista-dividas" class="lista-dividas">
-          <div class="lista-vazia">
-            <p>Nenhuma dívida registrada. Comece adicionando acima!</p>
-          </div>
-        </div>
-      </section>
+      <h2>Dívida onerosa (com juros)</h2>
+      <div class="resumo-dividas">
+        <div class="card-info"><p>Total a pagar</p><p class="valor" id="onerosa-total">R$ 0,00</p></div>
+        <div class="card-info"><p>Já pago</p><p class="valor" id="onerosa-pago">R$ 0,00</p></div>
+        <div class="card-info"><p>Falta pagar</p><p class="valor" id="onerosa-falta">R$ 0,00</p></div>
+      </div>
+      <div class="card-info" style="margin-bottom: var(--espacamento-xl);">
+        <p>Comprometimento mensal</p>
+        <p class="valor" id="valor-comprometimento">R$ 0,00</p>
+        <p id="comprometimento-pct" style="font-size:13px;margin-top:4px;">parcelas mensais das dívidas onerosas</p>
+      </div>
+      <div id="lista-onerosas" class="lista-dividas"></div>
+
+      <h2 style="margin-top: var(--espacamento-xl);">Contas a pagar (curto prazo)</h2>
+      <div class="resumo-dividas">
+        <div class="card-info"><p>Total</p><p class="valor" id="curto-total">R$ 0,00</p></div>
+        <div class="card-info"><p>Já pago</p><p class="valor" id="curto-pago">R$ 0,00</p></div>
+        <div class="card-info"><p>Falta pagar</p><p class="valor" id="curto-falta">R$ 0,00</p></div>
+      </div>
+      <div id="lista-curto-prazo" class="lista-dividas"></div>
     </section>
+
+    <section id="simulador-container" hidden class="formulario-divida">
+      <h2>Simulador de quitação: avalanche × bola de neve</h2>
+      <p>Considera apenas as dívidas onerosas ativas. Informe quanto você consegue pagar por mês além das parcelas.</p>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="input-valor-extra">Valor extra mensal (R$)</label>
+          <input type="number" id="input-valor-extra" min="0" step="0.01" placeholder="Ex: 300">
+        </div>
+        <div class="form-group" style="justify-content:flex-end;">
+          <button class="btn-primario" onclick="rodarSimulacao()">Simular</button>
+        </div>
+      </div>
+      <div id="simulador-resultado"></div>
+    </section>
+
+    <section id="faturas-cartao-container" hidden></section>
 
     <section class="proximos-passos">
       <h2>Dicas para quitar dívidas</h2>
