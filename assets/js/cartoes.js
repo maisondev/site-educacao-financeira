@@ -4,6 +4,13 @@ const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Se
 const MESES_COMPLETOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const MESES_MINUSCULOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
+// Escapa texto do usuário antes de injetar via innerHTML (evita HTML injection)
+function escaparTextoCartao(texto) {
+  const div = document.createElement('div');
+  div.textContent = texto == null ? '' : texto;
+  return div.innerHTML;
+}
+
 function inicializarCartoes() {
   atualizarVisualizacao();
   sincronizarFaturasExistentes();
@@ -33,7 +40,7 @@ function sincronizarFaturasExistentes() {
           const vencimentoDia = fatura.vencimento.split('/')[0];
           const vencimentoMêsStr = fatura.vencimento.split('/')[1];
           const vencimentoMêsNum = vencimentoMêsStr ? parseInt(vencimentoMêsStr) : mes;
-          const vencimentoAno = vencimentoMêsNum > mes ? ano : ano;
+          const vencimentoAno = vencimentoMêsNum < mes ? ano + 1 : ano;
           const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
 
           adicionarDespesaDeCartao(descricao, fatura.saldo, dataVencimento);
@@ -240,7 +247,7 @@ function salvarDatasMes() {
     const descricao = `${cartao.nome}${ultimosDígitos} - Fatura ${nomeMes}`;
 
     const vencimentoMêsNum = vencimentoMes ? parseInt(vencimentoMes) : mesInt;
-    const vencimentoAno = vencimentoMêsNum > mesInt ? ano : ano;
+    const vencimentoAno = vencimentoMêsNum < mesInt ? ano + 1 : ano;
     const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
 
     adicionarDespesaDeCartao(descricao, saldo, dataVencimento, cartao.ultimos);
@@ -272,7 +279,7 @@ function salvarCartao() {
     return;
   }
 
-  if (!ultimos || ultimos.length !== 4 || isNaN(ultimos)) {
+  if (!/^\d{4}$/.test(ultimos)) {
     alert('Por favor, insira os últimos 4 dígitos (apenas números)');
     return;
   }
@@ -384,16 +391,20 @@ function atualizarVisualizacao() {
   // Calcular resumo de saldos abertos (última fatura disponível)
   const cartoesComSaldo = cartoes.map(c => {
     const ultimaFatura = obterUltimaFaturaDisponivel(c);
-    const saldo = ultimaFatura?.saldo || c.saldoAberto;
+    if (!ultimaFatura) return null;
+    const saldo = ultimaFatura.saldo || 0;
     return {
       ...c,
       saldoVisivel: saldo,
-      temSaldo: saldo && saldo > 0,
-      mesReferencia: ultimaFatura?.mes
+      mesReferencia: ultimaFatura.mes,
+      ultimaFatura
     };
-  }).filter(c => c.temSaldo);
+  }).filter(c => c !== null);
 
-  const totalSaldosAbertos = cartoesComSaldo.reduce((sum, c) => sum + (c.saldoVisivel || 0), 0);
+  const totalSaldosAbertos = cartoesComSaldo.reduce((sum, c) => {
+    const pago = c.ultimaFatura && c.ultimaFatura.foiPaga;
+    return sum + (pago || !c.saldoVisivel ? 0 : c.saldoVisivel);
+  }, 0);
 
   // Mostrar/esconder resumo
   const resumoDiv = document.getElementById('resumo-saldos');
@@ -420,8 +431,8 @@ function atualizarVisualizacao() {
           <label for="pago-${c.id}" style="font-size: 11px; color: var(--cor-texto-light); cursor: pointer; font-weight: 500;">${pago ? 'Pago' : 'Pagar'}</label>
         </div>
         <div style="margin-bottom: 8px; padding-right: 60px;">
-          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: var(--cor-texto); ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.nome}</p>
-          ${c.titular ? `<p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">Titular: ${c.titular}</p>` : ''}
+          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: var(--cor-texto); ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escaparTextoCartao(c.nome)}</p>
+          ${c.titular ? `<p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">Titular: ${escaparTextoCartao(c.titular)}</p>` : ''}
         </div>
         <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? 'var(--cor-texto-light)' : 'var(--cor-primaria)'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
         <p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">●●●● ${c.ultimos} • ${mesRef}</p>
@@ -455,8 +466,8 @@ function atualizarVisualizacao() {
 
       <div class="card-cartao-header">
         <div>
-          <h3 class="card-cartao-titulo">${cartao.nome}</h3>
-          ${cartao.titular ? `<div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Titular: ${cartao.titular}</div>` : ''}
+          <h3 class="card-cartao-titulo">${escaparTextoCartao(cartao.nome)}</h3>
+          ${cartao.titular ? `<div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Titular: ${escaparTextoCartao(cartao.titular)}</div>` : ''}
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
           ${cartao.bandeira ? `<span class="card-cartao-bandeira">${obterNomeBandeira(cartao.bandeira)}</span>` : ''}
