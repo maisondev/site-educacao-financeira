@@ -1,5 +1,6 @@
 class GerenciadorCartoesAdicionais {
   constructor() {
+    this.editandoId = null;
     this.inicializar();
   }
 
@@ -59,6 +60,21 @@ class GerenciadorCartoesAdicionais {
       return;
     }
 
+    if (this.editandoId !== null) {
+      const cartao = this.cartoes.find(c => c.id === this.editandoId);
+      if (cartao) {
+        cartao.pessoa = nome;
+        cartao.valor = valor;
+        cartao.data = data;
+        cartao.observacao = observacao;
+      }
+      this.salvarDados();
+      this.renderizar();
+      this.atualizarResumo();
+      this.cancelarEdicao();
+      return;
+    }
+
     const cartao = {
       id: Date.now(),
       pessoa: nome,
@@ -80,6 +96,31 @@ class GerenciadorCartoesAdicionais {
 
     // Mostrar mensagem de sucesso
     console.log(`Cartão de ${nome} com saldo R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} registrado!`);
+  }
+
+  iniciarEdicao(id) {
+    const cartao = this.cartoes.find(c => c.id === id);
+    if (!cartao) return;
+
+    this.editandoId = id;
+    document.getElementById('nome-titular').value = cartao.pessoa || '';
+    document.getElementById('valor-saldo').value = cartao.valor;
+    document.getElementById('data-cartao').value = cartao.data || '';
+    document.getElementById('observacao').value = cartao.observacao || '';
+
+    document.getElementById('titulo-form-cartao').textContent = 'Editar Cartão Adicional';
+    document.getElementById('btn-salvar-cartao').textContent = 'Salvar alterações';
+    document.getElementById('btn-cancelar-cartao').style.display = '';
+    document.getElementById('titulo-form-cartao').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  cancelarEdicao() {
+    this.editandoId = null;
+    document.getElementById('form-cartao').reset();
+    this.definirDataHoje();
+    document.getElementById('titulo-form-cartao').textContent = 'Novo Cartão Adicional';
+    document.getElementById('btn-salvar-cartao').textContent = 'Registrar Cartão';
+    document.getElementById('btn-cancelar-cartao').style.display = 'none';
   }
 
   renderizar() {
@@ -151,6 +192,9 @@ class GerenciadorCartoesAdicionais {
               Marcar como Pago
             </button>
           ` : ''}
+          <button class="btn-acao btn-pagar" onclick="editarCartaoAdicional(${emprestimo.id})">
+            Editar
+          </button>
           <button class="btn-acao btn-deletar" onclick="deletarEmprestimo(${emprestimo.id})">
             Deletar
           </button>
@@ -263,5 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.fecharModal = fecharModal;
   window.deletarEmprestimo = (id) => {
     window.gerenciadorCartoesAdicionais.deletarCartao(id);
+  };
+  window.editarCartaoAdicional = (id) => {
+    window.gerenciadorCartoesAdicionais.iniciarEdicao(id);
   };
 });

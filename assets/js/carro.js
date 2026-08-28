@@ -638,6 +638,7 @@ function renderFundo(d) {
             </strong>
           </div>
           <p class="registro-meta">${mv.data ? new Date(mv.data + 'T00:00:00').toLocaleDateString('pt-BR') : '—'}</p>
+          <button class="btn-link-remover" onclick="iniciarEdicaoMovimentoFundo(${mv.id})">Editar</button>
           <button class="btn-link-remover" onclick="removerMovimentoFundo(${mv.id})">Remover</button>
         </div>
       `).join('');

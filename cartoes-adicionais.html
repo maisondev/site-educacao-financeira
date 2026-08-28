@@ -399,7 +399,7 @@
     </p>
 
     <div class="formulario-cartao">
-      <h2>Novo Cartão Adicional</h2>
+      <h2 id="titulo-form-cartao">Novo Cartão Adicional</h2>
       <form id="form-cartao">
         <div class="form-grupo-duplo">
           <div class="form-group">
@@ -441,7 +441,8 @@
           ></textarea>
         </div>
 
-        <button type="submit" class="btn-submit">Registrar Cartão</button>
+        <button type="submit" class="btn-submit" id="btn-salvar-cartao">Registrar Cartão</button>
+        <button type="button" class="btn-filtro" id="btn-cancelar-cartao" onclick="window.gerenciadorCartoesAdicionais.cancelarEdicao()" style="display:none">Cancelar edição</button>
       </form>
     </div>
 
