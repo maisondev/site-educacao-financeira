@@ -48,6 +48,7 @@ function salvarCartoes(cartoes) {
 function abrirModalCartao() {
   document.getElementById('modal-titulo').textContent = 'Novo Cartão';
   document.getElementById('input-cartao-id').value = '';
+  document.getElementById('input-cartao-titular').value = '';
   document.getElementById('input-cartao-nome').value = '';
   document.getElementById('input-cartao-ultimos').value = '';
   document.getElementById('select-cartao-bandeira').value = '';
@@ -57,7 +58,7 @@ function abrirModalCartao() {
   document.getElementById('input-cartao-vencimento').value = '';
   document.getElementById('input-cartao-saldo-aberto').value = '';
   document.getElementById('modal-cartao').removeAttribute('hidden');
-  document.getElementById('input-cartao-nome').focus();
+  document.getElementById('input-cartao-titular').focus();
 }
 
 function abrirModalCartaoEdicao(id) {
@@ -70,6 +71,7 @@ function abrirModalCartaoEdicao(id) {
 
   document.getElementById('modal-titulo').textContent = 'Editar Cartão';
   document.getElementById('input-cartao-id').value = id;
+  document.getElementById('input-cartao-titular').value = cartao.titular || '';
   document.getElementById('input-cartao-nome').value = cartao.nome;
   document.getElementById('input-cartao-ultimos').value = cartao.ultimos;
   document.getElementById('select-cartao-bandeira').value = cartao.bandeira || '';
@@ -202,6 +204,21 @@ function salvarDatasMes() {
     cartao.datasPorMes.push(dataObj);
   }
 
+  // Registrar histórico de utilização mensal
+  if (saldo && cartao.limite) {
+    if (!cartao.historicoUtilizacao) {
+      cartao.historicoUtilizacao = [];
+    }
+    const percentualUsado = (saldo / cartao.limite) * 100;
+    const jaRegistrado = cartao.historicoUtilizacao.some(h => h.mes === mes);
+    if (jaRegistrado) {
+      const index = cartao.historicoUtilizacao.findIndex(h => h.mes === mes);
+      cartao.historicoUtilizacao[index] = { mes, percentual: percentualUsado, saldo, data: new Date().toISOString() };
+    } else {
+      cartao.historicoUtilizacao.push({ mes, percentual: percentualUsado, saldo, data: new Date().toISOString() });
+    }
+  }
+
   salvarCartoes(cartoes);
   renderizarHistoricoDatas();
   atualizarVisualizacao();
@@ -225,6 +242,7 @@ function salvarDatasMes() {
 
 function salvarCartao() {
   const id = document.getElementById('input-cartao-id').value;
+  const titular = document.getElementById('input-cartao-titular').value.trim();
   const nome = document.getElementById('input-cartao-nome').value.trim();
   const ultimos = document.getElementById('input-cartao-ultimos').value.trim();
   const bandeira = document.getElementById('select-cartao-bandeira').value;
@@ -233,6 +251,11 @@ function salvarCartao() {
   const vencimento = document.getElementById('input-cartao-vencimento').value.trim();
   let limite = parseValorBrasileiro(document.getElementById('input-cartao-limite').value);
   let saldoAberto = parseValorBrasileiro(document.getElementById('input-cartao-saldo-aberto').value);
+
+  if (!titular) {
+    alert('Por favor, insira o titular do cartão');
+    return;
+  }
 
   if (!nome) {
     alert('Por favor, insira um nome/descrição do cartão');
@@ -265,6 +288,7 @@ function salvarCartao() {
     if (index > -1) {
       cartoes[index] = {
         ...cartoes[index],
+        titular,
         nome,
         ultimos,
         bandeira,
@@ -279,6 +303,7 @@ function salvarCartao() {
     // Novo
     cartoes.push({
       id: Date.now(),
+      titular,
       nome,
       ultimos,
       bandeira,
@@ -319,6 +344,12 @@ function obterSaldoMesAtual(cartao) {
 function atualizarVisualizacao() {
   const cartoes = obterCartoes();
   const container = document.getElementById('lista-cartoes');
+
+  // Atualizar contador de cartões
+  const contadorDiv = document.getElementById('contador-cartoes');
+  if (contadorDiv) {
+    contadorDiv.textContent = cartoes.length;
+  }
 
   // Calcular resumo de saldos abertos (mes atual ou geral)
   const cartoesComSaldo = cartoes.map(c => {
@@ -370,7 +401,10 @@ function atualizarVisualizacao() {
       </div>
 
       <div class="card-cartao-header">
-        <h3 class="card-cartao-titulo">${cartao.nome}</h3>
+        <div>
+          <h3 class="card-cartao-titulo">${cartao.nome}</h3>
+          ${cartao.titular ? `<div style="font-size: 12px; opacity: 0.8; margin-top: 2px;">Titular: ${cartao.titular}</div>` : ''}
+        </div>
         <div style="display: flex; gap: 8px; align-items: center;">
           ${cartao.bandeira ? `<span class="card-cartao-bandeira">${obterNomeBandeira(cartao.bandeira)}</span>` : ''}
           ${cartao.tipo ? `<span class="card-cartao-bandeira" style="background: rgba(255,255,255,0.15);">${cartao.tipo === 'fisico' ? 'Físico' : 'Virtual'}</span>` : ''}
@@ -397,13 +431,64 @@ function atualizarVisualizacao() {
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <span style="font-size: 16px; font-weight: bold;">${formatarMoedaBrasileira(saldoVisivel)}</span>
-          ${cartao.limite ? `<span style="font-size: 11px; opacity: 0.8;">${Math.round((saldoVisivel / cartao.limite) * 100)}</span>` : ''}
+          ${cartao.limite ? `<span style="font-size: 11px; opacity: 0.8;">${Math.round((saldoVisivel / cartao.limite) * 100)}%</span>` : ''}
         </div>
         ${cartao.limite ? `
         <div style="background: rgba(255,255,255,0.25); border-radius: 3px; height: 6px; overflow: hidden; margin-top: 4px;">
           <div style="background: rgba(255,255,255,0.95); height: 100%; width: ${Math.min((saldoVisivel / cartao.limite) * 100, 100)}%;"></div>
         </div>
         ` : ''}
+      </div>
+      ` : ''}
+
+      ${cartao.historicoUtilizacao && cartao.historicoUtilizacao.length > 1 ? `
+      <div class="historico-utilizacao-container">
+        <div class="historico-titulo">📊 Utilização Mensal</div>
+        <div class="chart-barras-horizontal">
+          ${cartao.historicoUtilizacao
+            .sort((a, b) => a.mes.localeCompare(b.mes))
+            .slice(-6)
+            .map(h => {
+              const classe = h.percentual > 80 ? 'critico' : h.percentual > 60 ? 'alerta' : '';
+              const [ano, mes] = h.mes.split('-');
+              const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+              const mesNome = meses[parseInt(mes) - 1];
+              return `
+                <div class="chart-barra-item">
+                  <div class="chart-barra-label">${mesNome}</div>
+                  <div class="chart-barra-wrapper">
+                    <div class="chart-barra-fill ${classe}" style="width: ${Math.min(h.percentual, 100)}%">
+                      ${h.percentual > 20 ? Math.round(h.percentual) + '%' : ''}
+                    </div>
+                  </div>
+                  <div class="chart-barra-valor">${Math.round(h.percentual)}%</div>
+                </div>
+              `;
+            }).join('')}
+        </div>
+
+        <div style="margin-top: var(--espacamento-lg); padding-top: var(--espacamento-md); border-top: 1px solid rgba(255,255,255,0.2);">
+          <div class="historico-titulo">📋 Histórico de Faturas</div>
+          <div style="font-size: 12px; display: grid; gap: 6px;">
+            ${cartao.historicoUtilizacao
+              .sort((a, b) => b.mes.localeCompare(a.mes))
+              .map(h => {
+                const [ano, mes] = h.mes.split('-');
+                const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                const mesNome = meses[parseInt(mes) - 1];
+                const statusColor = h.percentual > 80 ? '#ef4444' : h.percentual > 60 ? '#fbbf24' : '#10b981';
+                const statusLabel = h.percentual > 80 ? '⚠️ Crítico' : h.percentual > 60 ? '⚠️ Alerta' : '✓ Normal';
+                return `
+                  <div style="display: grid; grid-template-columns: 60px 1fr 80px 80px; gap: 8px; align-items: center; padding: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; border-left: 3px solid ${statusColor};">
+                    <div style="font-weight: 600;">${mesNome} ${ano.slice(2)}</div>
+                    <div>${formatarMoedaBrasileira(h.saldo)}</div>
+                    <div style="text-align: center; color: ${statusColor}; font-weight: 600;">${Math.round(h.percentual)}%</div>
+                    <div style="text-align: right; font-size: 11px; opacity: 0.8;">${statusLabel}</div>
+                  </div>
+                `;
+              }).join('')}
+          </div>
+        </div>
       </div>
       ` : ''}
     </div>
