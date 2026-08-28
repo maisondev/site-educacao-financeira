@@ -380,14 +380,19 @@ function atualizarVisualizacao() {
       const [ano, mes] = dataAtual ? dataAtual.mes.split('-') : mesAtual.split('-');
       const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
       const mesRef = `${meses[parseInt(mes) - 1]} ${ano.slice(2)}`;
+      const pago = dataAtual && dataAtual.foiPaga;
 
       return `
-      <div style="background: rgba(255,255,255,0.7); padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid #856404;">
-        <div style="margin-bottom: 8px;">
-          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: #333;">${c.nome}</p>
+      <div style="background: rgba(255,255,255,0.7); padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid #856404; position: relative;">
+        <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 6px;">
+          <input type="checkbox" id="pago-${c.id}" ${pago ? 'checked' : ''} onchange="marcarFaturaPaga(${c.id}, '${mesAtual}')" style="cursor: pointer; width: 18px; height: 18px;">
+          <label for="pago-${c.id}" style="font-size: 11px; color: #666; cursor: pointer; font-weight: 500;">${pago ? 'Pago' : 'Pagar'}</label>
+        </div>
+        <div style="margin-bottom: 8px; padding-right: 60px;">
+          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: #333; ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.nome}</p>
           ${c.titular ? `<p style="margin: 0; font-size: 11px; color: #666;">Titular: ${c.titular}</p>` : ''}
         </div>
-        <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: #856404;">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
+        <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? '#999' : '#856404'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
         <p style="margin: 0; font-size: 11px; color: #999;">●●●● ${c.ultimos} • ${mesRef}</p>
       </div>
     `;
@@ -644,6 +649,30 @@ END:VCALENDAR`;
   alert(`Arquivo de calendário gerado! 📅\n\nImporte "${cartao.nome}.ics" no seu:\n• Google Calendar\n• Outlook\n• Apple Calendar\n\nA Alexa lerá seus lembretes!`);
 }
 
+function marcarFaturaPaga(cartaoId, mes) {
+  const cartoes = obterCartoes();
+  const cartao = cartoes.find(c => c.id === cartaoId);
+
+  if (!cartao) return;
+
+  if (!cartao.datasPorMes) {
+    cartao.datasPorMes = [];
+  }
+
+  const dataIndex = cartao.datasPorMes.findIndex(d => d.mes === mes);
+
+  if (dataIndex !== -1) {
+    // Toggle estado de pagamento
+    cartao.datasPorMes[dataIndex].foiPaga = !cartao.datasPorMes[dataIndex].foiPaga;
+  } else {
+    // Criar novo registro se não existir
+    cartao.datasPorMes.push({ mes, foiPaga: true });
+  }
+
+  salvarCartoes(cartoes);
+  atualizarVisualizacao();
+}
+
 // Fechar modal ao clicar fora
 document.addEventListener('click', function(event) {
   const modal = document.getElementById('modal-cartao');
@@ -651,3 +680,67 @@ document.addEventListener('click', function(event) {
     fecharModalCartao();
   }
 });
+
+function importarCartoesPicpay(dados) {
+  if (!dados.cartoes_picpay || !Array.isArray(dados.cartoes_picpay)) {
+    alert('Formato de dados inválido');
+    return;
+  }
+
+  const cartoes = obterCartoes();
+  const mesReferencia = dados.resumo?.mes || 'agosto/2026';
+  const [mes, ano] = mesReferencia.split('/');
+  const mesPadrao = `${ano}-${String(new Date(Date.parse('01 ' + mes + ' ' + ano)).getMonth() + 1).padStart(2, '0')}`;
+
+  let importados = 0;
+
+  dados.cartoes_picpay.forEach(cartaoPicpay => {
+    const nomeCompleto = `${cartaoPicpay.nome} - ${cartaoPicpay.titular}`.substring(0, 50);
+    const ultimos = String(cartaoPicpay.ultimos_digitos).slice(-4);
+
+    // Verificar se cartão já existe (por últimos dígitos + titular)
+    const existe = cartoes.some(c =>
+      c.ultimos === ultimos &&
+      c.titular?.toLowerCase() === cartaoPicpay.titular.toLowerCase()
+    );
+
+    if (!existe) {
+      const novoCartao = {
+        id: Date.now() + Math.random(),
+        titular: cartaoPicpay.titular,
+        nome: cartaoPicpay.nome,
+        ultimos: ultimos,
+        bandeira: 'mastercard',
+        tipo: '',
+        limite: null,
+        fechamento: '',
+        vencimento: String(cartaoPicpay.vencimento?.split('/')[0] || '10'),
+        saldoAberto: cartaoPicpay.fatura_agosto_2026 || 0,
+        dataCriacao: new Date().toISOString(),
+        datasPorMes: cartaoPicpay.fatura_agosto_2026 ? [
+          {
+            mes: mesPadrao,
+            fechamento: '04',
+            vencimento: cartaoPicpay.vencimento || '10/08/2026',
+            saldo: cartaoPicpay.fatura_agosto_2026
+          }
+        ] : []
+      };
+
+      cartoes.push(novoCartao);
+      importados++;
+    }
+  });
+
+  salvarCartoes(cartoes);
+  atualizarVisualizacao();
+
+  const mensagem = importados > 0
+    ? `✓ ${importados} cartão(ões) Picpay importado(s) com sucesso!\n\nFatura: ${mesReferencia}`
+    : '✓ Todos os cartões Picpay já estavam cadastrados';
+
+  alert(mensagem);
+}
+
+// Expor função globalmente para uso no console
+window.importarCartoesPicpay = importarCartoesPicpay;
