@@ -454,4 +454,7 @@ function renderizarDashboard() {
 
 document.addEventListener('DOMContentLoaded', function() {
   renderizarDashboard();
+  if (typeof renderizarSecaoBackup === 'function') {
+    renderizarSecaoBackup();
+  }
 });

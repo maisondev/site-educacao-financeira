@@ -157,6 +157,36 @@
         font-size: 24px;
       }
     }
+    .secao-backup {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .secao-backup h2 {
+      margin-top: 0;
+    }
+
+    .backup-descricao {
+      color: var(--cor-texto-leve);
+      max-width: 70ch;
+    }
+
+    .backup-aviso {
+      font-weight: 500;
+    }
+
+    .backup-aviso-atencao {
+      color: var(--cor-aviso);
+    }
+
+    .backup-acoes {
+      display: flex;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
@@ -182,6 +212,10 @@
       <!-- Preenchido por JavaScript -->
     </div>
 
+    <section id="container-backup" class="secao-backup">
+      <!-- Renderizado por backup.js -->
+    </section>
+
     <div id="container-lembretes" style="margin-top: var(--espacamento-xl); margin-bottom: var(--espacamento-xl); max-height: 600px; overflow-y: auto;">
       <!-- Lembretes renderizados por lembretes.js -->
     </div>
@@ -197,6 +231,7 @@
   <script src="./assets/js/formatacao.js"></script>
   <script src="./assets/js/lembretes.js"></script>
   <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/backup.js"></script>
   <script src="./assets/js/dashboard.js"></script>
 </body>
 </html>
