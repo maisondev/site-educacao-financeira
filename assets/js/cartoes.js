@@ -427,33 +427,47 @@ function atualizarVisualizacao() {
   if (cartoesComSaldo.length > 0) {
     resumoDiv.style.display = 'block';
 
-    // Preencher lista de cartões com saldo
+    // Agrupar por banco
+    const cartoesPorBanco = {};
+    cartoesComSaldo.forEach(c => {
+      const banco = obterBancoPorNome(c.nome) || 'outros';
+      if (!cartoesPorBanco[banco]) {
+        cartoesPorBanco[banco] = [];
+      }
+      cartoesPorBanco[banco].push(c);
+    });
+
+    // Preencher lista de cartões com saldo agrupados por banco
     const listaDiv = document.getElementById('lista-saldos-por-cartao');
-    listaDiv.innerHTML = cartoesComSaldo.map(c => {
-      // Usar mês de referência da última fatura
-      const mesRef_ = c.mesReferencia || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-      const [ano, mes] = mesRef_.split('-');
-      const mesRef = `${MESES_ABREV[parseInt(mes) - 1]} ${ano.slice(2)}`;
+    listaDiv.innerHTML = Object.entries(cartoesPorBanco).map(([banco, cartoes]) => {
+      const htmlCartoes = cartoes.map(c => {
+        // Usar mês de referência da última fatura
+        const mesRef_ = c.mesReferencia || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+        const [ano, mes] = mesRef_.split('-');
+        const mesRef = `${MESES_ABREV[parseInt(mes) - 1]} ${ano.slice(2)}`;
 
-      // Buscar status de pagamento da última fatura
-      const datas = c.datasPorMes || [];
-      const dataAtual = datas.find(d => d.mes === mesRef_);
-      const pago = dataAtual && dataAtual.foiPaga;
+        // Buscar status de pagamento da última fatura
+        const datas = c.datasPorMes || [];
+        const dataAtual = datas.find(d => d.mes === mesRef_);
+        const pago = dataAtual && dataAtual.foiPaga;
 
-      return `
-      <div style="background: white; padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid var(--cor-primaria); position: relative; box-shadow: var(--sombra-sm);">
-        <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 6px;">
-          <input type="checkbox" id="pago-${c.id}" ${pago ? 'checked' : ''} onchange="marcarFaturaPaga(${c.id}, '${mesRef_}')" style="cursor: pointer; width: 18px; height: 18px;">
-          <label for="pago-${c.id}" style="font-size: 11px; color: var(--cor-texto-light); cursor: pointer; font-weight: 500;">${pago ? 'Pago' : 'Pagar'}</label>
+        return `
+        <div style="background: white; padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid var(--cor-primaria); position: relative; box-shadow: var(--sombra-sm);">
+          <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="pago-${c.id}" ${pago ? 'checked' : ''} onchange="marcarFaturaPaga(${c.id}, '${mesRef_}')" style="cursor: pointer; width: 18px; height: 18px;">
+            <label for="pago-${c.id}" style="font-size: 11px; color: var(--cor-texto-light); cursor: pointer; font-weight: 500;">${pago ? 'Pago' : 'Pagar'}</label>
+          </div>
+          <div style="margin-bottom: 8px; padding-right: 60px;">
+            <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: var(--cor-texto); ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escaparTextoCartao(c.nome)}</p>
+            ${c.titular ? `<p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">Titular: ${escaparTextoCartao(c.titular)}</p>` : ''}
+          </div>
+          <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? 'var(--cor-texto-light)' : 'var(--cor-primaria)'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
+          <p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">●●●● ${c.ultimos} • ${mesRef}</p>
         </div>
-        <div style="margin-bottom: 8px; padding-right: 60px;">
-          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: var(--cor-texto); ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escaparTextoCartao(c.nome)}</p>
-          ${c.titular ? `<p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">Titular: ${escaparTextoCartao(c.titular)}</p>` : ''}
-        </div>
-        <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? 'var(--cor-texto-light)' : 'var(--cor-primaria)'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
-        <p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">●●●● ${c.ultimos} • ${mesRef}</p>
-      </div>
-    `;
+      `;
+      }).join('');
+
+      return `<div style="margin-bottom: var(--espacamento-lg);"><h3 style="margin: var(--espacamento-md) 0; color: var(--cor-primaria); font-size: 16px; text-transform: capitalize;">${banco}</h3><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--espacamento-md);">${htmlCartoes}</div></div>`;
     }).join('');
 
     document.getElementById('total-saldos-abertos').textContent = formatarMoedaBrasileira(totalSaldosAbertos);
