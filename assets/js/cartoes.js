@@ -348,6 +348,12 @@ function obterUltimaFaturaDisponivel(cartao) {
   return ordenadas[0];
 }
 
+function formatarMesPtBr(mesStr) {
+  const [ano, mes] = mesStr.split('-');
+  const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  return `${meses[parseInt(mes) - 1]} ${ano.slice(2)}`;
+}
+
 function atualizarVisualizacao() {
   const cartoes = obterCartoes();
   const container = document.getElementById('lista-cartoes');
@@ -418,8 +424,9 @@ function atualizarVisualizacao() {
   }
 
   container.innerHTML = cartoes.map(cartao => {
-    const saldoMesAtual = obterSaldoMesAtual(cartao);
-    const saldoVisivel = saldoMesAtual || cartao.saldoAberto;
+    const ultimaFatura = obterUltimaFaturaDisponivel(cartao);
+    const saldoVisivel = ultimaFatura?.saldo || cartao.saldoAberto;
+    const mesReferencia = ultimaFatura?.mes;
     const banco = obterBancoPorNome(cartao.nome);
     const classeBanco = banco ? `card-cartao--${banco}` : '';
     return `
@@ -457,7 +464,7 @@ function atualizarVisualizacao() {
       ${saldoVisivel ? `
       <div style="margin-top: var(--espacamento-sm); padding: var(--espacamento-sm); background: rgba(255,255,255,0.15); border-radius: 6px; border-top: 1px solid rgba(255,255,255,0.3);">
         <div style="font-size: 11px; opacity: 0.85; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; font-weight: 600;">
-          ${saldoMesAtual ? '📅 Fatura Este Mês' : 'Saldo Aberto'}
+          ${mesReferencia ? `📅 Fatura ${formatarMesPtBr(mesReferencia)}` : 'Saldo Aberto'}
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <span style="font-size: 16px; font-weight: bold;">${formatarMoedaBrasileira(saldoVisivel)}</span>
@@ -554,7 +561,6 @@ function obterNomeBandeira(bandeira) {
 function obterBancoPorNome(nomeCartao) {
   const nome = (nomeCartao || '').toLowerCase();
 
-  if (nome.includes('picpay')) return 'picpay';
   if (nome.includes('nubank')) return 'nubank';
   if (nome.includes('bradesco')) return 'bradesco';
   if (nome.includes('itau') || nome.includes('itaú')) return 'itau';
@@ -706,63 +712,3 @@ document.addEventListener('click', function(event) {
   }
 });
 
-function importarCartoesPicpay(dados) {
-  if (!dados.cartoes_picpay || !Array.isArray(dados.cartoes_picpay)) {
-    alert('Formato de dados inválido');
-    return;
-  }
-
-  const cartoes = obterCartoes();
-  const mesPadrao = '2026-08';
-
-  let importados = 0;
-
-  dados.cartoes_picpay.forEach(cartaoPicpay => {
-    const ultimos = String(cartaoPicpay.ultimos_digitos).slice(-4);
-
-    // Verificar se cartão já existe (por últimos dígitos + titular)
-    const existe = cartoes.some(c =>
-      c.ultimos === ultimos &&
-      c.titular?.toLowerCase() === cartaoPicpay.titular.toLowerCase()
-    );
-
-    if (!existe) {
-      const novoCartao = {
-        id: Date.now() + Math.random(),
-        titular: cartaoPicpay.titular,
-        nome: cartaoPicpay.nome,
-        ultimos: ultimos,
-        bandeira: 'mastercard',
-        tipo: '',
-        limite: null,
-        fechamento: '04',
-        vencimento: '10',
-        saldoAberto: cartaoPicpay.fatura_agosto_2026 || 0,
-        dataCriacao: new Date().toISOString(),
-        datasPorMes: [
-          {
-            mes: mesPadrao,
-            fechamento: '04',
-            vencimento: '10',
-            saldo: cartaoPicpay.fatura_agosto_2026
-          }
-        ]
-      };
-
-      cartoes.push(novoCartao);
-      importados++;
-    }
-  });
-
-  salvarCartoes(cartoes);
-  atualizarVisualizacao();
-
-  const mensagem = importados > 0
-    ? `✓ ${importados} cartão(ões) Picpay importado(s) com sucesso!\n\nFatura: Agosto/2026\nTotal: R$ ${dados.resumo?.total_fatura || 0}`
-    : '✓ Todos os cartões Picpay já estavam cadastrados';
-
-  alert(mensagem);
-}
-
-// Expor função globalmente para uso no console
-window.importarCartoesPicpay = importarCartoesPicpay;

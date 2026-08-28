@@ -26,18 +26,6 @@
       justify-content: space-between;
     }
 
-    .card-cartao--picpay {
-      background: linear-gradient(135deg, #1b8672 0%, #0f6b56 100%);
-      color: white;
-    }
-
-    .card-cartao--picpay .card-cartao-titulo,
-    .card-cartao--picpay .card-cartao-numero,
-    .card-cartao--picpay .card-cartao-label,
-    .card-cartao--picpay .card-cartao-bandeira {
-      color: white;
-    }
-
     .card-cartao--nubank {
       background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
       color: white;
@@ -395,7 +383,6 @@
 
     <div style="margin-bottom: var(--espacamento-lg); display: flex; gap: var(--espacamento-md);">
       <button class="btn btn-primary" onclick="abrirModalCartao()">+ Adicionar Cartão</button>
-      <button class="btn btn-secondary" onclick="abrirModalImportarPicpay()">📥 Importar Picpay</button>
     </div>
 
     <div id="resumo-saldos" style="display: none; background-color: var(--cor-fundo-alt); border: 2px solid var(--cor-primaria); border-radius: 8px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-lg);">
@@ -502,23 +489,6 @@
     </div>
   </div>
 
-  <!-- Modal para importar Picpay -->
-  <div id="modal-importar-picpay" class="modal" hidden>
-    <div class="modal-content">
-      <h2>Importar Cartões Picpay</h2>
-      <p style="color: #666; font-size: 14px;">Cole aqui o JSON dos cartões Picpay extraídos do PDF:</p>
-
-      <div class="form-group">
-        <textarea id="textarea-json-picpay" placeholder='Cole o JSON aqui...' style="width: 100%; padding: var(--espacamento-md); border: 1px solid var(--cor-borda); border-radius: 6px; font-size: 13px; font-family: monospace; resize: vertical; min-height: 200px; box-sizing: border-box;"></textarea>
-      </div>
-
-      <div class="botoes-modal">
-        <button class="btn btn-primary" onclick="processarImportacaoPicpay()">Importar</button>
-        <button class="btn btn-fechar" onclick="fecharModalImportarPicpay()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Modal para gerenciar datas por mês -->
   <div id="modal-datas-mes" class="modal" hidden>
     <div class="modal-content">
@@ -604,35 +574,7 @@
   <script src="./assets/js/formatacao.js"></script>
   <script src="./assets/js/despesas-variaveis.js"></script>
   <script src="./assets/js/cartoes.js"></script>
-  <script src="./assets/js/dados-picpay.js"></script>
   <script>
-    function abrirModalImportarPicpay() {
-      document.getElementById('textarea-json-picpay').value = '';
-      document.getElementById('modal-importar-picpay').removeAttribute('hidden');
-      document.getElementById('textarea-json-picpay').focus();
-    }
-
-    function fecharModalImportarPicpay() {
-      document.getElementById('modal-importar-picpay').setAttribute('hidden', '');
-    }
-
-    function processarImportacaoPicpay() {
-      const json = document.getElementById('textarea-json-picpay').value.trim();
-
-      if (!json) {
-        alert('Por favor, cole o JSON dos cartões Picpay');
-        return;
-      }
-
-      try {
-        const dados = JSON.parse(json);
-        importarCartoesPicpay(dados);
-        fecharModalImportarPicpay();
-      } catch (erro) {
-        alert('Erro ao processar JSON:\n\n' + erro.message + '\n\nVerifique se o JSON está válido.');
-      }
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
       renderizarMenu();
       inicializarCartoes();

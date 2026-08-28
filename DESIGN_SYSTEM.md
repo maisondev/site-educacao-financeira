@@ -67,14 +67,22 @@ xl:  32px
 - **Sombra**: 0 4px 12px rgba(0,0,0,0.15) on hover
 - **Hover Effect**: Elevação + transformação Y-2px
 
+### Cards de Cartões (Banco)
+- **Nubank**: Gradiente #7c3aed → #6d28d9, texto branco
+- **Bradesco**: Gradiente #b91c1c → #991b1b, texto branco
+- **Itaú**: Gradiente #0369a1 → #0c4a6e, texto branco
+- **Santander**: Gradiente #d97706 → #b45309, texto branco
+- **Caixa**: Gradiente #0369a1 → #0c4a6e, texto branco
+- **Banco do Brasil**: Gradiente #ca8a04 → #a16207, texto branco
+
 ### Badges
 - **Tamanhos**: 12px font
 - **Padding**: 4px 8px
 - **Border Radius**: 4px
 - **Tipos**:
-  - Básico: fundo verde claro, texto verde
-  - Intermediário: fundo amarelo claro, texto amarelo
-  - Avançado: fundo vermelho claro, texto vermelho
+  - Básico: fundo verde (#2d7e3c), texto branco
+  - Intermediário: fundo amarelo (#c88c00), texto branco
+  - Avançado: fundo vermelho (#a63030), texto branco
 
 ### Inputs
 - **Padding**: 8px 16px
@@ -149,6 +157,15 @@ Todas essas são definidas em `assets/css/style.css` na seção `:root`:
 3. **Use border-radius do design system** (sm/md/pill)
 4. **Aplique transições** para interações suaves (0.2s ease)
 5. **Teste em dark/light mode** se necessário (suporte futuro)
+
+## ♿ Acessibilidade & Contraste
+
+- **Contraste mínimo**: WCAG AA (4.5:1 para texto normal, 3:1 para texto grande)
+- **Texto em fundo claro**: sempre usar cor escura (--cor-texto ou escuro)
+- **Texto em fundo escuro**: sempre usar branco ou cor clara
+- **Badges**: usar cores sólidas com texto branco (não usar fundo claro + texto escuro)
+- **Cards**: se usar gradientes escuros, texto deve ser branco; se fundos claros, texto deve ser --cor-texto
+- **Nunca usar**: cores muito próximas (ex: verde claro com texto verde escuro)
 
 ## 📚 Referências
 
