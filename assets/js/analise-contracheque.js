@@ -750,10 +750,15 @@ function carregarHistorico() {
 
   const tbody = document.getElementById('tabela-historico');
 
-  // Calcular totais (independe da ordem)
+  // Calcular totais e médias (independe da ordem)
   const totalBruto = historico.reduce((sum, c) => sum + (c.totalBruto || 0), 0);
   const totalDescontos = historico.reduce((sum, c) => sum + (c.totalDescontos || 0), 0);
   const totalLiquido = historico.reduce((sum, c) => sum + (c.salarioLiquido || 0), 0);
+
+  const meses = historico.length;
+  const mediaBruto = totalBruto / meses;
+  const mediaDescontos = totalDescontos / meses;
+  const mediaLiquido = totalLiquido / meses;
 
   const ordenado = [...historico].sort((a, b) => {
     const cmp = compararHistorico(a, b, ordemHistorico.campo);
@@ -769,10 +774,16 @@ function carregarHistorico() {
     </tr>
   `).join('') + `
     <tr style="font-weight: bold; border-top: 2px solid var(--cor-borda); background-color: var(--cor-fundo-hover);">
-      <td>Total (${historico.length} meses)</td>
+      <td>Total (${meses} ${meses === 1 ? 'mês' : 'meses'})</td>
       <td>${formatarMoeda(totalBruto)}</td>
       <td>${formatarMoeda(totalDescontos)}</td>
       <td>${formatarMoeda(totalLiquido)}</td>
+    </tr>
+    <tr style="font-weight: bold; background-color: var(--cor-fundo-hover);">
+      <td>Média mensal</td>
+      <td>${formatarMoeda(mediaBruto)}</td>
+      <td>${formatarMoeda(mediaDescontos)}</td>
+      <td>${formatarMoeda(mediaLiquido)}</td>
     </tr>
   `;
 
