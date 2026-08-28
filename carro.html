@@ -255,7 +255,7 @@
 
     <!-- Nova manutenção -->
     <section class="bloco">
-      <h2>Registrar manutenção</h2>
+      <h2 id="titulo-form-manutencao">Registrar manutenção</h2>
       <div class="form-row tres">
         <div class="form-group">
           <label for="m-data">Data *</label>
@@ -306,8 +306,9 @@
         <textarea id="m-obs" placeholder="Garantia, próxima recomendação, etc."></textarea>
       </div>
       <div class="acoes-form">
-        <button class="btn btn-primary" onclick="adicionarManutencao()">Adicionar manutenção</button>
+        <button class="btn btn-primary" id="btn-salvar-manutencao" onclick="adicionarManutencao()">Adicionar manutenção</button>
         <button class="btn btn-secondary" onclick="limparFormManutencao()">Limpar</button>
+        <button class="btn btn-secondary" id="btn-cancelar-manutencao" onclick="cancelarEdicaoManutencao()" style="display:none">Cancelar edição</button>
       </div>
     </section>
 
@@ -360,7 +361,8 @@
         </div>
       </div>
       <div class="acoes-form">
-        <button class="btn btn-primary" onclick="adicionarAbastecimento()">Adicionar abastecimento</button>
+        <button class="btn btn-primary" id="btn-salvar-abastecimento" onclick="adicionarAbastecimento()">Adicionar abastecimento</button>
+        <button class="btn btn-secondary" id="btn-cancelar-abastecimento" onclick="cancelarEdicaoAbastecimento()" style="display:none">Cancelar edição</button>
       </div>
       <div id="lista-abastecimentos" class="lista-registros" style="margin-top: var(--espacamento-lg);"></div>
     </section>
@@ -402,8 +404,9 @@
           <input type="text" id="f-mov-desc" placeholder="Ex: pneu furado">
         </div>
         <div class="form-group check-inline" style="align-items: flex-end;">
-          <button class="btn btn-secondary" onclick="movimentarFundo('aporte')">+ Aporte</button>
-          <button class="btn btn-secondary" onclick="movimentarFundo('retirada')">− Retirada</button>
+          <button class="btn btn-secondary" id="btn-mov-aporte" onclick="movimentarFundo('aporte')">+ Aporte</button>
+          <button class="btn btn-secondary" id="btn-mov-retirada" onclick="movimentarFundo('retirada')">− Retirada</button>
+          <button class="btn btn-secondary" id="btn-cancelar-mov-fundo" onclick="cancelarEdicaoMovimentoFundo()" style="display:none">Cancelar</button>
         </div>
       </div>
       <div id="lista-fundo" class="lista-registros" style="margin-top: var(--espacamento-lg);"></div>

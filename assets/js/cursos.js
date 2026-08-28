@@ -1,6 +1,7 @@
 const CHAVE_CURSOS = 'cursos_lista';
 
 let filtroAtualCursos = 'todos';
+let cursoEditandoId = null;
 
 function obterCursos() {
   try {
@@ -28,23 +29,64 @@ function adicionarCurso() {
   }
 
   const cursos = obterCursos();
-  cursos.push({
-    id: Date.now(),
-    titulo,
-    instituicao,
-    link,
-    status,
-    dataCriacao: new Date().toISOString()
-  });
+
+  if (cursoEditandoId !== null) {
+    const curso = cursos.find(c => c.id === cursoEditandoId);
+    if (curso) {
+      curso.titulo = titulo;
+      curso.instituicao = instituicao;
+      curso.link = link;
+      curso.status = status;
+    }
+  } else {
+    cursos.push({
+      id: Date.now(),
+      titulo,
+      instituicao,
+      link,
+      status,
+      dataCriacao: new Date().toISOString()
+    });
+  }
 
   salvarCursos(cursos);
+  cancelarEdicaoCurso();
+  renderizarCursos();
+}
 
+function iniciarEdicaoCurso(id) {
+  const curso = obterCursos().find(c => c.id === id);
+  if (!curso) return;
+
+  cursoEditandoId = id;
+  document.getElementById('input-curso-titulo').value = curso.titulo || '';
+  document.getElementById('input-curso-instituicao').value = curso.instituicao || '';
+  document.getElementById('input-curso-link').value = curso.link || '';
+  document.getElementById('select-curso-status').value = curso.status || 'pendente';
+
+  const titulo = document.getElementById('titulo-form-curso');
+  if (titulo) titulo.textContent = 'Editar Curso';
+  const btn = document.getElementById('btn-salvar-curso');
+  if (btn) btn.textContent = 'Salvar alterações';
+  const btnCancelar = document.getElementById('btn-cancelar-curso');
+  if (btnCancelar) btnCancelar.style.display = '';
+
+  document.querySelector('.formulario-curso').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelarEdicaoCurso() {
+  cursoEditandoId = null;
   document.getElementById('input-curso-titulo').value = '';
   document.getElementById('input-curso-instituicao').value = '';
   document.getElementById('input-curso-link').value = '';
   document.getElementById('select-curso-status').value = 'pendente';
 
-  renderizarCursos();
+  const titulo = document.getElementById('titulo-form-curso');
+  if (titulo) titulo.textContent = 'Adicionar Curso';
+  const btn = document.getElementById('btn-salvar-curso');
+  if (btn) btn.textContent = 'Adicionar';
+  const btnCancelar = document.getElementById('btn-cancelar-curso');
+  if (btnCancelar) btnCancelar.style.display = 'none';
 }
 
 function alternarConclusao(id) {
@@ -108,6 +150,7 @@ function renderizarCursos() {
           ${curso.link ? ' &middot; <a class="item-curso-link" href="' + escaparHtml(curso.link) + '" target="_blank" rel="noopener noreferrer">Acessar curso</a>' : ''}
         </div>
       </div>
+      <button type="button" class="btn-editar-curso" onclick="iniciarEdicaoCurso(${curso.id})" title="Editar curso">Editar</button>
       <button type="button" class="btn-remover-curso" onclick="removerCurso(${curso.id})" title="Remover curso">&times;</button>
     </div>
   `).join('');

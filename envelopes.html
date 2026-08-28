@@ -68,6 +68,72 @@
       margin: 0;
     }
 
+    .cmp-seletor-linha {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .cmp-seletor {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-sm);
+    }
+
+    .cmp-label {
+      font-weight: 500;
+    }
+
+    .cmp-select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+      text-transform: capitalize;
+    }
+
+    .cmp-fechado {
+      background: var(--cor-cinza-leve);
+      color: var(--cor-texto-leve);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 13px;
+    }
+
+    .btn-fechar-mes {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      background-color: var(--cor-cinza-leve);
+      color: var(--cor-texto);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-fechar-mes:hover {
+      background-color: #e8e8e8;
+    }
+
+    .link-lancamentos-dia {
+      display: inline-block;
+      margin-bottom: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .aviso-mes {
+      background-color: var(--cor-cinza-leve);
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+    }
+
     .grid-envelopes {
       display: grid;
       grid-template-columns: 1fr;
@@ -473,6 +539,13 @@
       </p>
     </div>
 
+    <div class="cmp-seletor-linha">
+      <div id="container-competencia" class="cmp-seletor">
+        <!-- Renderizado por competencia.js -->
+      </div>
+      <button type="button" class="btn-fechar-mes" onclick="confirmarFechamentoDoMesEnvelopes()">Fechar mês</button>
+    </div>
+
     <section class="configurar-renda">
       <h2>Sua Renda Mensal</h2>
       <div class="input-grupo">
@@ -487,6 +560,7 @@
 
     <section>
       <h2>Seus Envelopes</h2>
+      <a class="link-lancamentos-dia" href="./dashboard.html#container-lancamento-rapido">Ver lançamentos do dia &rarr;</a>
       <div id="grid-envelopes" class="grid-envelopes"></div>
     </section>
   </main>
@@ -529,6 +603,7 @@
   </footer>
 
   <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/competencia.js"></script>
   <script src="./assets/js/icones.js"></script>
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/config.js"></script>

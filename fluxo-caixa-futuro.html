@@ -246,7 +246,7 @@
     </div>
 
     <section class="secao-adicionar">
-      <h2>Registrar Nova Compra Parcelada</h2>
+      <h2 id="titulo-form-compra">Registrar Nova Compra Parcelada</h2>
 
       <div class="form-grid">
         <div class="form-group">
@@ -298,8 +298,11 @@
         </div>
       </div>
 
-      <button class="btn-adicionar-compra" onclick="adicionarCompra()">
+      <button class="btn-adicionar-compra" id="btn-salvar-compra" onclick="adicionarCompra()">
         Registrar Compra Parcelada
+      </button>
+      <button class="btn-remover" id="btn-cancelar-compra" onclick="cancelarEdicaoCompra()" style="display:none; margin-left:8px;">
+        Cancelar edição
       </button>
     </section>
 

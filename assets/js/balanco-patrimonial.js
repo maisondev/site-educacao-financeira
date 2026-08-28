@@ -2,6 +2,9 @@ function inicializarBalanco() {
   atualizarVisualizacao();
 }
 
+let ativoEditandoId = null;
+let passivoEditandoId = null;
+
 function obterDados() {
   const dados = localStorage.getItem('balanco_patrimonial');
   return dados ? JSON.parse(dados) : { ativos: [], passivos: [] };
@@ -32,9 +35,27 @@ function obterSaldoFgts() {
 }
 
 function abrirModalAtivo() {
+  ativoEditandoId = null;
   document.getElementById('input-ativo-nome').value = '';
   document.getElementById('select-ativo-categoria').value = '';
   document.getElementById('input-ativo-valor').value = '';
+  document.getElementById('titulo-modal-ativo').textContent = 'Adicionar Ativo';
+  document.getElementById('btn-salvar-ativo').textContent = 'Adicionar';
+  document.getElementById('modal-ativo').removeAttribute('hidden');
+  document.getElementById('input-ativo-nome').focus();
+}
+
+function editarAtivo(id) {
+  const dados = obterDados();
+  const ativo = dados.ativos.find(a => a.id === id);
+  if (!ativo) return;
+
+  ativoEditandoId = id;
+  document.getElementById('input-ativo-nome').value = ativo.nome;
+  document.getElementById('select-ativo-categoria').value = ativo.categoria;
+  document.getElementById('input-ativo-valor').value = formatarMoedaBrasileira(ativo.valor).replace(/R\$\s?/, '');
+  document.getElementById('titulo-modal-ativo').textContent = 'Editar Ativo';
+  document.getElementById('btn-salvar-ativo').textContent = 'Salvar alterações';
   document.getElementById('modal-ativo').removeAttribute('hidden');
   document.getElementById('input-ativo-nome').focus();
 }
@@ -44,9 +65,27 @@ function fecharModalAtivo() {
 }
 
 function abrirModalPassivo() {
+  passivoEditandoId = null;
   document.getElementById('input-passivo-nome').value = '';
   document.getElementById('select-passivo-categoria').value = '';
   document.getElementById('input-passivo-valor').value = '';
+  document.getElementById('titulo-modal-passivo').textContent = 'Adicionar Passivo';
+  document.getElementById('btn-salvar-passivo').textContent = 'Adicionar';
+  document.getElementById('modal-passivo').removeAttribute('hidden');
+  document.getElementById('input-passivo-nome').focus();
+}
+
+function editarPassivo(id) {
+  const dados = obterDados();
+  const passivo = dados.passivos.find(p => p.id === id);
+  if (!passivo) return;
+
+  passivoEditandoId = id;
+  document.getElementById('input-passivo-nome').value = passivo.nome;
+  document.getElementById('select-passivo-categoria').value = passivo.categoria;
+  document.getElementById('input-passivo-valor').value = formatarMoedaBrasileira(passivo.valor).replace(/R\$\s?/, '');
+  document.getElementById('titulo-modal-passivo').textContent = 'Editar Passivo';
+  document.getElementById('btn-salvar-passivo').textContent = 'Salvar alterações';
   document.getElementById('modal-passivo').removeAttribute('hidden');
   document.getElementById('input-passivo-nome').focus();
 }
@@ -78,13 +117,23 @@ function salvarAtivo() {
   valor = Math.round(valor * 100) / 100;
 
   const dados = obterDados();
-  dados.ativos.push({
-    id: Date.now(),
-    nome,
-    categoria,
-    valor,
-    dataCriacao: new Date().toISOString()
-  });
+
+  if (ativoEditandoId !== null) {
+    const ativo = dados.ativos.find(a => a.id === ativoEditandoId);
+    if (ativo) {
+      ativo.nome = nome;
+      ativo.categoria = categoria;
+      ativo.valor = valor;
+    }
+  } else {
+    dados.ativos.push({
+      id: Date.now(),
+      nome,
+      categoria,
+      valor,
+      dataCriacao: new Date().toISOString()
+    });
+  }
 
   salvarDados(dados);
   atualizarVisualizacao();
@@ -114,13 +163,23 @@ function salvarPassivo() {
   valor = Math.round(valor * 100) / 100;
 
   const dados = obterDados();
-  dados.passivos.push({
-    id: Date.now(),
-    nome,
-    categoria,
-    valor,
-    dataCriacao: new Date().toISOString()
-  });
+
+  if (passivoEditandoId !== null) {
+    const passivo = dados.passivos.find(p => p.id === passivoEditandoId);
+    if (passivo) {
+      passivo.nome = nome;
+      passivo.categoria = categoria;
+      passivo.valor = valor;
+    }
+  } else {
+    dados.passivos.push({
+      id: Date.now(),
+      nome,
+      categoria,
+      valor,
+      dataCriacao: new Date().toISOString()
+    });
+  }
 
   salvarDados(dados);
   atualizarVisualizacao();
@@ -174,7 +233,7 @@ function atualizarListaAtivos(dados) {
   // Ordenar por valor (maior primeiro)
   const ativosOrdenados = [...dados.ativos].sort((a, b) => b.valor - a.valor);
 
-  lista.innerHTML = linhaFgts + ativosOrdenados.map((ativo, index) => `
+  lista.innerHTML = linhaFgts + ativosOrdenados.map((ativo) => `
     <div class="item-patrimonio item-ativo">
       <div class="item-info">
         <h4>${ativo.nome}</h4>
@@ -184,7 +243,8 @@ function atualizarListaAtivos(dados) {
         <div class="item-valor">
           <div class="item-valor-principal">${formatarMoedaBrasileira(ativo.valor)}</div>
         </div>
-        <button class="btn-remover" onclick="removerAtivo(${index})" title="Remover ativo">×</button>
+        <button class="btn-editar" onclick="editarAtivo(${ativo.id})" title="Editar ativo">Editar</button>
+        <button class="btn-remover" onclick="removerAtivo(${ativo.id})" title="Remover ativo">×</button>
       </div>
     </div>
   `).join('');
@@ -201,7 +261,7 @@ function atualizarListaPassivos(dados) {
   // Ordenar por valor (maior primeiro)
   const passivosOrdenados = [...dados.passivos].sort((a, b) => b.valor - a.valor);
 
-  lista.innerHTML = passivosOrdenados.map((passivo, index) => `
+  lista.innerHTML = passivosOrdenados.map((passivo) => `
     <div class="item-patrimonio item-passivo">
       <div class="item-info">
         <h4>${passivo.nome}</h4>
@@ -211,25 +271,26 @@ function atualizarListaPassivos(dados) {
         <div class="item-valor">
           <div class="item-valor-principal">${formatarMoedaBrasileira(passivo.valor)}</div>
         </div>
-        <button class="btn-remover" onclick="removerPassivo(${index})" title="Remover passivo">×</button>
+        <button class="btn-editar" onclick="editarPassivo(${passivo.id})" title="Editar passivo">Editar</button>
+        <button class="btn-remover" onclick="removerPassivo(${passivo.id})" title="Remover passivo">×</button>
       </div>
     </div>
   `).join('');
 }
 
-function removerAtivo(index) {
+function removerAtivo(id) {
   if (confirm('Tem certeza que deseja remover este ativo?')) {
     const dados = obterDados();
-    dados.ativos.splice(index, 1);
+    dados.ativos = dados.ativos.filter(a => a.id !== id);
     salvarDados(dados);
     atualizarVisualizacao();
   }
 }
 
-function removerPassivo(index) {
+function removerPassivo(id) {
   if (confirm('Tem certeza que deseja remover este passivo?')) {
     const dados = obterDados();
-    dados.passivos.splice(index, 1);
+    dados.passivos = dados.passivos.filter(p => p.id !== id);
     salvarDados(dados);
     atualizarVisualizacao();
   }

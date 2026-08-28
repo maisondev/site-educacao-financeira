@@ -187,6 +187,26 @@
       flex-shrink: 0;
     }
 
+    .btn-editar-curso {
+      background: none;
+      border: 1px solid var(--cor-borda, #ccc);
+      border-radius: 4px;
+      color: var(--cor-secundaria, #1264a3);
+      font-size: 13px;
+      cursor: pointer;
+      padding: 2px 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-secundario {
+      background: none;
+      border: 1px solid var(--cor-borda, #ccc);
+      border-radius: 4px;
+      padding: 8px 16px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
     .lista-vazia {
       text-align: center;
       padding: var(--espacamento-xl);
@@ -239,7 +259,7 @@
     </div>
 
     <section class="formulario-curso">
-      <h2>Adicionar Curso</h2>
+      <h2 id="titulo-form-curso">Adicionar Curso</h2>
       <div class="form-row">
         <div class="form-group">
           <label for="input-curso-titulo">Nome do Curso *</label>
@@ -264,7 +284,8 @@
           </select>
         </div>
       </div>
-      <button type="button" class="btn-primario" onclick="adicionarCurso()">Adicionar</button>
+      <button type="button" class="btn-primario" id="btn-salvar-curso" onclick="adicionarCurso()">Adicionar</button>
+      <button type="button" class="btn-secundario" id="btn-cancelar-curso" onclick="cancelarEdicaoCurso()" style="display:none">Cancelar</button>
     </section>
 
     <div class="filtros-curso">

@@ -171,6 +171,21 @@
       color: #c53030;
     }
 
+    .btn-editar {
+      background: none;
+      border: 1px solid var(--cor-borda, #ccc);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--cor-secundaria, #1264a3);
+      padding: 4px 10px;
+      margin-left: var(--espacamento-md);
+    }
+
+    .btn-editar:hover {
+      background: var(--cor-fundo-alt, #f4f4f4);
+    }
+
     .lista-vazia {
       text-align: center;
       padding: var(--espacamento-lg);
@@ -408,7 +423,7 @@
   <div id="modal-ativo" class="modal" hidden>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Adicionar Ativo</h2>
+        <h2 id="titulo-modal-ativo">Adicionar Ativo</h2>
         <button class="btn-fechar" onclick="fecharModalAtivo()">&times;</button>
       </div>
       <div class="modal-body">
@@ -434,7 +449,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-salvar" onclick="salvarAtivo()">Adicionar</button>
+        <button class="btn-salvar" id="btn-salvar-ativo" onclick="salvarAtivo()">Adicionar</button>
         <button class="btn-cancelar" onclick="fecharModalAtivo()">Cancelar</button>
       </div>
     </div>
@@ -444,7 +459,7 @@
   <div id="modal-passivo" class="modal" hidden>
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Adicionar Passivo</h2>
+        <h2 id="titulo-modal-passivo">Adicionar Passivo</h2>
         <button class="btn-fechar" onclick="fecharModalPassivo()">&times;</button>
       </div>
       <div class="modal-body">
@@ -468,7 +483,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-salvar" onclick="salvarPassivo()">Adicionar</button>
+        <button class="btn-salvar" id="btn-salvar-passivo" onclick="salvarPassivo()">Adicionar</button>
         <button class="btn-cancelar" onclick="fecharModalPassivo()">Cancelar</button>
       </div>
     </div>

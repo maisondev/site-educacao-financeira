@@ -17,7 +17,32 @@ const ENVELOPES_PADRAO = [
 
 let envelopeEmEdicao = null;
 
+// Competência que a página está exibindo. Sem competencia.js carregado,
+// cai num modo "mês único" que preserva o comportamento antigo.
+function mesSelecionado() {
+  return typeof competenciaSelecionada === 'function'
+    ? competenciaSelecionada()
+    : (new Date().toISOString().slice(0, 7));
+}
+
+// Só o mês corrente é editável: os envelopes guardam sempre o orçamento
+// vigente. Meses fechados ficam só de leitura, a partir do histórico.
+function mesEhEditavel() {
+  if (typeof competenciaAtual !== 'function') return true;
+  if (typeof competenciaFechada === 'function' && competenciaFechada(mesSelecionado())) return false;
+  return mesSelecionado() === competenciaAtual();
+}
+
+function aoMudarMes() {
+  carregarRenda();
+  renderizarEnvelopes();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  if (typeof migrarCompetencias === 'function') migrarCompetencias();
+  if (typeof renderizarSeletorCompetencia === 'function') {
+    renderizarSeletorCompetencia('container-competencia', aoMudarMes);
+  }
   carregarRenda();
   renderizarEnvelopes();
 
@@ -84,6 +109,53 @@ function salvarEnvelopes(envelopes) {
   Store.gravar(Store.CHAVES.ENVELOPES, envelopes);
 }
 
+// Retrato de um mês já fechado, montado a partir do histórico mensal.
+function renderizarMesFechado(container, renda) {
+  const historico = typeof Store !== 'undefined'
+    ? Store.ler(Store.CHAVES.HISTORICO_MENSAL, {})
+    : {};
+  const registro = historico[mesSelecionado()];
+  const envelopesSnapshot = (registro && registro.envelopes) || [];
+
+  if (envelopesSnapshot.length === 0) {
+    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--cor-texto-leve);">Nenhum envelope arquivado para este mês.</p>';
+    return;
+  }
+
+  const cards = envelopesSnapshot.map(e => {
+    const valorAlocado = (renda * (Number(e.percentual) || 0)) / 100;
+    const totalGasto = Number(e.gasto) || 0;
+    const sobra = valorAlocado - totalGasto;
+    const percentualUsado = valorAlocado > 0 ? (totalGasto / valorAlocado) * 100 : 0;
+    let classeProgresso = '';
+    if (percentualUsado > 100) classeProgresso = 'erro';
+    else if (percentualUsado > 80) classeProgresso = 'alerta';
+
+    return `
+      <div class="envelope">
+        <div class="envelope-header">
+          <div class="envelope-nome">
+            <h3>${e.nome}</h3>
+            <p class="envelope-percentual">${e.percentual}% da renda</p>
+          </div>
+        </div>
+        <div class="envelope-valores">
+          <div class="valor-linha"><span>Alocado:</span><strong>${valorAlocado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></div>
+          <div class="valor-linha"><span>Gasto:</span><strong class="valor-usado">${totalGasto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></div>
+          <div class="valor-linha"><span>Disponível:</span><strong>${sobra.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></div>
+        </div>
+        <div class="envelope-progresso">
+          <div class="envelope-progresso-barra ${classeProgresso}" style="width: ${Math.min(percentualUsado, 100)}%"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="aviso-mes" style="grid-column: 1/-1;">Mês fechado &mdash; retrato arquivado, somente leitura.</div>
+    <div class="grid-envelopes-grupo" style="grid-column: 1/-1;">${cards}</div>
+  `;
+}
+
 function renderizarEnvelopes() {
   const renda = parseFloat(localStorage.getItem(CHAVE_RENDA) || '0');
   const envelopes = obterEnvelopes();
@@ -93,6 +165,15 @@ function renderizarEnvelopes() {
     container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--cor-texto-leve);">Defina sua renda mensal para começar</p>';
     return;
   }
+
+  if (typeof competenciaFechada === 'function' && competenciaFechada(mesSelecionado())) {
+    renderizarMesFechado(container, renda);
+    return;
+  }
+
+  const avisoOutroMes = (typeof competenciaAtual === 'function' && mesSelecionado() !== competenciaAtual())
+    ? '<div class="aviso-mes" style="grid-column: 1/-1;">Os envelopes mostram sempre o orçamento do mês corrente. Feche o mês para arquivar este retrato.</div>'
+    : '';
 
   // Agrupar envelopes por categoria
   const grupos = {
@@ -122,7 +203,7 @@ function renderizarEnvelopes() {
     }
   });
 
-  container.innerHTML = html;
+  container.innerHTML = avisoOutroMes + html;
 }
 
 function criarCardEnvelope(envelope, rendaTotal) {
@@ -137,6 +218,8 @@ function criarCardEnvelope(envelope, rendaTotal) {
     envelope.registros = envelope.despesas.map(d => ({ ...d, tipo: 'variavel' }));
     delete envelope.despesas;
   }
+
+  const editavel = mesEhEditavel();
 
   let classeProgresso = '';
   if (percentualUsado > 100) {
@@ -183,15 +266,16 @@ function criarCardEnvelope(envelope, rendaTotal) {
               <span>${r.descricao}</span>
             </div>
             <span class="despesa-valor">${r.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-            <button class="btn-remover-despesa" onclick="removerRegistro('${envelope.id}', ${idx})">×</button>
+            ${editavel ? `<button class="btn-remover-despesa" onclick="removerRegistro('${envelope.id}', ${idx})">×</button>` : ''}
           </div>
         `}).join('')}
       </div>
 
+      ${editavel ? `
       <div class="envelope-acoes">
         <button class="btn-adicionar" onclick="abrirModalDespesa('${envelope.id}', '${envelope.nome}')">+ Adicionar</button>
         <button class="btn-limpar" onclick="limparEnvelope('${envelope.id}')">Limpar Despesas</button>
-      </div>
+      </div>` : ''}
     </div>
   `;
 }
@@ -213,6 +297,12 @@ function fecharModalDespesa() {
 
 function salvarRegistro() {
   if (!envelopeEmEdicao) return;
+
+  if (!mesEhEditavel()) {
+    alert('Este mês está fechado ou não é o mês corrente. Só o mês atual aceita novos lançamentos.');
+    fecharModalDespesa();
+    return;
+  }
 
   const tipo = document.getElementById('registro-tipo').value;
   const descricao = document.getElementById('registro-descricao').value.trim();
@@ -271,4 +361,35 @@ function limparEnvelope(envelopeId) {
       renderizarEnvelopes();
     }
   }
+}
+
+// Fecha (ou reabre) o mês selecionado: arquiva o retrato e zera os envelopes
+// para o mês seguinte. Reaproveita fecharMes/reabrirMes de competencia.js.
+function confirmarFechamentoDoMesEnvelopes() {
+  if (typeof fecharMes !== 'function' || typeof competenciaSelecionada !== 'function') {
+    alert('Controle mensal indisponível nesta página.');
+    return;
+  }
+
+  const competencia = competenciaSelecionada();
+  const nome = formatarCompetencia(competencia);
+
+  if (competenciaFechada(competencia)) {
+    if (!confirm(`${nome} já está fechado. Reabrir para continuar lançando?`)) return;
+    reabrirMes(competencia);
+  } else {
+    const confirmado = confirm(
+      `Fechar ${nome}?\n\n` +
+      'O retrato do mês é arquivado e os envelopes voltam a zero. ' +
+      'Nenhum lançamento é apagado, e dá para reabrir depois.'
+    );
+    if (!confirmado) return;
+    if (!fecharMes(competencia)) return;
+  }
+
+  if (typeof renderizarSeletorCompetencia === 'function') {
+    renderizarSeletorCompetencia('container-competencia', aoMudarMes);
+  }
+  carregarRenda();
+  renderizarEnvelopes();
 }

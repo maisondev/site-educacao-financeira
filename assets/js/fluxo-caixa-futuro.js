@@ -2,6 +2,8 @@
 
 const CHAVE_COMPRAS = 'compras_parceladas';
 
+let compraEditandoId = null;
+
 document.addEventListener('DOMContentLoaded', function() {
   renderizarTabela();
   renderizarCalendario();
@@ -59,31 +61,74 @@ function adicionarCompra() {
     return;
   }
 
-  const compra = {
-    id: Date.now(),
-    descricao,
-    cartao: cartao || 'Não informado',
-    valorTotal,
-    numParcelas,
-    dataInicio,
-    dataCriacao: new Date().toISOString()
-  };
-
   const compras = obterCompras();
-  compras.push(compra);
+
+  if (compraEditandoId !== null) {
+    const compra = compras.find(c => c.id === compraEditandoId);
+    if (compra) {
+      compra.descricao = descricao;
+      compra.cartao = cartao || 'Não informado';
+      compra.valorTotal = valorTotal;
+      compra.numParcelas = numParcelas;
+      compra.dataInicio = dataInicio;
+    }
+  } else {
+    compras.push({
+      id: Date.now(),
+      descricao,
+      cartao: cartao || 'Não informado',
+      valorTotal,
+      numParcelas,
+      dataInicio,
+      dataCriacao: new Date().toISOString()
+    });
+  }
+
   salvarCompras(compras);
 
   // Sincronizar com envelopes
   sincronizarComEnvelopes();
 
-  // Limpar formulário
+  cancelarEdicaoCompra();
+
+  renderizarTabela();
+  renderizarCalendario();
+}
+
+function iniciarEdicaoCompra(id) {
+  const compra = obterCompras().find(c => c.id === id);
+  if (!compra) return;
+
+  compraEditandoId = id;
+  document.getElementById('input-descricao').value = compra.descricao || '';
+  document.getElementById('input-cartao').value = compra.cartao === 'Não informado' ? '' : (compra.cartao || '');
+  document.getElementById('input-valor-total').value = compra.valorTotal;
+  document.getElementById('input-parcelas').value = compra.numParcelas;
+  document.getElementById('input-data-inicio').value = compra.dataInicio;
+
+  const titulo = document.getElementById('titulo-form-compra');
+  if (titulo) titulo.textContent = 'Editar Compra Parcelada';
+  const btn = document.getElementById('btn-salvar-compra');
+  if (btn) btn.textContent = 'Salvar alterações';
+  const btnCancelar = document.getElementById('btn-cancelar-compra');
+  if (btnCancelar) btnCancelar.style.display = '';
+
+  document.querySelector('.secao-adicionar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelarEdicaoCompra() {
+  compraEditandoId = null;
   document.getElementById('input-descricao').value = '';
   document.getElementById('input-cartao').value = '';
   document.getElementById('input-valor-total').value = '';
   document.getElementById('input-parcelas').value = '';
 
-  renderizarTabela();
-  renderizarCalendario();
+  const titulo = document.getElementById('titulo-form-compra');
+  if (titulo) titulo.textContent = 'Registrar Nova Compra Parcelada';
+  const btn = document.getElementById('btn-salvar-compra');
+  if (btn) btn.textContent = 'Registrar Compra Parcelada';
+  const btnCancelar = document.getElementById('btn-cancelar-compra');
+  if (btnCancelar) btnCancelar.style.display = 'none';
 }
 
 function removerCompra(id) {
@@ -139,7 +184,10 @@ function renderizarTabela() {
         <td>${compra.numParcelas}x</td>
         <td>${dataFormatada}</td>
         <td>${parseFloat(valorParcela).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-        <td><button class="btn-remover" onclick="removerCompra(${compra.id})">Remover</button></td>
+        <td>
+          <button class="btn-remover" onclick="iniciarEdicaoCompra(${compra.id})" style="background: var(--cor-secundaria, #1264a3);">Editar</button>
+          <button class="btn-remover" onclick="removerCompra(${compra.id})">Remover</button>
+        </td>
       </tr>
     `;
   });

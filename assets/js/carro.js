@@ -3,6 +3,10 @@
 
 const CHAVE_CARRO = 'carro';
 
+let manutencaoEditandoId = null;
+let abastecimentoEditandoId = null;
+let movimentoFundoEditandoId = null;
+
 // Plano preventivo de referência. Intervalos típicos para carro de passeio flex.
 // Ajuste sempre pelo manual do fabricante — este é só um ponto de partida.
 const PLANO_PADRAO = [
@@ -98,6 +102,22 @@ function adicionarManutencao() {
   };
   if (!m.data || !m.categoria || !m.tipo) { alert('Preencha data, tipo e categoria.'); return; }
 
+  if (manutencaoEditandoId !== null) {
+    const idx = d.manutencoes.findIndex(x => x.id === manutencaoEditandoId);
+    if (idx !== -1) {
+      m.id = manutencaoEditandoId;
+      d.manutencoes[idx] = m;
+    }
+    if (m.km > (d.veiculo.kmAtual || 0)) {
+      d.veiculo.kmAtual = m.km;
+      d.veiculo.kmAtualData = m.data;
+    }
+    salvarDadosCarro(d);
+    cancelarEdicaoManutencao();
+    renderTudo();
+    return;
+  }
+
   const total = m.valorPecas + m.valorMaoObra;
   const pagarComFundo = document.getElementById('m-fundo').checked;
 
@@ -132,6 +152,38 @@ function limparFormManutencao() {
   document.getElementById('m-fundo').checked = false;
 }
 
+function iniciarEdicaoManutencao(id) {
+  const d = obterDadosCarro();
+  const m = d.manutencoes.find(x => x.id === id);
+  if (!m) return;
+  preencherSelectCategoria();
+
+  manutencaoEditandoId = id;
+  document.getElementById('m-data').value = m.data || '';
+  document.getElementById('m-km').value = m.km || '';
+  document.getElementById('m-tipo').value = m.tipo || 'preventiva';
+  document.getElementById('m-categoria').value = m.categoria || '';
+  document.getElementById('m-oficina').value = m.oficina || '';
+  document.getElementById('m-descricao').value = m.descricao || '';
+  document.getElementById('m-pecas').value = m.valorPecas || '';
+  document.getElementById('m-mao-obra').value = m.valorMaoObra || '';
+  document.getElementById('m-obs').value = m.observacoes || '';
+  document.getElementById('m-fundo').checked = false;
+
+  document.getElementById('titulo-form-manutencao').textContent = 'Editar manutenção';
+  document.getElementById('btn-salvar-manutencao').textContent = 'Salvar alterações';
+  document.getElementById('btn-cancelar-manutencao').style.display = '';
+  document.getElementById('titulo-form-manutencao').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelarEdicaoManutencao() {
+  manutencaoEditandoId = null;
+  limparFormManutencao();
+  document.getElementById('titulo-form-manutencao').textContent = 'Registrar manutenção';
+  document.getElementById('btn-salvar-manutencao').textContent = 'Adicionar manutenção';
+  document.getElementById('btn-cancelar-manutencao').style.display = 'none';
+}
+
 function removerManutencao(id) {
   if (!confirm('Remover esta manutenção?')) return;
   const d = obterDadosCarro();
@@ -161,6 +213,22 @@ function adicionarAbastecimento() {
   };
   if (!a.data || !a.km || !a.litros) { alert('Preencha data, km e litros.'); return; }
 
+  if (abastecimentoEditandoId !== null) {
+    const idx = d.abastecimentos.findIndex(x => x.id === abastecimentoEditandoId);
+    if (idx !== -1) {
+      a.id = abastecimentoEditandoId;
+      d.abastecimentos[idx] = a;
+    }
+    if (a.km > (d.veiculo.kmAtual || 0)) {
+      d.veiculo.kmAtual = a.km;
+      d.veiculo.kmAtualData = a.data;
+    }
+    salvarDadosCarro(d);
+    cancelarEdicaoAbastecimento();
+    renderTudo();
+    return;
+  }
+
   d.abastecimentos.push(a);
   if (a.km > (d.veiculo.kmAtual || 0)) {
     d.veiculo.kmAtual = a.km;
@@ -170,6 +238,32 @@ function adicionarAbastecimento() {
   ['a-data', 'a-km', 'a-litros', 'a-valor-litro', 'a-valor-total'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('a-cheio').checked = true;
   renderTudo();
+}
+
+function iniciarEdicaoAbastecimento(id) {
+  const d = obterDadosCarro();
+  const a = d.abastecimentos.find(x => x.id === id);
+  if (!a) return;
+
+  abastecimentoEditandoId = id;
+  document.getElementById('a-data').value = a.data || '';
+  document.getElementById('a-km').value = a.km || '';
+  document.getElementById('a-litros').value = a.litros || '';
+  document.getElementById('a-valor-litro').value = a.valorLitro || '';
+  document.getElementById('a-valor-total').value = a.valorTotal || '';
+  document.getElementById('a-cheio').checked = !!a.tanqueCheio;
+
+  document.getElementById('btn-salvar-abastecimento').textContent = 'Salvar alterações';
+  document.getElementById('btn-cancelar-abastecimento').style.display = '';
+  document.getElementById('a-data').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelarEdicaoAbastecimento() {
+  abastecimentoEditandoId = null;
+  ['a-data', 'a-km', 'a-litros', 'a-valor-litro', 'a-valor-total'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('a-cheio').checked = true;
+  document.getElementById('btn-salvar-abastecimento').textContent = 'Adicionar abastecimento';
+  document.getElementById('btn-cancelar-abastecimento').style.display = 'none';
 }
 
 function removerAbastecimento(id) {
@@ -197,6 +291,20 @@ function movimentarFundo(tipo) {
   if (valor <= 0) { alert('Informe um valor.'); return; }
   const d = obterDadosCarro();
   d.fundo.movimentos = d.fundo.movimentos || [];
+
+  if (movimentoFundoEditandoId !== null) {
+    const mv = d.fundo.movimentos.find(x => x.id === movimentoFundoEditandoId);
+    if (mv) {
+      mv.tipo = tipo;
+      mv.valor = valor;
+      mv.descricao = descricao || (tipo === 'aporte' ? 'Aporte' : 'Retirada');
+    }
+    salvarDadosCarro(d);
+    cancelarEdicaoMovimentoFundo();
+    renderTudo();
+    return;
+  }
+
   d.fundo.movimentos.push({
     id: Date.now(),
     data: new Date().toISOString().split('T')[0],
@@ -208,6 +316,29 @@ function movimentarFundo(tipo) {
   document.getElementById('f-mov-valor').value = '';
   document.getElementById('f-mov-desc').value = '';
   renderTudo();
+}
+
+function iniciarEdicaoMovimentoFundo(id) {
+  const d = obterDadosCarro();
+  const mv = (d.fundo.movimentos || []).find(x => x.id === id);
+  if (!mv) return;
+
+  movimentoFundoEditandoId = id;
+  document.getElementById('f-mov-valor').value = mv.valor || '';
+  document.getElementById('f-mov-desc').value = mv.descricao || '';
+  document.getElementById('btn-mov-aporte').textContent = 'Salvar como aporte';
+  document.getElementById('btn-mov-retirada').textContent = 'Salvar como retirada';
+  document.getElementById('btn-cancelar-mov-fundo').style.display = '';
+  document.getElementById('f-mov-valor').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelarEdicaoMovimentoFundo() {
+  movimentoFundoEditandoId = null;
+  document.getElementById('f-mov-valor').value = '';
+  document.getElementById('f-mov-desc').value = '';
+  document.getElementById('btn-mov-aporte').textContent = '+ Aporte';
+  document.getElementById('btn-mov-retirada').textContent = '− Retirada';
+  document.getElementById('btn-cancelar-mov-fundo').style.display = 'none';
 }
 
 function registrarAporteMensal() {
@@ -440,6 +571,7 @@ function renderListaManutencoes(d) {
         ${m.descricao ? `<p class="registro-desc">${escaparHtml(m.descricao)}</p>` : ''}
         <p class="registro-meta">Peças ${moeda(m.valorPecas)} · Mão de obra ${moeda(m.valorMaoObra)}</p>
         ${m.observacoes ? `<p class="registro-desc">${escaparHtml(m.observacoes)}</p>` : ''}
+        <button class="btn-link-remover" onclick="iniciarEdicaoManutencao(${m.id})">Editar</button>
         <button class="btn-link-remover" onclick="removerManutencao(${m.id})">Remover</button>
       </div>
     `;
@@ -470,6 +602,7 @@ function renderListaAbastecimentos(d) {
           ${a.data ? new Date(a.data + 'T00:00:00').toLocaleDateString('pt-BR') : '—'} ·
           ${num(a.litros, 2)} L · ${moeda(a.valorLitro)}/L${a.tanqueCheio ? ' · tanque cheio' : ''}${consumo}
         </p>
+        <button class="btn-link-remover" onclick="iniciarEdicaoAbastecimento(${a.id})">Editar</button>
         <button class="btn-link-remover" onclick="removerAbastecimento(${a.id})">Remover</button>
       </div>
     `;

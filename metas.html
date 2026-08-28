@@ -109,7 +109,7 @@
     }
 
     .meta-descricao {
-      color: var(--cor-texto-leve);
+      color: var(--cor-texto-light);
       margin-bottom: var(--espacamento-md);
       font-size: 14px;
     }
@@ -132,7 +132,7 @@
       display: flex;
       gap: var(--espacamento-md);
       font-size: 14px;
-      color: var(--cor-texto-leve);
+      color: var(--cor-texto-light);
       margin-bottom: var(--espacamento-md);
     }
 
@@ -208,7 +208,7 @@
     .lista-vazia {
       text-align: center;
       padding: var(--espacamento-xl);
-      color: var(--cor-texto-leve);
+      color: var(--cor-texto-light);
       background-color: var(--cor-cinza-leve);
       border-radius: 4px;
       margin-top: var(--espacamento-lg);
@@ -263,7 +263,7 @@
       background: none;
       border: none;
       font-size: 28px;
-      color: var(--cor-texto-leve);
+      color: var(--cor-texto-light);
       cursor: pointer;
       padding: 0;
       width: 32px;
@@ -299,7 +299,274 @@
       .modal-content {
         width: 95%;
       }
+
+      .metas-cabecalho {
+        align-items: flex-start;
+      }
+
+      .lista-aportes li {
+        grid-template-columns: auto 1fr auto;
+      }
+
+      .aporte-nota {
+        grid-column: 1 / -1;
+      }
     }
+
+    /* Painel de resumo */
+    .resumo-metas:not(:empty) {
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .resumo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--espacamento-md);
+    }
+
+    .resumo-item {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .resumo-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cor-texto-light);
+    }
+
+    .resumo-valor {
+      font-size: 20px;
+      color: var(--cor-primaria);
+    }
+
+    .resumo-sub {
+      font-size: 12px;
+      color: var(--cor-texto-light);
+    }
+
+    .resumo-item .meta-progresso {
+      margin-top: var(--espacamento-sm);
+      margin-bottom: 0;
+    }
+
+    /* Validação inline */
+    .form-erros {
+      list-style: none;
+      margin: 0 0 var(--espacamento-md);
+      padding: var(--espacamento-md);
+      background-color: #fbeaea;
+      border: 1px solid var(--cor-vermelho);
+      border-radius: 4px;
+      color: var(--cor-vermelho);
+      font-size: 14px;
+    }
+
+    .form-erros li {
+      margin-left: var(--espacamento-md);
+    }
+
+    .campo-invalido {
+      border-color: var(--cor-vermelho) !important;
+    }
+
+    .campo-invalido:focus {
+      box-shadow: 0 0 0 3px rgba(166, 48, 48, 0.12) !important;
+    }
+
+    /* Controles de ordenação e filtro */
+    .metas-cabecalho {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+    }
+
+    .controles-metas {
+      display: flex;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+    }
+
+    .controles-metas label {
+      font-size: 13px;
+      color: var(--cor-texto-light);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .controles-metas select {
+      padding: 6px 8px;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: var(--fonte-sistema);
+    }
+
+    /* Barra de progresso com cores por faixa */
+    .meta-progresso-barra.barra-baixa { background-color: var(--cor-vermelho); }
+    .meta-progresso-barra.barra-media { background-color: var(--cor-amarelo); }
+    .meta-progresso-barra.barra-alta { background-color: var(--cor-azul); }
+    .meta-progresso-barra.barra-completa { background-color: var(--cor-verde); }
+
+    .card-meta-concluida {
+      border-left: 4px solid var(--cor-verde);
+    }
+
+    .meta-atingida {
+      color: var(--cor-verde);
+      font-weight: bold;
+    }
+
+    /* Projeção de prazo */
+    .meta-projecao {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 13px;
+      color: var(--cor-texto-light);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .meta-projecao .icone {
+      vertical-align: -2px;
+      margin-right: 4px;
+    }
+
+    .meta-projecao strong {
+      color: var(--cor-texto);
+    }
+
+    .proj-alerta {
+      color: var(--cor-vermelho);
+      font-weight: 500;
+    }
+
+    /* Histórico de aportes */
+    .meta-historico {
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .meta-historico summary {
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--cor-azul);
+    }
+
+    .lista-aportes {
+      list-style: none;
+      margin: var(--espacamento-sm) 0 0;
+      padding: 0;
+    }
+
+    .lista-aportes li {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto;
+      gap: var(--espacamento-sm);
+      align-items: center;
+      font-size: 13px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .aporte-nota {
+      color: var(--cor-texto-light);
+    }
+
+    .btn-remover-aporte {
+      background: none;
+      border: none;
+      color: var(--cor-vermelho);
+      cursor: pointer;
+      padding: 2px;
+      display: inline-flex;
+    }
+
+    /* Botões de aporte e de alternar concluídas */
+    .btn-aporte {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      background-color: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-aporte:hover {
+      background-color: var(--cor-primaria-hover);
+    }
+
+    .btn-toggle {
+      flex: none !important;
+      padding: 6px 14px;
+    }
+
+    .secao-concluidas {
+      margin-top: var(--espacamento-xl);
+    }
+
+    .aporte-alvo {
+      margin: 0 0 var(--espacamento-md);
+      color: var(--cor-texto-light);
+      font-size: 14px;
+    }
+
+    /* Backup */
+    .backup-metas {
+      margin-top: var(--espacamento-xl);
+      padding-top: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .modal-corpo {
+      padding: var(--espacamento-lg);
+    }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      bottom: var(--espacamento-lg);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-sm);
+      z-index: 2000;
+      pointer-events: none;
+    }
+
+    .toast {
+      background-color: var(--cor-texto);
+      color: white;
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      border-radius: 4px;
+      font-size: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .toast-visivel {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast-sucesso { background-color: var(--cor-verde); }
+    .toast-erro { background-color: var(--cor-vermelho); }
+    .toast-aviso { background-color: var(--cor-amarelo); }
   </style>
 </head>
 <body>
@@ -353,48 +620,97 @@
     <h1>Metas Financeiras</h1>
 
     <p>
-      Defina suas metas financeiras e acompanhe seu progresso. Suas metas são salvas automaticamente,
-      então você pode voltar sempre para visualizar e atualizar.
+      Defina suas metas financeiras, registre aportes ao longo do tempo e acompanhe o progresso.
+      Tudo é salvo automaticamente neste navegador.
     </p>
+
+    <section id="resumo-metas" class="resumo-metas"></section>
 
     <section class="formulario-meta">
       <h2>Adicionar Nova Meta</h2>
 
-      <label for="meta-titulo">Título da Meta *</label>
-      <input type="text" id="meta-titulo" placeholder="Ex: Juntar R$ 1.000 para emergência" required>
+      <form id="formulario-nova-meta" novalidate>
+        <ul class="form-erros" hidden></ul>
 
-      <label for="meta-descricao">Descrição (opcional)</label>
-      <textarea id="meta-descricao" placeholder="Por que essa meta é importante?"></textarea>
+        <label for="meta-titulo">Título da Meta *</label>
+        <input type="text" id="meta-titulo" placeholder="Ex: Juntar R$ 1.000 para emergência">
 
-      <label for="meta-valor-alvo">Valor alvo (R$) *</label>
-      <input type="number" id="meta-valor-alvo" min="0" step="0.01" placeholder="Ex: 1000" required>
+        <label for="meta-descricao">Descrição (opcional)</label>
+        <textarea id="meta-descricao" placeholder="Por que essa meta é importante?"></textarea>
 
-      <label for="meta-valor-atual">Valor atual (R$)</label>
-      <input type="number" id="meta-valor-atual" min="0" step="0.01" value="0" placeholder="0">
+        <label for="meta-valor-alvo">Valor alvo (R$) *</label>
+        <input type="number" id="meta-valor-alvo" min="0" step="0.01" placeholder="Ex: 1000">
 
-      <label for="meta-prazo">Prazo *</label>
-      <select id="meta-prazo" required>
-        <option value="">Selecione um prazo</option>
-        <option value="curto">Curto prazo (até 1 ano)</option>
-        <option value="medio">Médio prazo (1-3 anos)</option>
-        <option value="longo">Longo prazo (mais de 3 anos)</option>
-      </select>
+        <label for="meta-valor-atual">Valor já guardado (R$)</label>
+        <input type="number" id="meta-valor-atual" min="0" step="0.01" value="0" placeholder="0">
 
-      <label for="meta-data">Data limite (opcional)</label>
-      <input type="date" id="meta-data">
+        <label for="meta-prazo">Prazo *</label>
+        <select id="meta-prazo">
+          <option value="">Selecione um prazo</option>
+          <option value="curto">Curto prazo (até 1 ano)</option>
+          <option value="medio">Médio prazo (1-3 anos)</option>
+          <option value="longo">Longo prazo (mais de 3 anos)</option>
+        </select>
 
-      <div class="botoes-formulario">
-        <button type="button" class="btn-primario" onclick="adicionarMeta()">Adicionar Meta</button>
-        <button type="button" class="btn-secundario" onclick="limparFormulario()">Limpar</button>
-      </div>
+        <label for="meta-data">Data limite (opcional)</label>
+        <input type="date" id="meta-data">
+
+        <div class="botoes-formulario">
+          <button type="submit" class="btn-primario">Adicionar Meta</button>
+          <button type="button" class="btn-secundario" onclick="limparFormulario()">Limpar</button>
+        </div>
+      </form>
     </section>
 
     <section>
-      <h2>Suas Metas</h2>
+      <div class="metas-cabecalho">
+        <h2>Suas Metas</h2>
+        <div id="controles-metas" class="controles-metas" hidden>
+          <label>Ordenar
+            <select id="ordenar-metas">
+              <option value="valor-alvo">Maior valor alvo</option>
+              <option value="progresso">Maior progresso</option>
+              <option value="data-limite">Prazo mais próximo</option>
+              <option value="recente">Mais recentes</option>
+              <option value="prazo">Curto → longo prazo</option>
+            </select>
+          </label>
+          <label>Prazo
+            <select id="filtrar-prazo">
+              <option value="todos">Todos</option>
+              <option value="curto">Curto</option>
+              <option value="medio">Médio</option>
+              <option value="longo">Longo</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
       <div id="lista-metas" class="lista-metas">
         <div class="lista-vazia">
           <p>Nenhuma meta adicionada ainda. Crie sua primeira meta acima!</p>
         </div>
+      </div>
+    </section>
+
+    <section id="secao-concluidas" class="secao-concluidas" hidden>
+      <div class="metas-cabecalho">
+        <h2>Concluídas (<span id="contador-concluidas">0</span>)</h2>
+        <button type="button" class="btn-secundario btn-toggle" id="btn-toggle-concluidas" onclick="toggleConcluidas()">Mostrar</button>
+      </div>
+      <div id="lista-concluidas" class="lista-metas" hidden></div>
+    </section>
+
+    <section class="backup-metas">
+      <h2>Backup das metas</h2>
+      <p class="meta-descricao">
+        As metas ficam só neste navegador. Exporte um arquivo para não perder tudo ao limpar o cache
+        ou trocar de dispositivo — e importe depois para restaurar.
+      </p>
+      <div class="botoes-formulario">
+        <button type="button" class="btn-secundario" id="btn-exportar-metas">Exportar metas</button>
+        <button type="button" class="btn-secundario" id="btn-importar-metas">Importar metas</button>
+        <input type="file" id="input-importar-metas" accept="application/json,.json" hidden>
       </div>
     </section>
 
@@ -403,26 +719,28 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2>Editar Meta</h2>
-          <button class="btn-fechar-modal" onclick="fecharModalEdicao()">&times;</button>
+          <button class="btn-fechar-modal" onclick="fecharModais()">&times;</button>
         </div>
 
-        <form id="formulario-edicao" class="formulario-meta">
+        <form id="formulario-edicao" class="formulario-meta" novalidate>
           <input type="hidden" id="edit-meta-id">
 
+          <ul class="form-erros" hidden></ul>
+
           <label for="edit-titulo">Título da Meta *</label>
-          <input type="text" id="edit-titulo" required>
+          <input type="text" id="edit-titulo">
 
           <label for="edit-descricao">Descrição (opcional)</label>
           <textarea id="edit-descricao"></textarea>
 
           <label for="edit-valor-alvo">Valor alvo (R$) *</label>
-          <input type="number" id="edit-valor-alvo" min="0" step="0.01" required>
+          <input type="number" id="edit-valor-alvo" min="0" step="0.01">
 
-          <label for="edit-valor-atual">Valor atual (R$)</label>
-          <input type="number" id="edit-valor-atual" min="0" step="0.01" required>
+          <label for="edit-valor-atual">Valor guardado (R$)</label>
+          <input type="number" id="edit-valor-atual" min="0" step="0.01">
 
           <label for="edit-prazo">Prazo *</label>
-          <select id="edit-prazo" required>
+          <select id="edit-prazo">
             <option value="">Selecione um prazo</option>
             <option value="curto">Curto prazo (até 1 ano)</option>
             <option value="medio">Médio prazo (1-3 anos)</option>
@@ -434,9 +752,58 @@
 
           <div class="botoes-formulario">
             <button type="submit" class="btn-primario">Salvar Alterações</button>
-            <button type="button" class="btn-secundario" onclick="fecharModalEdicao()">Cancelar</button>
+            <button type="button" class="btn-secundario" onclick="fecharModais()">Cancelar</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal de aporte -->
+    <div id="modal-aporte" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Registrar aporte</h2>
+          <button class="btn-fechar-modal" onclick="fecharModais()">&times;</button>
+        </div>
+
+        <form id="formulario-aporte" class="formulario-meta" novalidate>
+          <input type="hidden" id="aporte-meta-id">
+
+          <p class="aporte-alvo">Meta: <strong id="aporte-meta-titulo"></strong></p>
+
+          <ul class="form-erros" hidden></ul>
+
+          <label for="aporte-valor">Valor do aporte (R$) *</label>
+          <input type="number" id="aporte-valor" min="0" step="0.01" placeholder="Ex: 150">
+
+          <label for="aporte-data">Data *</label>
+          <input type="date" id="aporte-data">
+
+          <label for="aporte-nota">Nota (opcional)</label>
+          <input type="text" id="aporte-nota" placeholder="Ex: 13º salário">
+
+          <div class="botoes-formulario">
+            <button type="submit" class="btn-primario">Registrar</button>
+            <button type="button" class="btn-secundario" onclick="fecharModais()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de confirmação -->
+    <div id="modal-confirmar" class="modal" hidden>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirmar</h2>
+          <button class="btn-fechar-modal" onclick="fecharModais()">&times;</button>
+        </div>
+        <div class="modal-corpo">
+          <p id="confirmar-mensagem"></p>
+          <div class="botoes-formulario">
+            <button type="button" class="btn-primario" id="confirmar-ok">Confirmar</button>
+            <button type="button" class="btn-secundario" onclick="fecharModais()">Cancelar</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -445,7 +812,7 @@
       <ul>
         <li>Comece pequeno — uma meta de R$ 500 é melhor que uma de R$ 50.000 que você não vai conseguir</li>
         <li>Seja específico — "juntar R$ 1.000" é melhor que "poupar dinheiro"</li>
-        <li>Acompanhe o progresso — atualizar o valor atual regularmente te motiva</li>
+        <li>Acompanhe o progresso — registrar um aporte a cada depósito te motiva e alimenta a projeção de prazo</li>
         <li><a href="./temas/orcamento-pessoal/metodo-50-30-20.html">Use 20% do seu orçamento</a> para alcançar suas metas</li>
       </ul>
     </section>
@@ -454,6 +821,8 @@
   <footer class="site-footer">
     <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
   </footer>
+
+  <div id="toast-container"></div>
 
   <script src="./assets/js/storage.js"></script>
   <script src="./assets/js/icones.js"></script>
