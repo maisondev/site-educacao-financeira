@@ -344,7 +344,11 @@ function obterSaldoMesAtual(cartao) {
 function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   if (datas.length === 0) return null;
-  const ordenadas = [...datas].sort((a, b) => b.mes.localeCompare(a.mes));
+  const ordenadas = [...datas].sort((a, b) => {
+    const aMês = parseInt(a.mes.replace('-', ''));
+    const bMês = parseInt(b.mes.replace('-', ''));
+    return bMês - aMês;
+  });
   return ordenadas[0];
 }
 
