@@ -360,6 +360,22 @@ function obterSaldoMesAtual(cartao) {
 
 function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
+  const historico = cartao.historicoUtilizacao || [];
+
+  // Priorizar historicoUtilizacao que tem saldo real
+  if (historico.length > 0) {
+    const ordenadas = historico.sort((a, b) => {
+      const aNum = parseInt(a.mes.replace('-', ''));
+      const bNum = parseInt(b.mes.replace('-', ''));
+      return bNum - aNum;
+    });
+    const ultimoHistorico = ordenadas[0];
+
+    // Buscar a data correspondente em datasPorMes
+    const dataCorrespondente = datas.find(d => d.mes === ultimoHistorico.mes);
+    return dataCorrespondente || ultimoHistorico;
+  }
+
   if (datas.length === 0) return null;
 
   // Ordenar por mês numericamente (YYYY-MM): maior mês primeiro
