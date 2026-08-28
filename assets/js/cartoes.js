@@ -362,8 +362,12 @@ function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   if (datas.length === 0) return null;
 
-  // Ordenar por mês em ordem decrescente e retornar a primeira (mais recente)
-  const ordenadas = datas.sort((a, b) => b.mes.localeCompare(a.mes));
+  // Ordenar por mês numericamente (YYYY-MM): maior mês primeiro
+  const ordenadas = datas.sort((a, b) => {
+    const aNum = parseInt(a.mes.replace('-', ''));
+    const bNum = parseInt(b.mes.replace('-', ''));
+    return bNum - aNum;
+  });
   return ordenadas[0] || null;
 }
 
@@ -452,13 +456,55 @@ function atualizarVisualizacao() {
     return;
   }
 
-  container.innerHTML = cartoes.map(cartao => {
-    const ultimaFatura = obterUltimaFaturaDisponivel(cartao);
-    const saldoVisivel = ultimaFatura?.saldo ?? cartao.saldoAberto;
-    const mesReferencia = ultimaFatura?.mes;
-    const banco = obterBancoPorNome(cartao.nome);
-    const databancoAttr = banco ? ` data-banco="${banco}"` : '';
-    return `
+  container.innerHTML = agruparCartoesPorBanco(cartoes);
+}
+
+const ORDEM_BANCOS = ['nubank', 'bradesco', 'picpay', 'itau', 'santander', 'caixa', 'bb'];
+const NOMES_BANCOS = {
+  nubank: 'Nubank',
+  bradesco: 'Bradesco',
+  picpay: 'PicPay',
+  itau: 'Itaú',
+  santander: 'Santander',
+  caixa: 'Caixa',
+  bb: 'Banco do Brasil',
+  outros: 'Outros'
+};
+
+// Agrupa os cartões por banco e monta uma seção por grupo
+function agruparCartoesPorBanco(cartoes) {
+  const grupos = {};
+  cartoes.forEach(cartao => {
+    const chave = obterBancoPorNome(cartao.nome) || 'outros';
+    (grupos[chave] = grupos[chave] || []).push(cartao);
+  });
+
+  const chavesConhecidas = ORDEM_BANCOS.filter(b => grupos[b]);
+  const chavesExtras = Object.keys(grupos)
+    .filter(k => !ORDEM_BANCOS.includes(k) && k !== 'outros')
+    .sort();
+  const chaves = [...chavesConhecidas, ...chavesExtras, ...(grupos.outros ? ['outros'] : [])];
+
+  return chaves.map(chave => `
+    <section class="grupo-banco">
+      <h2 class="grupo-banco-titulo">
+        ${NOMES_BANCOS[chave] || chave}
+        <span class="grupo-banco-contagem">${grupos[chave].length}</span>
+      </h2>
+      <div class="cartoes-container">
+        ${grupos[chave].map(montarCardCartao).join('')}
+      </div>
+    </section>
+  `).join('');
+}
+
+function montarCardCartao(cartao) {
+  const ultimaFatura = obterUltimaFaturaDisponivel(cartao);
+  const saldoVisivel = ultimaFatura?.saldo ?? cartao.saldoAberto;
+  const mesReferencia = ultimaFatura?.mes;
+  const banco = obterBancoPorNome(cartao.nome);
+  const databancoAttr = banco ? ` data-banco="${banco}"` : '';
+  return `
     <div class="card-cartao"${databancoAttr}>
       <div class="card-cartao-botoes">
         <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário">📅</button>
@@ -557,7 +603,7 @@ function atualizarVisualizacao() {
       </div>
       ` : ''}
     </div>
-  `}).join('');
+  `;
 }
 
 function formatarDiaOuDiaMes(valor) {
@@ -585,6 +631,7 @@ function obterBancoPorNome(nomeCartao) {
 
   if (nome.includes('nubank')) return 'nubank';
   if (nome.includes('bradesco')) return 'bradesco';
+  if (nome.includes('picpay')) return 'picpay';
   if (nome.includes('itau') || nome.includes('itaú')) return 'itau';
   if (nome.includes('santander')) return 'santander';
   if (nome.includes('caixa')) return 'caixa';
