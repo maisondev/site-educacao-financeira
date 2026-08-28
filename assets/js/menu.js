@@ -15,6 +15,7 @@ const MENU_ITEMS = [
     href: './temas/index.html',
     submenu: [
       { label: 'Juros e Investimentos', href: './temas/juros-e-investimentos/index.html' },
+      { label: 'Renda Fixa: onde deixar a reserva', href: './temas/juros-e-investimentos/renda-fixa-para-comecar.html' },
       { label: 'Orçamento Pessoal', href: './temas/orcamento-pessoal/index.html' },
       { label: 'Reserva de Emergência', href: './temas/reserva-de-emergencia/index.html' }
     ]
