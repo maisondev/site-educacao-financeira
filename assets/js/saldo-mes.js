@@ -175,7 +175,9 @@ function calcularSaldoDoMes(competencia = smCompetenciaEmFoco()) {
     saidas,
     saldo,
     // Indicadores de saúde; null quando não há base para calcular.
-    taxaPoupanca: receitas > 0 ? (saldo / receitas) * 100 : null,
+    // Quanto da renda sobrou no mês (saldo / receitas). Evitamos "taxa de poupança"
+    // para não confundir com a caderneta de poupança.
+    taxaEconomia: receitas > 0 ? (saldo / receitas) * 100 : null,
     comprometimentoDividas: receitas > 0 ? (dividas / receitas) * 100 : null,
     mesesReserva: saidas > 0 ? smReservaAtual() / saidas : null
   };
@@ -203,9 +205,9 @@ function smIndicador(rotulo, texto, estado) {
 function smIndicadores(r) {
   const itens = [];
 
-  if (r.taxaPoupanca !== null) {
-    const estado = r.taxaPoupanca >= 20 ? 'bom' : (r.taxaPoupanca >= 0 ? 'atencao' : 'ruim');
-    itens.push(smIndicador('Taxa de poupança', `${r.taxaPoupanca.toFixed(0)}%`, estado));
+  if (r.taxaEconomia !== null) {
+    const estado = r.taxaEconomia >= 20 ? 'bom' : (r.taxaEconomia >= 0 ? 'atencao' : 'ruim');
+    itens.push(smIndicador('Taxa de economia', `${r.taxaEconomia.toFixed(0)}%`, estado));
   }
 
   if (r.comprometimentoDividas !== null) {
