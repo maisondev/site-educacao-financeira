@@ -418,7 +418,7 @@
   </footer>
 
   <!-- Modal para adicionar/editar cartão -->
-  <div id="modal-cartao" class="modal" hidden>
+  <div id="modal-cartao" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
     <div class="modal-content">
       <h2 id="modal-titulo">Novo Cartão</h2>
 
@@ -463,7 +463,7 @@
 
       <div class="form-group">
         <label for="input-cartao-limite">Limite de Crédito</label>
-        <input type="text" id="input-cartao-limite" placeholder="ex: 5.000,00" class="campo-moeda">
+        <input type="text" id="input-cartao-limite" placeholder="ex: 5.000,00" data-moeda inputmode="decimal">
       </div>
 
       <div class="form-group">
@@ -478,7 +478,7 @@
 
       <div class="form-group">
         <label for="input-cartao-saldo-aberto">Saldo da Fatura Aberta (R$) - Opcional</label>
-        <input type="text" id="input-cartao-saldo-aberto" placeholder="ex: 1.500,00" class="campo-moeda">
+        <input type="text" id="input-cartao-saldo-aberto" placeholder="ex: 1.500,00" data-moeda inputmode="decimal">
         <small class="form-hint">Quanto já foi gasto neste mês antes do fechamento</small>
       </div>
 
@@ -494,10 +494,10 @@
   </div>
 
   <!-- Modal para gerenciar datas por mês -->
-  <div id="modal-datas-mes" class="modal" hidden>
+  <div id="modal-datas-mes" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="titulo-datas-mes">
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Datas por Mês - <span id="nome-cartao-datas"></span></h2>
+        <h2 id="titulo-datas-mes">Datas por Mês - <span id="nome-cartao-datas"></span></h2>
         <button class="btn-fechar" onclick="fecharModalDatasMes()">&times;</button>
       </div>
       <div class="modal-body">
@@ -561,7 +561,7 @@
         </div>
         <div class="form-group">
           <label for="input-saldo-mes">Saldo da Fatura Fechada (R$) - Opcional</label>
-          <input type="text" id="input-saldo-mes" placeholder="1.500,00" class="campo-moeda">
+          <input type="text" id="input-saldo-mes" placeholder="1.500,00" data-moeda inputmode="decimal">
         </div>
         <div id="historico-datas-mes" style="margin-top: var(--espacamento-lg); max-height: 200px; overflow-y: auto;"></div>
       </div>

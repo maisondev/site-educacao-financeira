@@ -537,8 +537,7 @@ function atualizarVisualizacao() {
               .sort((a, b) => b.mes.localeCompare(a.mes))
               .map(h => {
                 const [ano, mes] = h.mes.split('-');
-                const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-                const mesNome = meses[parseInt(mes) - 1];
+                const mesNome = MESES_ABREV[parseInt(mes) - 1];
                 const statusPagamento = cartao.datasPorMes?.find(d => d.mes === h.mes)?.foiPaga;
                 const statusColor = statusPagamento ? '#10b981' : h.percentual > 80 ? '#ef4444' : h.percentual > 60 ? '#fbbf24' : '#f59e0b';
                 const statusLabel = statusPagamento ? '✓ Pago' : h.percentual > 80 ? '⚠️ Crítico' : h.percentual > 60 ? '⚠️ Alerta' : '📌 Pendente';
@@ -725,10 +724,22 @@ function marcarFaturaPaga(cartaoId, mes) {
   atualizarVisualizacao();
 }
 
-// Fechar modal ao clicar fora
+// Fechar modais ao clicar fora
 document.addEventListener('click', function(event) {
-  const modal = document.getElementById('modal-cartao');
-  if (event.target === modal) {
+  if (event.target === document.getElementById('modal-cartao')) {
+    fecharModalCartao();
+  }
+  if (event.target === document.getElementById('modal-datas-mes')) {
+    fecharModalDatasMes();
+  }
+});
+
+// Fechar modais com a tecla Esc
+document.addEventListener('keydown', function(event) {
+  if (event.key !== 'Escape') return;
+  if (!document.getElementById('modal-datas-mes').hasAttribute('hidden')) {
+    fecharModalDatasMes();
+  } else if (!document.getElementById('modal-cartao').hasAttribute('hidden')) {
     fecharModalCartao();
   }
 });

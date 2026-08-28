@@ -135,7 +135,8 @@ function aplicarMascaraMoedaBrasileira(input) {
 
 // Configurar todos os inputs de moeda da página automaticamente
 function configurarTodosCamposMoeda() {
-  const inputs = document.querySelectorAll('input[type="number"][data-moeda]');
+  // Campos de moeda são type="text" (a máscara insere "." e "," que type="number" rejeita)
+  const inputs = document.querySelectorAll('input[data-moeda]');
   inputs.forEach(input => {
     aplicarMascaraMoedaBrasileira(input);
   });
