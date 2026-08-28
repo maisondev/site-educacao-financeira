@@ -1,6 +1,5 @@
 // Gerenciar envelopes financeiros
 
-const CHAVE_STORAGE = 'envelopes_financeiros';
 const CHAVE_RENDA = 'renda_mensal';
 
 const ENVELOPES_PADRAO = [
@@ -75,24 +74,14 @@ function carregarRenda() {
 }
 
 function obterEnvelopes() {
-  try {
-    const dados = localStorage.getItem(CHAVE_STORAGE);
-    if (!dados) {
-      return ENVELOPES_PADRAO.map(e => ({ ...e, registros: [] }));
-    }
-    return JSON.parse(dados);
-  } catch (e) {
-    return ENVELOPES_PADRAO.map(e => ({ ...e, registros: [] }));
-  }
+  return Store.ler(
+    Store.CHAVES.ENVELOPES,
+    ENVELOPES_PADRAO.map(e => ({ ...e, registros: [] }))
+  );
 }
 
 function salvarEnvelopes(envelopes) {
-  try {
-    localStorage.setItem(CHAVE_STORAGE, JSON.stringify(envelopes));
-  } catch (e) {
-    console.error('Erro ao salvar envelopes:', e);
-    alert('Não foi possível salvar os dados.');
-  }
+  Store.gravar(Store.CHAVES.ENVELOPES, envelopes);
 }
 
 function renderizarEnvelopes() {

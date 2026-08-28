@@ -1,6 +1,5 @@
 // Gerenciar rendas extras com localStorage
 
-const CHAVE_STORAGE = 'rendas_extras';
 
 // Carregar rendas ao abrir a página
 document.addEventListener('DOMContentLoaded', function() {
@@ -80,22 +79,11 @@ function adicionarRenda() {
 }
 
 function obterRendas() {
-  try {
-    const dados = localStorage.getItem(CHAVE_STORAGE);
-    return dados ? JSON.parse(dados) : [];
-  } catch (e) {
-    console.error('Erro ao obter rendas do localStorage:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.RENDAS_EXTRAS, []);
 }
 
 function salvarRendas(rendas) {
-  try {
-    localStorage.setItem(CHAVE_STORAGE, JSON.stringify(rendas));
-  } catch (e) {
-    console.error('Erro ao salvar rendas no localStorage:', e);
-    alert('Não foi possível salvar a renda. Verifique o espaço disponível.');
-  }
+  Store.gravar(Store.CHAVES.RENDAS_EXTRAS, rendas);
 }
 
 function renderizarRendas() {

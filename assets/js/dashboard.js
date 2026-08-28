@@ -7,73 +7,31 @@ function escaparHTML(texto) {
 }
 
 function lerMetas() {
-  try {
-    const dados = localStorage.getItem('metas_financeiras');
-    return dados ? JSON.parse(dados) : [];
-  } catch (e) {
-    console.error('Erro ao ler metas:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.METAS, []);
 }
 
 function lerEnvelopes() {
-  try {
-    const dados = localStorage.getItem('envelopes_financeiros');
-    return dados ? JSON.parse(dados) : [];
-  } catch (e) {
-    console.error('Erro ao ler envelopes:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.ENVELOPES, []);
 }
 
 function lerCartoes() {
-  try {
-    const dados = localStorage.getItem('cartoes');
-    return dados ? JSON.parse(dados) : [];
-  } catch (e) {
-    console.error('Erro ao ler cartões:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.CARTOES, []);
 }
 
 function lerDespesasFixas() {
-  try {
-    const dados = localStorage.getItem('despesas_fixas');
-    return dados ? JSON.parse(dados) : null;
-  } catch (e) {
-    console.error('Erro ao ler despesas fixas:', e);
-    return null;
-  }
+  return Store.ler(Store.CHAVES.DESPESAS_FIXAS, null);
 }
 
 function lerDespesasVariaveis() {
-  try {
-    const dados = localStorage.getItem('despesas_variaveis');
-    return dados ? JSON.parse(dados) : [];
-  } catch (e) {
-    console.error('Erro ao ler despesas variáveis:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []);
 }
 
 function lerReserva() {
-  try {
-    const dados = localStorage.getItem('reserva_emergencia');
-    return dados ? JSON.parse(dados) : null;
-  } catch (e) {
-    console.error('Erro ao ler reserva:', e);
-    return null;
-  }
+  return Store.ler(Store.CHAVES.RESERVA, null);
 }
 
 function lerCursos() {
-  try {
-    const dados = localStorage.getItem('cursos_lista');
-    return dados ? JSON.parse(dados) : [];
-  } catch (e) {
-    console.error('Erro ao ler cursos:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.CURSOS, []);
 }
 
 function obterSaldoMesAtual(cartao) {

@@ -1,6 +1,5 @@
 // Gerenciar metas financeiras com localStorage
 
-const CHAVE_STORAGE = 'metas_financeiras';
 
 // Carregar metas ao abrir a página
 document.addEventListener('DOMContentLoaded', function() {
@@ -70,22 +69,11 @@ function adicionarMeta() {
 }
 
 function obterMetas() {
-  try {
-    const dados = localStorage.getItem(CHAVE_STORAGE);
-    return dados ? JSON.parse(dados) : [];
-  } catch (e) {
-    console.error('Erro ao obter metas do localStorage:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.METAS, []);
 }
 
 function salvarMetas(metas) {
-  try {
-    localStorage.setItem(CHAVE_STORAGE, JSON.stringify(metas));
-  } catch (e) {
-    console.error('Erro ao salvar metas no localStorage:', e);
-    alert('Não foi possível salvar a meta. Verifique o espaço disponível.');
-  }
+  Store.gravar(Store.CHAVES.METAS, metas);
 }
 
 function renderizarMetas() {

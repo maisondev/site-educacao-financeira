@@ -8,7 +8,7 @@ O critério de ordenação é **utilidade real no gerenciamento das finanças ÷
 
 ## P0 — Fazer amanhã
 
-### 1. Backup / Exportar / Importar todos os dados (≈1h)
+### 1. ✅ Backup / Exportar / Importar todos os dados (≈1h) — feito em 2026-08-28
 
 **Problema:** hoje 100% dos dados vivem no `localStorage` do navegador. Limpar cache, trocar de máquina, usar o celular ou o Chrome resetar o site = perda total do histórico financeiro. Não existe nenhuma saída de dados no projeto.
 
@@ -33,7 +33,7 @@ compras_parceladas, hacks_nubank_dados, cursos_lista
 
 ---
 
-### 2. Camada única de storage (`assets/js/storage.js`) (≈1h)
+### 2. ✅ Camada única de storage (`assets/js/storage.js`) (≈1h) — feito em 2026-08-28
 
 **Problema:** cada script reimplementa `getItem` + `JSON.parse` + `try/catch`, e três arquivos diferentes declaram a **mesma global `CHAVE_STORAGE`** (`assets/js/metas.js:3`, `assets/js/envelopes.js:3`, `assets/js/renda-extra.js:3`). Como não há módulos ES, se duas dessas páginas carregarem o mesmo par de scripts, ocorre conflito de declaração. As chaves também estão espalhadas como strings soltas (`assets/js/relatorios.js:282-297`, `assets/js/dashboard.js:11-71`).
 

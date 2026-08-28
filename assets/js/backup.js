@@ -5,32 +5,12 @@ const BACKUP_VERSAO = 1;
 const CHAVE_BACKUP_ULTIMA_DATA = 'backup_ultima_data';
 const BACKUP_DIAS_ALERTA = 30;
 
-// Catálogo das chaves usadas pelo site. A exportação varre também o que
-// estiver no localStorage fora desta lista, então nada é esquecido.
-const BACKUP_CHAVES_CONHECIDAS = [
-  'renda_mensal',
-  'renda_mensal_competencia',
-  'receitas_lista',
-  'contracheques_historico',
-  'rendas_extras',
-  'despesas_fixas',
-  'despesas_variaveis',
-  'despesas_variaveis_colapsadas',
-  'envelopes_financeiros',
-  'metas_financeiras',
-  'dividas',
-  'investimentos',
-  'balanco_patrimonial',
-  'reserva_emergencia',
-  'cartoes',
-  'cartoes_financeiros',
-  'cartao_credito',
-  'cartoes_adicionais_dados',
-  'compras_parceladas',
-  'hacks_nubank_dados',
-  'cursos_lista',
-  'analise_faturas'
-];
+// Catálogo das chaves usadas pelo site, vindo do Store quando disponível.
+// A exportação varre também o que estiver no localStorage fora desta lista,
+// então nada é esquecido se uma página nova criar a própria chave.
+const BACKUP_CHAVES_CONHECIDAS = typeof Store !== 'undefined'
+  ? Object.values(Store.CHAVES)
+  : [];
 
 // Chaves que não fazem parte dos dados do usuário e não entram no backup.
 const BACKUP_CHAVES_IGNORADAS = [CHAVE_BACKUP_ULTIMA_DATA];

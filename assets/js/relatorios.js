@@ -279,21 +279,17 @@ function recarregarRelatorio() {
 
 // Funções para obter dados de cada módulo
 function obterDadosDespesasFixas() {
-  const dados = localStorage.getItem('despesas_fixas');
-  return dados ? JSON.parse(dados) : { salario: 0, despesas: [] };
+  return Store.ler(Store.CHAVES.DESPESAS_FIXAS, { salario: 0, despesas: [] });
 }
 
 function obterDadosDividas() {
-  const dados = localStorage.getItem('dividas');
-  return dados ? JSON.parse(dados) : { dividas: [] };
+  return Store.ler(Store.CHAVES.DIVIDAS, { dividas: [] });
 }
 
 function obterDadosReserva() {
-  const dados = localStorage.getItem('reserva_emergencia');
-  return dados ? JSON.parse(dados) : { salario: 0, meses: 0, aportes: [] };
+  return Store.ler(Store.CHAVES.RESERVA, { salario: 0, meses: 0, aportes: [] });
 }
 
 function obterDadosCartao() {
-  const dados = localStorage.getItem('cartao_credito');
-  return dados ? JSON.parse(dados) : { cartoes: [] };
+  return Store.ler(Store.CHAVES.CARTAO_CREDITO, { cartoes: [] });
 }
