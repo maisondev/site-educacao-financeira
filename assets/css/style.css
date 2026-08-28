@@ -854,6 +854,60 @@ hr {
   box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.15);
 }
 
+/* Navegação de mês do lançamento rápido (lista mostra o mês vigente por padrão) */
+.lr-nav-mes {
+  display: flex;
+  align-items: center;
+  gap: var(--espacamento-sm);
+  margin-bottom: var(--espacamento-md);
+}
+
+.lr-nav-mes-seta {
+  border: 1px solid var(--cor-borda);
+  background-color: var(--cor-fundo, #fff);
+  color: var(--cor-primaria);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lr-nav-mes-seta:hover {
+  background-color: #f0e6ff;
+}
+
+.lr-nav-mes-rotulo {
+  font-weight: bold;
+  color: var(--cor-primaria);
+  text-transform: capitalize;
+  min-width: 8.5em;
+  text-align: center;
+}
+
+.lr-nav-mes-hoje {
+  border: 1px solid var(--cor-borda);
+  background: none;
+  color: var(--cor-secundaria, #1264a3);
+  font-size: 13px;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.lr-nav-mes-hoje:hover {
+  background-color: #f0e6ff;
+}
+
+.lr-nav-mes-total {
+  margin-left: auto;
+  font-weight: bold;
+  color: var(--cor-primaria);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Responsivo */
 @media (min-width: 640px) {
   main {
