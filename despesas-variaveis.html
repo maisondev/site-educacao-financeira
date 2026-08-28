@@ -116,11 +116,27 @@
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
+      user-select: none;
     }
 
     .categoria-titulo:hover {
       background: var(--cor-primaria);
       color: white;
+    }
+
+    .categoria-chevron {
+      display: inline-block;
+      margin-right: var(--espacamento-sm);
+      font-size: 12px;
+      transition: transform 0.15s ease;
+    }
+
+    .categoria-grupo.colapsado .categoria-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .categoria-grupo.colapsado .registros-categoria {
+      display: none;
     }
 
     .categoria-media {
@@ -170,13 +186,70 @@
       text-align: right;
     }
 
+    .registro-acoes {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .btn-editar,
     .btn-remover {
       background: none;
       border: none;
-      color: #c0392b;
-      font-size: 20px;
       cursor: pointer;
-      padding: 0 4px;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-editar:hover {
+      color: var(--cor-primaria);
+    }
+
+    .btn-remover:hover {
+      color: #c0392b;
+    }
+
+    @keyframes flashDestaque {
+      from { background: var(--cor-fundo-hover); }
+      to { background: white; }
+    }
+
+    .registro-item.destaque {
+      animation: flashDestaque 1.6s ease-out;
+    }
+
+    .form-edicao-aviso {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--espacamento-md);
+      background: var(--cor-fundo-hover);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .form-edicao-aviso.ativo {
+      display: flex;
+    }
+
+    .btn-cancelar-edicao {
+      background: none;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--cor-texto);
+      width: auto;
     }
 
     .lista-vazia {
@@ -191,11 +264,18 @@
       .registro-item {
         flex-direction: column;
         align-items: flex-start;
+        position: relative;
       }
 
       .registro-valor {
         margin: var(--espacamento-md) 0 0 0;
         text-align: left;
+      }
+
+      .registro-acoes {
+        position: absolute;
+        right: var(--espacamento-md);
+        top: var(--espacamento-md);
       }
     }
   </style>
@@ -224,7 +304,7 @@
         <p class="valor" id="total-mes-atual">R$ 0,00</p>
       </div>
       <div class="card-resumo">
-        <h3>Média dos Últimos 3 Meses</h3>
+        <h3>Média Mensal (últimos 3 meses)</h3>
         <p class="valor" id="media-3-meses">R$ 0,00</p>
       </div>
       <div class="card-resumo">
@@ -234,9 +314,14 @@
     </div>
 
     <div class="secao-variaveis">
-      <h2>Registrar Despesa Variável</h2>
+      <h2 id="titulo-form-variavel">Registrar Despesa Variável</h2>
 
       <div class="formulario-variavel">
+        <div id="aviso-edicao-variavel" class="form-edicao-aviso">
+          <span>Editando um lançamento existente.</span>
+          <button type="button" class="btn-cancelar-edicao" onclick="cancelarEdicaoVariavel()">Cancelar edição</button>
+        </div>
+
         <label for="var-categoria">Categoria *</label>
         <select id="var-categoria" required>
           <option value="">Selecione uma categoria</option>
@@ -248,6 +333,7 @@
           <option value="streaming">Streaming / Assinaturas</option>
           <option value="combustivel">Combustível</option>
           <option value="manutencao">Manutenção / Consertos</option>
+          <option value="cartao">Cartão de Crédito</option>
           <option value="outro">Outro</option>
         </select>
 
@@ -260,7 +346,7 @@
         <label for="var-data">Data do Pagamento *</label>
         <input type="date" id="var-data" required>
 
-        <button type="button" onclick="adicionarDespesaVariavel()">Registrar Despesa</button>
+        <button type="button" id="btn-salvar-variavel" onclick="salvarDespesaVariavel()">Registrar Despesa</button>
       </div>
     </div>
 
@@ -298,6 +384,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       renderizarMenu();
       configurarTodosCamposMoeda();
+      definirDataPadraoVariavel();
       sincronizarUltimosDígitosCartão();
       carregarDespesasVariaveis();
     });
