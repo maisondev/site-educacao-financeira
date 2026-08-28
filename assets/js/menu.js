@@ -14,6 +14,7 @@ const MENU_ITEMS = [
     label: 'Aprender',
     href: './temas/index.html',
     submenu: [
+      { label: 'Roadmap de Estudos', href: './roadmap.html' },
       { label: 'Juros e Investimentos', href: './temas/juros-e-investimentos/index.html' },
       { label: 'Renda Fixa: onde deixar a reserva', href: './temas/juros-e-investimentos/renda-fixa-para-comecar.html' },
       { label: 'Orçamento Pessoal', href: './temas/orcamento-pessoal/index.html' },
@@ -32,6 +33,7 @@ const MENU_ITEMS = [
       { label: 'Dívidas', href: './dividas.html' },
       { label: 'Cartões Adicionais', href: './cartoes-adicionais.html' },
       { label: 'Envelopes', href: './envelopes.html' },
+      { label: 'FGTS', href: './fgts.html' },
       { label: 'Investimentos', href: './investimentos.html' },
       { label: 'Metas', href: './metas.html' },
       { label: 'Receitas', href: './receitas.html' },
@@ -46,7 +48,8 @@ const MENU_ITEMS = [
       { label: 'Balanço Patrimonial', href: './balanco-patrimonial.html' },
       { label: 'Contracheque', href: './analise-contracheque.html' },
       { label: 'Fatura de Cartão', href: './analise-fatura.html' },
-      { label: 'Relatórios', href: './relatorios.html' }
+      { label: 'Relatórios', href: './relatorios.html' },
+      { label: 'Saldo Projetado', href: './saldo-projetado.html' }
     ]
   },
   {
@@ -57,7 +60,9 @@ const MENU_ITEMS = [
       { label: 'Grandes Máximas', href: './maximas.html' },
       { label: 'Grandes Nomes', href: './pensadores.html' },
       { label: 'Glossário', href: './glossario.html' },
-      { label: 'Meus Cursos', href: './cursos.html' }
+      { label: 'Meus Cursos', href: './cursos.html' },
+      { label: 'Cadastros Gerais', href: './cadastros.html' },
+      { label: 'Registrato (BCB)', href: './registrato.html' }
     ]
   },
   {

@@ -423,6 +423,160 @@
       font-family: inherit;
       padding: 0;
     }
+
+    .lr-estabelecimento {
+      flex: 1 1 200px;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .lr-pagamento,
+    .lr-hora {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .lr-lista {
+      margin-top: var(--espacamento-lg);
+    }
+
+    .lr-vazia {
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+      margin: var(--espacamento-md) 0 0;
+    }
+
+    .lr-mes {
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .lr-mes-titulo {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      border-bottom: 2px solid var(--cor-borda);
+      padding-bottom: 4px;
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .lr-dia {
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .lr-dia-label {
+      font-size: 13px;
+      text-transform: capitalize;
+      color: var(--cor-texto-leve);
+      margin: var(--espacamento-sm) 0 4px;
+    }
+
+    .lr-item {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-sm) 0;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .lr-item-hora {
+      flex: 0 0 auto;
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+      min-width: 44px;
+    }
+
+    .lr-item-hora-vazia {
+      opacity: 0.4;
+    }
+
+    .lr-item-principal {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .lr-item-desc {
+      font-size: 15px;
+    }
+
+    .lr-item-tags {
+      font-size: 12px;
+      color: var(--cor-texto-leve);
+    }
+
+    .lr-item-valor {
+      flex: 0 0 auto;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lr-item-acoes {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 4px;
+    }
+
+    .lr-mini-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cor-texto-leve);
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+    }
+
+    .lr-mini-btn:hover {
+      background: var(--cor-fundo-hover);
+      color: var(--cor-primaria);
+    }
+
+    .lr-mini-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .lr-edicao {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--espacamento-sm);
+      background: var(--cor-cinza-leve);
+      border-radius: 6px;
+      padding: var(--espacamento-md);
+    }
+
+    .lr-edicao-campos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: var(--espacamento-sm);
+    }
+
+    .lr-edicao-campos input,
+    .lr-edicao-campos select {
+      padding: var(--espacamento-sm);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+      width: 100%;
+    }
+
+    .lr-edicao-acoes {
+      display: flex;
+      gap: var(--espacamento-sm);
+    }
+
     .secao-competencia {
       display: flex;
       align-items: center;
@@ -504,6 +658,9 @@
     <section id="container-saldo-mes" class="secao-saldo-mes">
       <!-- Renderizado por saldo-mes.js -->
     </section>
+    <p style="margin: calc(-1 * var(--espacamento-lg)) 0 var(--espacamento-xl); font-size: 14px;">
+      <a href="./saldo-projetado.html">Abrir página do Saldo Projetado</a> — projetar outros meses e adicionar ajustes manuais
+    </p>
 
     <div id="dashboard-grid">
       <!-- Preenchido por JavaScript -->
@@ -533,6 +690,7 @@
   <script src="./assets/js/saldo-mes.js"></script>
   <script src="./assets/js/alertas.js"></script>
   <script src="./assets/js/competencia.js"></script>
+  <script src="./assets/js/cadastros-dados.js"></script>
   <script src="./assets/js/lancamento-rapido.js"></script>
   <script src="./assets/js/dashboard.js"></script>
 </body>
