@@ -171,6 +171,118 @@
       margin-top: var(--espacamento-md);
     }
 
+    .glossario-total {
+      display: inline-block;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--cor-primaria);
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 999px;
+      padding: 4px 14px;
+      margin: 0 0 var(--espacamento-lg);
+    }
+
+    .form-termo-wrap {
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .form-termo {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-top: var(--espacamento-md);
+    }
+
+    .form-termo h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .form-termo .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .form-termo label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--cor-texto-leve);
+    }
+
+    .form-termo input,
+    .form-termo select,
+    .form-termo textarea {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    .form-termo input:focus,
+    .form-termo select:focus,
+    .form-termo textarea:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+      box-shadow: 0 0 0 3px rgba(74, 21, 75, 0.1);
+    }
+
+    .form-termo textarea {
+      resize: vertical;
+    }
+
+    .form-termo-acoes {
+      display: flex;
+      gap: var(--espacamento-sm);
+    }
+
+    .form-termo-ajuda {
+      font-size: 13px;
+      color: var(--cor-texto-leve);
+      margin: var(--espacamento-md) 0 0;
+    }
+
+    .termo-acoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-sm);
+      margin-top: var(--espacamento-md);
+    }
+
+    .termo-btn {
+      background: none;
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--cor-texto);
+    }
+
+    .termo-btn:hover {
+      border-color: var(--cor-primaria);
+      color: var(--cor-primaria);
+    }
+
+    .termo-btn-perigo:hover {
+      border-color: var(--cor-erro);
+      color: var(--cor-erro);
+    }
+
+    .termo-marcador {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cor-azul);
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
     @media (max-width: 640px) {
       .busca-container {
         flex-direction: column;
@@ -208,6 +320,50 @@
       Dicionário de termos financeiros explicados de forma simples e clara.
       Use a busca ou filtre por categoria para encontrar o termo que procura.
     </p>
+
+    <p class="glossario-total" id="glossario-total"></p>
+
+    <section class="form-termo-wrap">
+      <button type="button" class="btn btn-primary" id="btn-novo-termo">+ Adicionar termo</button>
+
+      <form class="form-termo" id="form-termo" hidden>
+        <h2 id="form-termo-titulo">Novo termo</h2>
+
+        <div class="campo">
+          <label for="ft-titulo">Título</label>
+          <input type="text" id="ft-titulo" autocomplete="off" required>
+        </div>
+
+        <div class="campo">
+          <label for="ft-categoria">Categoria</label>
+          <select id="ft-categoria">
+            <option value="planejamento">Planejamento</option>
+            <option value="investimentos">Investimentos</option>
+            <option value="juros">Juros &amp; Empréstimos</option>
+            <option value="mercado">Mercado</option>
+            <option value="impostos">Impostos</option>
+            <option value="conta">Contas</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="ft-definicao">Definição</label>
+          <textarea id="ft-definicao" rows="3" required></textarea>
+        </div>
+
+        <div class="campo">
+          <label for="ft-exemplo">Exemplo (opcional)</label>
+          <textarea id="ft-exemplo" rows="2"></textarea>
+        </div>
+
+        <div class="form-termo-acoes">
+          <button type="submit" class="btn btn-primary">Salvar</button>
+          <button type="button" class="btn btn-secondary" id="ft-cancelar">Cancelar</button>
+        </div>
+
+        <p class="form-termo-ajuda">Termos criados ou editados por você ficam salvos apenas neste navegador (localStorage).</p>
+      </form>
+    </section>
 
     <section class="filtro-glossario">
       <h2>Buscar e Filtrar</h2>
@@ -258,6 +414,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       renderizarMenu();
+      configurarFormularioTermo();
       carregarTermos();
     });
   </script>

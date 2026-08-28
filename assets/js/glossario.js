@@ -197,6 +197,15 @@ const TERMOS = [
 
 let categoriaAtiva = 'todos';
 
+// Termos em exibição: base do arquivo + edições/novos termos salvos pelo usuário.
+let termosAtuais = [];
+
+// Estado do formulário de cadastro/edição ({ modo: 'novo' } ou { modo: 'editar', slug, origem }).
+let formEstado = null;
+
+const STORAGE_TERMOS_USUARIO = 'glossario_termos_usuario';
+const STORAGE_OVERRIDES = 'glossario_overrides';
+
 // Slug estável para ancorar/linkar cada termo (usa o campo slug quando existe).
 function slugTermo(termo) {
   if (termo.slug) return termo.slug;
@@ -207,10 +216,56 @@ function slugTermo(termo) {
     .replace(/(^-|-$)/g, '');
 }
 
+function carregarUsuario() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_TERMOS_USUARIO)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarUsuario(lista) {
+  localStorage.setItem(STORAGE_TERMOS_USUARIO, JSON.stringify(lista));
+}
+
+function carregarOverrides() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_OVERRIDES)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function salvarOverrides(obj) {
+  localStorage.setItem(STORAGE_OVERRIDES, JSON.stringify(obj));
+}
+
+// Junta os termos do arquivo (aplicando edições salvas) com os termos criados pelo usuário.
+function obterTermos() {
+  const overrides = carregarOverrides();
+  const base = TERMOS.map(termo => {
+    const slug = slugTermo(termo);
+    const ov = overrides[slug];
+    return ov
+      ? Object.assign({}, termo, ov, { slug: slug, origem: 'base', editado: true })
+      : Object.assign({}, termo, { slug: slug, origem: 'base' });
+  });
+  const usuario = carregarUsuario().map(termo => Object.assign({}, termo, { origem: 'usuario' }));
+  return base.concat(usuario);
+}
+
 function carregarTermos() {
-  mostrarTermos(TERMOS);
-  atualizarContador(TERMOS.length);
+  termosAtuais = obterTermos();
+  atualizarTotal();
+  filtrarTermos();
   abrirTermoDoHash();
+}
+
+// Recalcula a lista após um cadastro/edição/remoção, mantendo o filtro atual.
+function recarregarTermos() {
+  termosAtuais = obterTermos();
+  atualizarTotal();
+  filtrarTermos();
 }
 
 // Ao chegar via link "glossario.html#termo-<slug>", expande e rola até o termo.
@@ -233,25 +288,44 @@ function mostrarTermos(termos) {
     return;
   }
 
-  container.innerHTML = termos.map(termo => `
-    <div class="termo-card" id="termo-${slugTermo(termo)}" onclick="toggle(this)">
+  container.innerHTML = termos.map(termo => {
+    const slug = slugTermo(termo);
+    let marcador = '';
+    if (termo.origem === 'usuario') {
+      marcador = '<span class="termo-marcador">meu termo</span>';
+    } else if (termo.editado) {
+      marcador = '<span class="termo-marcador">editado</span>';
+    }
+
+    const exemplo = termo.exemplo
+      ? `<div class="termo-exemplo"><strong>Exemplo:</strong> ${termo.exemplo}</div>`
+      : '';
+
+    let acoes = `<button type="button" class="termo-btn" onclick="editarTermo('${slug}'); event.stopPropagation();">Editar</button>`;
+    if (termo.origem === 'usuario') {
+      acoes += `<button type="button" class="termo-btn termo-btn-perigo" onclick="excluirTermo('${slug}'); event.stopPropagation();">Excluir</button>`;
+    } else if (termo.editado) {
+      acoes += `<button type="button" class="termo-btn" onclick="restaurarTermo('${slug}'); event.stopPropagation();">Restaurar original</button>`;
+    }
+
+    return `
+    <div class="termo-card" id="termo-${slug}" onclick="toggle(this)">
       <div class="termo-header">
         <div class="termo-titulo">
           <h3>${termo.titulo}</h3>
-          <p class="termo-categoria">${obterNomeCategoria(termo.categoria)}</p>
+          <p class="termo-categoria">${obterNomeCategoria(termo.categoria)}${marcador}</p>
         </div>
         <span class="termo-icone">▼</span>
       </div>
 
       <div class="termo-definicao">
         <p>${termo.definicao}</p>
-        <div class="termo-exemplo">
-          <strong>Exemplo:</strong>
-          ${termo.exemplo}
-        </div>
+        ${exemplo}
+        <div class="termo-acoes">${acoes}</div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function toggle(element) {
@@ -260,7 +334,7 @@ function toggle(element) {
 
 function filtrarTermos() {
   const busca = document.getElementById('input-busca').value.toLowerCase();
-  const termosFiltrados = TERMOS.filter(termo => {
+  const termosFiltrados = termosAtuais.filter(termo => {
     const matchBusca = termo.titulo.toLowerCase().includes(busca) ||
                        termo.definicao.toLowerCase().includes(busca);
     const matchCategoria = categoriaAtiva === 'todos' || termo.categoria === categoriaAtiva;
@@ -299,4 +373,110 @@ function obterNomeCategoria(slug) {
 function atualizarContador(total) {
   const contador = document.getElementById('contador-termos');
   contador.textContent = `Mostrando ${total} termo${total !== 1 ? 's' : ''}`;
+}
+
+// Contador fixo no topo: total de termos do glossário (base + os do usuário).
+function atualizarTotal() {
+  const el = document.getElementById('glossario-total');
+  if (!el) return;
+  const n = termosAtuais.length;
+  el.textContent = `${n} termo${n !== 1 ? 's' : ''} no glossário`;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Cadastro e edição de termos (localStorage)
+ * ------------------------------------------------------------------ */
+
+function configurarFormularioTermo() {
+  const btnNovo = document.getElementById('btn-novo-termo');
+  const form = document.getElementById('form-termo');
+  const btnCancelar = document.getElementById('ft-cancelar');
+  if (!btnNovo || !form) return;
+
+  btnNovo.addEventListener('click', abrirFormNovo);
+  btnCancelar.addEventListener('click', fecharForm);
+  form.addEventListener('submit', salvarForm);
+}
+
+function mostrarForm() {
+  document.getElementById('form-termo').hidden = false;
+  document.getElementById('btn-novo-termo').hidden = true;
+}
+
+function fecharForm() {
+  const form = document.getElementById('form-termo');
+  form.reset();
+  form.hidden = true;
+  document.getElementById('btn-novo-termo').hidden = false;
+  formEstado = null;
+}
+
+function abrirFormNovo() {
+  formEstado = { modo: 'novo' };
+  document.getElementById('form-termo').reset();
+  document.getElementById('form-termo-titulo').textContent = 'Novo termo';
+  mostrarForm();
+  document.getElementById('ft-titulo').focus();
+}
+
+function editarTermo(slug) {
+  const termo = termosAtuais.find(t => slugTermo(t) === slug);
+  if (!termo) return;
+
+  formEstado = { modo: 'editar', slug: slug, origem: termo.origem };
+  document.getElementById('form-termo-titulo').textContent = 'Editar termo';
+  document.getElementById('ft-titulo').value = termo.titulo;
+  document.getElementById('ft-categoria').value = termo.categoria;
+  document.getElementById('ft-definicao').value = termo.definicao;
+  document.getElementById('ft-exemplo').value = termo.exemplo || '';
+
+  mostrarForm();
+  document.getElementById('form-termo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  document.getElementById('ft-titulo').focus();
+}
+
+function salvarForm(evento) {
+  evento.preventDefault();
+
+  const dados = {
+    titulo: document.getElementById('ft-titulo').value.trim(),
+    categoria: document.getElementById('ft-categoria').value,
+    definicao: document.getElementById('ft-definicao').value.trim(),
+    exemplo: document.getElementById('ft-exemplo').value.trim()
+  };
+
+  if (!dados.titulo || !dados.definicao) return;
+
+  if (!formEstado || formEstado.modo === 'novo') {
+    const usuario = carregarUsuario();
+    usuario.push(Object.assign(dados, { slug: 'u' + Date.now().toString(36) }));
+    salvarUsuario(usuario);
+  } else if (formEstado.origem === 'usuario') {
+    const usuario = carregarUsuario().map(t =>
+      t.slug === formEstado.slug ? Object.assign({}, t, dados) : t
+    );
+    salvarUsuario(usuario);
+  } else {
+    const overrides = carregarOverrides();
+    overrides[formEstado.slug] = dados;
+    salvarOverrides(overrides);
+  }
+
+  fecharForm();
+  recarregarTermos();
+}
+
+function excluirTermo(slug) {
+  if (!confirm('Excluir este termo? Esta ação não pode ser desfeita.')) return;
+  salvarUsuario(carregarUsuario().filter(t => t.slug !== slug));
+  recarregarTermos();
+}
+
+// Descarta a edição de um termo base e volta ao texto original do arquivo.
+function restaurarTermo(slug) {
+  if (!confirm('Descartar suas alterações e voltar ao texto original deste termo?')) return;
+  const overrides = carregarOverrides();
+  delete overrides[slug];
+  salvarOverrides(overrides);
+  recarregarTermos();
 }
