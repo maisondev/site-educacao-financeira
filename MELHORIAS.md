@@ -120,7 +120,7 @@ Mais três indicadores de saúde: **taxa de poupança** (% da renda que sobrou),
 
 `lembretes.js` já gera eventos de fechamento/vencimento de cartão, mas ficam restritos à página de cartões. Levar para um card fixo no dashboard e ampliar o escopo: meta com prazo vencendo, envelope acima de 100%, reserva abaixo do alvo, dívida com vencimento próximo, mês sem backup.
 
-### 9. Lançamento rápido (≈1h)
+### 9. ✅ Lançamento rápido (≈1h) — feito em 2026-08-28
 
 Um único campo no dashboard — `45,90 mercado` — que cria a despesa variável na hora, com categoria sugerida. A maior parte das despesas some do controle porque anotar dá trabalho; reduzir isso a um campo é o que mais aumenta a adesão na prática.
 

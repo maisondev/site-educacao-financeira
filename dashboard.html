@@ -349,6 +349,80 @@
     .alt-info {
       border-left-color: var(--cor-info);
     }
+    .secao-lancamento-rapido {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .secao-lancamento-rapido h2 {
+      margin-top: 0;
+    }
+
+    .lr-descricao {
+      color: var(--cor-texto-leve);
+      max-width: 70ch;
+    }
+
+    .lr-linha {
+      display: flex;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+    }
+
+    .lr-entrada {
+      flex: 1 1 240px;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .lr-categoria {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .lr-sugestao {
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+      min-height: 20px;
+      margin-top: 6px;
+    }
+
+    .lr-mensagem {
+      margin-top: var(--espacamento-sm);
+      font-size: 15px;
+    }
+
+    .lr-mensagem-sucesso {
+      color: var(--cor-sucesso);
+    }
+
+    .lr-mensagem-erro {
+      color: var(--cor-erro);
+    }
+
+    .lr-mensagem-neutro {
+      color: var(--cor-texto-leve);
+    }
+
+    .lr-desfazer {
+      background: none;
+      border: none;
+      color: var(--cor-azul);
+      text-decoration: underline;
+      cursor: pointer;
+      font-size: 15px;
+      font-family: inherit;
+      padding: 0;
+    }
   </style>
 </head>
 <body>
@@ -369,6 +443,10 @@
     <p style="color: var(--cor-texto-leve); font-size: 16px;">
       Veja um resumo consolidado de todas as suas finanças em um único lugar.
     </p>
+
+    <section id="container-lancamento-rapido" class="secao-lancamento-rapido">
+      <!-- Renderizado por lancamento-rapido.js -->
+    </section>
 
     <section id="container-alertas" class="secao-alertas">
       <!-- Renderizado por alertas.js -->
@@ -405,6 +483,7 @@
   <script src="./assets/js/backup.js"></script>
   <script src="./assets/js/saldo-mes.js"></script>
   <script src="./assets/js/alertas.js"></script>
+  <script src="./assets/js/lancamento-rapido.js"></script>
   <script src="./assets/js/dashboard.js"></script>
 </body>
 </html>

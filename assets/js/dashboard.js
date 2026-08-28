@@ -411,6 +411,9 @@ function renderizarDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  if (typeof renderizarLancamentoRapido === 'function') {
+    renderizarLancamentoRapido();
+  }
   if (typeof renderizarAlertas === 'function') {
     renderizarAlertas();
   }
