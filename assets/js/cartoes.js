@@ -2,10 +2,20 @@ let cartaoEmEdicaoId = null;
 
 const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const MESES_COMPLETOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const MESES_MINUSCULOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
 function inicializarCartoes() {
   atualizarVisualizacao();
   sincronizarFaturasExistentes();
+}
+
+function obterAnoMesDeMesStr(mesStr) {
+  const [ano, mes] = mesStr.split('-');
+  return { ano: parseInt(ano), mes: parseInt(mes) };
+}
+
+function formatarMesCompletoDeAnoMes(ano, mes) {
+  return new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 }
 
 function sincronizarFaturasExistentes() {
@@ -13,17 +23,17 @@ function sincronizarFaturasExistentes() {
   let houveMudancas = false;
 
   cartoes.forEach(cartao => {
-    if (cartao.datasPorMes && Array.isArray(cartao.datasPorMes)) {
+    if (cartao.datasPorMes?.length) {
       cartao.datasPorMes.forEach(fatura => {
         if (fatura.saldo && fatura.saldo > 0 && !fatura.foiRegistradoComoDespesa) {
-          const [ano, mês] = fatura.mes.split('-');
-          const nomeMes = new Date(ano, parseInt(mês) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+          const { ano, mes } = obterAnoMesDeMesStr(fatura.mes);
+          const nomeMes = formatarMesCompletoDeAnoMes(ano, mes);
           const descricao = `${cartao.nome} - Fatura ${nomeMes}`;
 
           const vencimentoDia = fatura.vencimento.split('/')[0];
           const vencimentoMêsStr = fatura.vencimento.split('/')[1];
-          const vencimentoMêsNum = vencimentoMêsStr ? parseInt(vencimentoMêsStr) : parseInt(mês);
-          const vencimentoAno = vencimentoMêsNum > parseInt(mês) ? parseInt(ano) : ano;
+          const vencimentoMêsNum = vencimentoMêsStr ? parseInt(vencimentoMêsStr) : mes;
+          const vencimentoAno = vencimentoMêsNum > mes ? ano : ano;
           const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
 
           adicionarDespesaDeCartao(descricao, fatura.saldo, dataVencimento);
@@ -48,20 +58,18 @@ function salvarCartoes(cartoes) {
   localStorage.setItem('cartoes', JSON.stringify(cartoes));
 }
 
+function limparFormularioCartao() {
+  const campos = ['input-cartao-id', 'input-cartao-titular', 'input-cartao-nome', 'input-cartao-ultimos', 'select-cartao-bandeira', 'select-cartao-tipo', 'input-cartao-limite', 'input-cartao-fechamento', 'input-cartao-vencimento', 'input-cartao-saldo-aberto'];
+  campos.forEach(id => document.getElementById(id).value = '');
+}
+
 function abrirModalCartao() {
   document.getElementById('modal-titulo').textContent = 'Novo Cartão';
-  document.getElementById('input-cartao-id').value = '';
-  document.getElementById('input-cartao-titular').value = '';
-  document.getElementById('input-cartao-nome').value = '';
-  document.getElementById('input-cartao-ultimos').value = '';
-  document.getElementById('select-cartao-bandeira').value = '';
-  document.getElementById('select-cartao-tipo').value = '';
-  document.getElementById('input-cartao-limite').value = '';
-  document.getElementById('input-cartao-fechamento').value = '';
-  document.getElementById('input-cartao-vencimento').value = '';
-  document.getElementById('input-cartao-saldo-aberto').value = '';
+  limparFormularioCartao();
+  document.getElementById('btn-gerenciar-datas').setAttribute('hidden', '');
   document.getElementById('modal-cartao').removeAttribute('hidden');
   document.getElementById('input-cartao-titular').focus();
+  cartaoEmEdicaoId = null;
 }
 
 function abrirModalCartaoEdicao(id) {
@@ -71,7 +79,6 @@ function abrirModalCartaoEdicao(id) {
   if (!cartao) return;
 
   cartaoEmEdicaoId = id;
-
   document.getElementById('modal-titulo').textContent = 'Editar Cartão';
   document.getElementById('input-cartao-id').value = id;
   document.getElementById('input-cartao-titular').value = cartao.titular || '';
@@ -155,8 +162,8 @@ function renderizarHistoricoDatas() {
   }
 
   container.innerHTML = `<h4 style="font-size: 13px; margin: 0 0 8px 0;">Histórico:</h4>` + datas.map(d => {
-    const [ano, mes] = d.mes.split('-');
-    const nomeMes = new Date(ano, parseInt(mes) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const { ano, mes } = obterAnoMesDeMesStr(d.mes);
+    const nomeMes = formatarMesCompletoDeAnoMes(ano, mes);
     return `<div style="padding: 6px; background: var(--cor-cinza-leve); border-radius: 4px; margin-bottom: 4px; font-size: 12px; color: var(--cor-texto);">
       <strong>${nomeMes}:</strong> ${formatarDiaOuDiaMes(d.fechamento)} → ${formatarDiaOuDiaMes(d.vencimento)}${d.saldo ? ` / saldo ${formatarMoedaBrasileira(d.saldo)}` : ''}
     </div>`;
@@ -227,13 +234,13 @@ function salvarDatasMes() {
   atualizarVisualizacao();
 
   if (saldo && saldo > 0) {
-    const [ano, mês] = mes.split('-');
-    const nomeMes = new Date(ano, parseInt(mês) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const { ano, mes: mesInt } = obterAnoMesDeMesStr(mes);
+    const nomeMes = formatarMesCompletoDeAnoMes(ano, mesInt);
     const ultimosDígitos = cartao.ultimos ? ` ●●●● ${cartao.ultimos}` : '';
     const descricao = `${cartao.nome}${ultimosDígitos} - Fatura ${nomeMes}`;
 
-    const vencimentoAno = vencimentoMes ? ano : ano;
-    const vencimentoMêsNum = vencimentoMes ? parseInt(vencimentoMes) : parseInt(mês);
+    const vencimentoMêsNum = vencimentoMes ? parseInt(vencimentoMes) : mesInt;
+    const vencimentoAno = vencimentoMêsNum > mesInt ? ano : ano;
     const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
 
     adicionarDespesaDeCartao(descricao, saldo, dataVencimento, cartao.ultimos);
@@ -347,20 +354,24 @@ function obterSaldoMesAtual(cartao) {
 function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   if (datas.length === 0) return null;
+
   const comSaldo = datas.filter(d => d.saldo && d.saldo > 0);
-  if (comSaldo.length === 0) return null;
-  const ordenadas = [...comSaldo].sort((a, b) => {
-    const aMês = parseInt(a.mes.replace('-', ''));
-    const bMês = parseInt(b.mes.replace('-', ''));
-    return bMês - aMês;
-  });
-  return ordenadas[0];
+  const ultimas = comSaldo.length > 0 ? comSaldo : datas;
+
+  return ultimas.reduce((max, d) => {
+    if (!max || d.mes > max.mes) return d;
+    return max;
+  }, null);
+}
+
+function obterSaldoExibicao(cartao) {
+  const ultimaFatura = obterUltimaFaturaDisponivel(cartao);
+  return ultimaFatura?.saldo || cartao.saldoAberto;
 }
 
 function formatarMesPtBr(mesStr) {
   const [ano, mes] = mesStr.split('-');
-  const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-  return `${meses[parseInt(mes) - 1]} ${ano.slice(2)}`;
+  return `${MESES_ABREV[parseInt(mes) - 1]} ${ano.slice(2)}`;
 }
 
 function atualizarVisualizacao() {
@@ -398,8 +409,7 @@ function atualizarVisualizacao() {
       // Usar mês de referência da última fatura
       const mesRef_ = c.mesReferencia || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
       const [ano, mes] = mesRef_.split('-');
-      const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-      const mesRef = `${meses[parseInt(mes) - 1]} ${ano.slice(2)}`;
+      const mesRef = `${MESES_ABREV[parseInt(mes) - 1]} ${ano.slice(2)}`;
 
       // Buscar status de pagamento da última fatura
       const datas = c.datasPorMes || [];
@@ -497,8 +507,7 @@ function atualizarVisualizacao() {
             .map(h => {
               const classe = h.percentual > 80 ? 'critico' : h.percentual > 60 ? 'alerta' : '';
               const [ano, mes] = h.mes.split('-');
-              const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-              const mesNome = meses[parseInt(mes) - 1];
+              const mesNome = MESES_ABREV[parseInt(mes) - 1];
               return `
                 <div class="chart-barra-item">
                   <div class="chart-barra-label">${mesNome}</div>
@@ -547,13 +556,7 @@ function formatarDiaOuDiaMes(valor) {
   const partes = valor.toString().split('/');
   const dia = partes[0];
   const mes = parseInt(partes[1]);
-
-  if (!mes) {
-    return dia;
-  }
-
-  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-  return `${dia} de ${meses[mes - 1]}`;
+  return mes ? `${dia} de ${MESES_MINUSCULOS[mes - 1]}` : dia;
 }
 
 function obterNomeBandeira(bandeira) {
