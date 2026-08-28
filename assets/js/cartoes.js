@@ -4,6 +4,12 @@ const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Se
 const MESES_COMPLETOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
 const MESES_MINUSCULOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
+// Ícones dos botões de ação (SVG monocromático, herda a cor do texto do cartão)
+const SVG_ATTRS = 'viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+const ICONE_CALENDARIO = `<svg ${SVG_ATTRS}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`;
+const ICONE_LAPIS = `<svg ${SVG_ATTRS}><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
+const ICONE_LIXEIRA = `<svg ${SVG_ATTRS}><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>`;
+
 // Escapa texto do usuário antes de injetar via innerHTML (evita HTML injection)
 function escaparTextoCartao(texto) {
   const div = document.createElement('div');
@@ -212,13 +218,14 @@ function salvarDatasMes() {
   }
 
   const index = cartao.datasPorMes.findIndex(d => d.mes === mes);
-  const dataObj = { mes, fechamento, vencimento };
-  if (saldo) dataObj.saldo = saldo;
+  const existente = index !== -1 ? cartao.datasPorMes[index] : {};
 
-  if (index !== -1) {
-    cartao.datasPorMes[index] = dataObj;
+  // Preserva campos já registrados do mês (ex.: foiPaga, foiRegistradoComoDespesa)
+  const dataObj = { ...existente, mes, fechamento, vencimento };
+  if (saldo) {
+    dataObj.saldo = saldo;
   } else {
-    cartao.datasPorMes.push(dataObj);
+    delete dataObj.saldo;
   }
 
   // Registrar histórico de utilização mensal
@@ -227,20 +234,19 @@ function salvarDatasMes() {
       cartao.historicoUtilizacao = [];
     }
     const percentualUsado = (saldo / cartao.limite) * 100;
-    const jaRegistrado = cartao.historicoUtilizacao.some(h => h.mes === mes);
-    if (jaRegistrado) {
-      const index = cartao.historicoUtilizacao.findIndex(h => h.mes === mes);
-      cartao.historicoUtilizacao[index] = { mes, percentual: percentualUsado, saldo, data: new Date().toISOString() };
+    const registroHist = { mes, percentual: percentualUsado, saldo, data: new Date().toISOString() };
+    const idxHist = cartao.historicoUtilizacao.findIndex(h => h.mes === mes);
+    if (idxHist !== -1) {
+      cartao.historicoUtilizacao[idxHist] = registroHist;
     } else {
-      cartao.historicoUtilizacao.push({ mes, percentual: percentualUsado, saldo, data: new Date().toISOString() });
+      cartao.historicoUtilizacao.push(registroHist);
     }
   }
 
-  salvarCartoes(cartoes);
-  renderizarHistoricoDatas();
-  atualizarVisualizacao();
-
-  if (saldo && saldo > 0) {
+  // Lança a fatura como despesa apenas uma vez por mês
+  // (evita duplicata na recarga da página e ao reeditar o mesmo mês)
+  let despesaLancada = false;
+  if (saldo && saldo > 0 && !dataObj.foiRegistradoComoDespesa) {
     const { ano, mes: mesInt } = obterAnoMesDeMesStr(mes);
     const nomeMes = formatarMesCompletoDeAnoMes(ano, mesInt);
     const ultimosDígitos = cartao.ultimos ? ` ●●●● ${cartao.ultimos}` : '';
@@ -251,9 +257,24 @@ function salvarDatasMes() {
     const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
 
     adicionarDespesaDeCartao(descricao, saldo, dataVencimento, cartao.ultimos);
+    dataObj.foiRegistradoComoDespesa = true;
+    despesaLancada = true;
+  }
+
+  if (index !== -1) {
+    cartao.datasPorMes[index] = dataObj;
+  } else {
+    cartao.datasPorMes.push(dataObj);
+  }
+
+  salvarCartoes(cartoes);
+  renderizarHistoricoDatas();
+  atualizarVisualizacao();
+
+  if (despesaLancada) {
     alert(`Datas e saldo salvos! Despesa de ${formatarMoedaBrasileira(saldo)} adicionada em Despesas Variáveis.`);
   } else {
-    alert('Datas e saldo salvo com sucesso!');
+    alert('Datas e saldo salvos com sucesso!');
   }
 }
 
