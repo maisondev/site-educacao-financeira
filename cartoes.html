@@ -8,7 +8,9 @@
   <style>
     .cartoes-container {
       display: grid;
-      gap: var(--espacamento-lg);
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--espacamento-md);
+      max-width: 700px;
     }
 
     .card-cartao {
@@ -22,6 +24,97 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+    }
+
+    .card-cartao--picpay {
+      background: linear-gradient(135deg, #1b8672 0%, #0f6b56 100%);
+      color: white;
+    }
+
+    .card-cartao--picpay .card-cartao-titulo,
+    .card-cartao--picpay .card-cartao-numero,
+    .card-cartao--picpay .card-cartao-label,
+    .card-cartao--picpay .card-cartao-bandeira {
+      color: white;
+    }
+
+    .card-cartao--nubank {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      color: white;
+    }
+
+    .card-cartao--nubank .card-cartao-titulo,
+    .card-cartao--nubank .card-cartao-numero,
+    .card-cartao--nubank .card-cartao-label,
+    .card-cartao--nubank .card-cartao-bandeira {
+      color: white;
+    }
+
+    .card-cartao--bradesco {
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      color: white;
+    }
+
+    .card-cartao--bradesco .card-cartao-titulo,
+    .card-cartao--bradesco .card-cartao-numero,
+    .card-cartao--bradesco .card-cartao-label,
+    .card-cartao--bradesco .card-cartao-bandeira {
+      color: white;
+    }
+
+    .card-cartao--itau {
+      background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
+      color: white;
+    }
+
+    .card-cartao--itau .card-cartao-titulo,
+    .card-cartao--itau .card-cartao-numero,
+    .card-cartao--itau .card-cartao-label,
+    .card-cartao--itau .card-cartao-bandeira {
+      color: white;
+    }
+
+    .card-cartao--santander {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: white;
+    }
+
+    .card-cartao--santander .card-cartao-titulo,
+    .card-cartao--santander .card-cartao-numero,
+    .card-cartao--santander .card-cartao-label,
+    .card-cartao--santander .card-cartao-bandeira {
+      color: white;
+    }
+
+    .card-cartao--caixa {
+      background: linear-gradient(135deg, #0369a1 0%, #0c4a6e 100%);
+      color: white;
+    }
+
+    .card-cartao--caixa .card-cartao-titulo,
+    .card-cartao--caixa .card-cartao-numero,
+    .card-cartao--caixa .card-cartao-label,
+    .card-cartao--caixa .card-cartao-bandeira {
+      color: white;
+    }
+
+    .card-cartao--bb {
+      background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);
+      color: white;
+    }
+
+    .card-cartao--bb .card-cartao-titulo,
+    .card-cartao--bb .card-cartao-numero,
+    .card-cartao--bb .card-cartao-label,
+    .card-cartao--bb .card-cartao-bandeira {
+      color: white;
+    }
+
+    @media (min-width: 768px) {
+      .cartoes-container {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+      }
     }
 
     .card-cartao-header {
@@ -305,14 +398,14 @@
       <button class="btn btn-secondary" onclick="abrirModalImportarPicpay()">📥 Importar Picpay</button>
     </div>
 
-    <div id="resumo-saldos" style="display: none; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-lg);">
-      <h3 style="margin: 0 0 var(--espacamento-md) 0; color: #856404;">Faturas Fechadas por Cartão</h3>
+    <div id="resumo-saldos" style="display: none; background-color: var(--cor-fundo-alt); border: 2px solid var(--cor-primaria); border-radius: 8px; padding: var(--espacamento-lg); margin-bottom: var(--espacamento-lg);">
+      <h3 style="margin: 0 0 var(--espacamento-md) 0; color: var(--cor-primaria);">Faturas Fechadas por Cartão</h3>
       <div id="lista-saldos-por-cartao" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--espacamento-md);">
         <!-- Preenchido por JavaScript -->
       </div>
-      <div style="margin-top: var(--espacamento-md); padding-top: var(--espacamento-md); border-top: 1px solid rgba(255, 193, 7, 0.3);">
-        <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: #666;">Total devido</p>
-        <p style="margin: 0; font-size: 20px; font-weight: bold; color: #856404;" id="total-saldos-abertos">R$ 0,00</p>
+      <div style="margin-top: var(--espacamento-md); padding-top: var(--espacamento-md); border-top: 2px solid var(--cor-primaria);">
+        <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: var(--cor-texto-light);">Total devido</p>
+        <p style="margin: 0; font-size: 20px; font-weight: bold; color: var(--cor-primaria);" id="total-saldos-abertos">R$ 0,00</p>
       </div>
     </div>
 
@@ -511,6 +604,7 @@
   <script src="./assets/js/formatacao.js"></script>
   <script src="./assets/js/despesas-variaveis.js"></script>
   <script src="./assets/js/cartoes.js"></script>
+  <script src="./assets/js/dados-picpay.js"></script>
   <script>
     function abrirModalImportarPicpay() {
       document.getElementById('textarea-json-picpay').value = '';

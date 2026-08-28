@@ -459,18 +459,18 @@ main {
 }
 
 .badge-basico {
-  background-color: #e8f5e9;
-  color: var(--cor-verde);
+  background-color: var(--cor-verde);
+  color: white;
 }
 
 .badge-intermediario {
-  background-color: #fff8e1;
-  color: var(--cor-amarelo);
+  background-color: var(--cor-amarelo);
+  color: white;
 }
 
 .badge-avancado {
-  background-color: #ffebee;
-  color: var(--cor-vermelho);
+  background-color: var(--cor-vermelho);
+  color: white;
 }
 
 /* Fonte de origem */

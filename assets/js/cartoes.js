@@ -147,14 +147,14 @@ function renderizarHistoricoDatas() {
   const container = document.getElementById('historico-datas-mes');
 
   if (datas.length === 0) {
-    container.innerHTML = '<p style="font-size: 13px; color: #999; text-align: center;">Nenhum registro ainda</p>';
+    container.innerHTML = '<p style="font-size: 13px; color: var(--cor-texto-light); text-align: center;">Nenhum registro ainda</p>';
     return;
   }
 
   container.innerHTML = `<h4 style="font-size: 13px; margin: 0 0 8px 0;">Histórico:</h4>` + datas.map(d => {
     const [ano, mes] = d.mes.split('-');
     const nomeMes = new Date(ano, parseInt(mes) - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-    return `<div style="padding: 6px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; font-size: 12px;">
+    return `<div style="padding: 6px; background: var(--cor-cinza-leve); border-radius: 4px; margin-bottom: 4px; font-size: 12px; color: var(--cor-texto);">
       <strong>${nomeMes}:</strong> ${formatarDiaOuDiaMes(d.fechamento)} → ${formatarDiaOuDiaMes(d.vencimento)}${d.saldo ? ` / saldo ${formatarMoedaBrasileira(d.saldo)}` : ''}
     </div>`;
   }).join('');
@@ -341,6 +341,13 @@ function obterSaldoMesAtual(cartao) {
   return dataAtual?.saldo || null;
 }
 
+function obterUltimaFaturaDisponivel(cartao) {
+  const datas = cartao.datasPorMes || [];
+  if (datas.length === 0) return null;
+  const ordenadas = [...datas].sort((a, b) => b.mes.localeCompare(a.mes));
+  return ordenadas[0];
+}
+
 function atualizarVisualizacao() {
   const cartoes = obterCartoes();
   const container = document.getElementById('lista-cartoes');
@@ -351,14 +358,15 @@ function atualizarVisualizacao() {
     contadorDiv.textContent = cartoes.length;
   }
 
-  // Calcular resumo de saldos abertos (mes atual ou geral)
+  // Calcular resumo de saldos abertos (última fatura disponível)
   const cartoesComSaldo = cartoes.map(c => {
-    const saldoMes = obterSaldoMesAtual(c);
-    const saldo = saldoMes || c.saldoAberto;
+    const ultimaFatura = obterUltimaFaturaDisponivel(c);
+    const saldo = ultimaFatura?.saldo || c.saldoAberto;
     return {
       ...c,
       saldoVisivel: saldo,
-      temSaldo: saldo && saldo > 0
+      temSaldo: saldo && saldo > 0,
+      mesReferencia: ultimaFatura?.mes
     };
   }).filter(c => c.temSaldo);
 
@@ -372,28 +380,29 @@ function atualizarVisualizacao() {
     // Preencher lista de cartões com saldo
     const listaDiv = document.getElementById('lista-saldos-por-cartao');
     listaDiv.innerHTML = cartoesComSaldo.map(c => {
-      // Obter mês de referência
-      const hoje = new Date();
-      const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-      const datas = c.datasPorMes || [];
-      const dataAtual = datas.find(d => d.mes === mesAtual);
-      const [ano, mes] = dataAtual ? dataAtual.mes.split('-') : mesAtual.split('-');
+      // Usar mês de referência da última fatura
+      const mesRef_ = c.mesReferencia || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+      const [ano, mes] = mesRef_.split('-');
       const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
       const mesRef = `${meses[parseInt(mes) - 1]} ${ano.slice(2)}`;
+
+      // Buscar status de pagamento da última fatura
+      const datas = c.datasPorMes || [];
+      const dataAtual = datas.find(d => d.mes === mesRef_);
       const pago = dataAtual && dataAtual.foiPaga;
 
       return `
-      <div style="background: rgba(255,255,255,0.7); padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid #856404; position: relative;">
+      <div style="background: white; padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid var(--cor-primaria); position: relative; box-shadow: var(--sombra-sm);">
         <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 6px;">
-          <input type="checkbox" id="pago-${c.id}" ${pago ? 'checked' : ''} onchange="marcarFaturaPaga(${c.id}, '${mesAtual}')" style="cursor: pointer; width: 18px; height: 18px;">
-          <label for="pago-${c.id}" style="font-size: 11px; color: #666; cursor: pointer; font-weight: 500;">${pago ? 'Pago' : 'Pagar'}</label>
+          <input type="checkbox" id="pago-${c.id}" ${pago ? 'checked' : ''} onchange="marcarFaturaPaga(${c.id}, '${mesRef_}')" style="cursor: pointer; width: 18px; height: 18px;">
+          <label for="pago-${c.id}" style="font-size: 11px; color: var(--cor-texto-light); cursor: pointer; font-weight: 500;">${pago ? 'Pago' : 'Pagar'}</label>
         </div>
         <div style="margin-bottom: 8px; padding-right: 60px;">
-          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: #333; ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.nome}</p>
-          ${c.titular ? `<p style="margin: 0; font-size: 11px; color: #666;">Titular: ${c.titular}</p>` : ''}
+          <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: var(--cor-texto); ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${c.nome}</p>
+          ${c.titular ? `<p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">Titular: ${c.titular}</p>` : ''}
         </div>
-        <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? '#999' : '#856404'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
-        <p style="margin: 0; font-size: 11px; color: #999;">●●●● ${c.ultimos} • ${mesRef}</p>
+        <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? 'var(--cor-texto-light)' : 'var(--cor-primaria)'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
+        <p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">●●●● ${c.ultimos} • ${mesRef}</p>
       </div>
     `;
     }).join('');
@@ -411,8 +420,10 @@ function atualizarVisualizacao() {
   container.innerHTML = cartoes.map(cartao => {
     const saldoMesAtual = obterSaldoMesAtual(cartao);
     const saldoVisivel = saldoMesAtual || cartao.saldoAberto;
+    const banco = obterBancoPorNome(cartao.nome);
+    const classeBanco = banco ? `card-cartao--${banco}` : '';
     return `
-    <div class="card-cartao">
+    <div class="card-cartao ${classeBanco}">
       <div class="card-cartao-botoes">
         <button class="btn-acao-cartao" onclick="exportarCartaoParaCalendario(${cartao.id})" title="Exportar para calendário">📅</button>
         <button class="btn-acao-cartao" onclick="abrirModalCartaoEdicao(${cartao.id})" title="Editar cartão">✎</button>
@@ -538,6 +549,20 @@ function obterNomeBandeira(bandeira) {
     'outro': 'Outro'
   };
   return nomes[bandeira] || bandeira;
+}
+
+function obterBancoPorNome(nomeCartao) {
+  const nome = (nomeCartao || '').toLowerCase();
+
+  if (nome.includes('picpay')) return 'picpay';
+  if (nome.includes('nubank')) return 'nubank';
+  if (nome.includes('bradesco')) return 'bradesco';
+  if (nome.includes('itau') || nome.includes('itaú')) return 'itau';
+  if (nome.includes('santander')) return 'santander';
+  if (nome.includes('caixa')) return 'caixa';
+  if (nome.includes('banco do brasil') || nome.includes('bb ')) return 'bb';
+
+  return null;
 }
 
 function gerarTextoCiclo(cartao) {
@@ -688,14 +713,11 @@ function importarCartoesPicpay(dados) {
   }
 
   const cartoes = obterCartoes();
-  const mesReferencia = dados.resumo?.mes || 'agosto/2026';
-  const [mes, ano] = mesReferencia.split('/');
-  const mesPadrao = `${ano}-${String(new Date(Date.parse('01 ' + mes + ' ' + ano)).getMonth() + 1).padStart(2, '0')}`;
+  const mesPadrao = '2026-08';
 
   let importados = 0;
 
   dados.cartoes_picpay.forEach(cartaoPicpay => {
-    const nomeCompleto = `${cartaoPicpay.nome} - ${cartaoPicpay.titular}`.substring(0, 50);
     const ultimos = String(cartaoPicpay.ultimos_digitos).slice(-4);
 
     // Verificar se cartão já existe (por últimos dígitos + titular)
@@ -713,18 +735,18 @@ function importarCartoesPicpay(dados) {
         bandeira: 'mastercard',
         tipo: '',
         limite: null,
-        fechamento: '',
-        vencimento: String(cartaoPicpay.vencimento?.split('/')[0] || '10'),
+        fechamento: '04',
+        vencimento: '10',
         saldoAberto: cartaoPicpay.fatura_agosto_2026 || 0,
         dataCriacao: new Date().toISOString(),
-        datasPorMes: cartaoPicpay.fatura_agosto_2026 ? [
+        datasPorMes: [
           {
             mes: mesPadrao,
             fechamento: '04',
-            vencimento: cartaoPicpay.vencimento || '10/08/2026',
+            vencimento: '10',
             saldo: cartaoPicpay.fatura_agosto_2026
           }
-        ] : []
+        ]
       };
 
       cartoes.push(novoCartao);
@@ -736,7 +758,7 @@ function importarCartoesPicpay(dados) {
   atualizarVisualizacao();
 
   const mensagem = importados > 0
-    ? `✓ ${importados} cartão(ões) Picpay importado(s) com sucesso!\n\nFatura: ${mesReferencia}`
+    ? `✓ ${importados} cartão(ões) Picpay importado(s) com sucesso!\n\nFatura: Agosto/2026\nTotal: R$ ${dados.resumo?.total_fatura || 0}`
     : '✓ Todos os cartões Picpay já estavam cadastrados';
 
   alert(mensagem);
