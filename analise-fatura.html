@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análise de Fatura de Cartão | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .af-container {
+      max-width: var(--max-width-pagina);
+      margin: 0 auto;
+    }
+
+    .af-descricao {
+      color: var(--cor-texto-light);
+      margin-bottom: var(--espacamento-lg);
+      max-width: 70ch;
+    }
+
+    .af-secao {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .af-form-linha {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+      flex-wrap: wrap;
+    }
+
+    .af-form-linha label {
+      font-weight: 500;
+    }
+
+    .af-form-linha select,
+    .af-competencia input {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .af-upload {
+      border: 2px dashed var(--cor-primaria);
+      border-radius: 8px;
+      padding: var(--espacamento-xl);
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .af-upload:hover,
+    .af-upload.af-dragover {
+      background: var(--cor-cinza-leve);
+    }
+
+    .af-upload-hint {
+      font-size: 0.85rem;
+      color: var(--cor-texto-light);
+      margin-top: var(--espacamento-xs);
+    }
+
+    .af-paste {
+      margin-top: var(--espacamento-md);
+    }
+
+    .af-paste summary {
+      cursor: pointer;
+      color: var(--cor-azul);
+      font-size: 0.95rem;
+    }
+
+    .af-paste textarea {
+      width: 100%;
+      margin-top: var(--espacamento-md);
+      padding: var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-family: ui-monospace, "Courier New", monospace;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    .af-msg {
+      margin-top: var(--espacamento-md);
+      padding: var(--espacamento-md);
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    .af-msg.af-erro {
+      background: #fbeaea;
+      border-left: 4px solid var(--cor-vermelho);
+      color: var(--cor-vermelho);
+    }
+
+    .af-msg.af-ok {
+      background: #eaf3ec;
+      border-left: 4px solid var(--cor-verde);
+      color: var(--cor-verde);
+    }
+
+    .af-resultado-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-md);
+    }
+
+    .af-competencia {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.85rem;
+      color: var(--cor-texto-light);
+    }
+
+    .af-cartoes-filtro {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-lg);
+      padding-bottom: var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .af-cartao-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .af-cartao-check input {
+      accent-color: var(--cor-primaria);
+    }
+
+    .af-cartao-check .af-cartao-soma {
+      color: var(--cor-texto-light);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .af-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .af-tile {
+      background: var(--cor-cinza-leve);
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: 4px;
+      padding: var(--espacamento-md);
+    }
+
+    .af-tile.af-tile-destaque {
+      background: #f3edf4;
+    }
+
+    .af-tile-k {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--cor-texto-light);
+      font-weight: 600;
+    }
+
+    .af-tile-v {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .af-tile-n {
+      font-size: 0.78rem;
+      color: var(--cor-texto-light);
+      margin-top: 2px;
+    }
+
+    .af-categorias {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-md);
+    }
+
+    .af-cat {
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .af-cat-head {
+      padding: var(--espacamento-md);
+    }
+
+    .af-cat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--espacamento-md);
+    }
+
+    .af-cat-nome {
+      font-weight: bold;
+      font-size: 1.05rem;
+    }
+
+    .af-cat-fig {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .af-cat-fig .af-cat-pct {
+      color: var(--cor-texto-light);
+      font-size: 0.85rem;
+      margin-left: 6px;
+    }
+
+    .af-cat-barra {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--cor-cinza-leve);
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .af-cat-barra i {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .af-tabela-wrap {
+      overflow-x: auto;
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .af-tabela {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .af-tabela th,
+    .af-tabela td {
+      padding: 8px var(--espacamento-md);
+      text-align: left;
+      border-bottom: 1px solid var(--cor-borda);
+      white-space: nowrap;
+    }
+
+    .af-tabela th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cor-texto-light);
+    }
+
+    .af-tabela td.af-valor,
+    .af-tabela th.af-valor {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .af-tabela tr:last-child td {
+      border-bottom: none;
+    }
+
+    .af-tabela select {
+      font-size: 0.85rem;
+      padding: 3px 6px;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-family: inherit;
+      max-width: 170px;
+    }
+
+    .af-rec-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+      color: var(--cor-texto-light);
+    }
+
+    .af-desc-loja {
+      font-weight: 500;
+      white-space: normal;
+    }
+
+    .af-desc-cidade {
+      font-size: 0.78rem;
+      color: var(--cor-texto-light);
+    }
+
+    .af-por-cartao {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+    }
+
+    .af-por-cartao div {
+      background: var(--cor-cinza-leve);
+      border-radius: 6px;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      font-size: 0.9rem;
+    }
+
+    .af-por-cartao strong {
+      display: block;
+      font-variant-numeric: tabular-nums;
+      color: var(--cor-primaria);
+    }
+
+    .af-pagamentos {
+      margin-top: var(--espacamento-lg);
+      padding: var(--espacamento-md);
+      background: var(--cor-cinza-leve);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: var(--cor-texto-light);
+    }
+
+    .af-acoes {
+      display: flex;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-xl);
+      flex-wrap: wrap;
+    }
+
+    .af-historico {
+      display: flex;
+      flex-direction: column;
+      gap: var(--espacamento-sm);
+    }
+
+    .af-hist-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      flex-wrap: wrap;
+    }
+
+    .af-hist-info strong {
+      font-size: 1rem;
+    }
+
+    .af-hist-info span {
+      color: var(--cor-texto-light);
+      font-size: 0.85rem;
+    }
+
+    .af-hist-acoes {
+      display: flex;
+      gap: var(--espacamento-sm);
+    }
+
+    .af-btn-mini {
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      border: 1px solid var(--cor-borda);
+      background: var(--cor-fundo);
+      cursor: pointer;
+    }
+
+    .af-btn-mini.af-btn-perigo {
+      color: var(--cor-vermelho);
+      border-color: var(--cor-vermelho);
+    }
+
+    .af-vazio {
+      color: var(--cor-texto-light);
+      font-style: italic;
+    }
+
+    @media (max-width: 640px) {
+      .af-secao {
+        padding: var(--espacamento-md);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main class="af-container">
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Análise de Fatura de Cartão</p>
+    <h1>Análise de Fatura de Cartão</h1>
+    <p class="af-descricao">
+      Importe o PDF da fatura fechada (ou cole o texto). Tudo é processado no seu navegador &mdash;
+      nenhum dado é enviado para servidor. Escolha quais cartões considerar, veja os gastos organizados
+      por categoria com os lançamentos de cada uma, e salve a análise para comparar entre meses.
+    </p>
+
+    <section class="af-secao">
+      <h2>1. Importar fatura</h2>
+
+      <div class="af-form-linha">
+        <label for="af-banco">Banco / emissor</label>
+        <select id="af-banco">
+          <option value="Bradesco">Bradesco</option>
+          <option value="Nubank">Nubank</option>
+          <option value="Itaú">Itaú</option>
+          <option value="Santander">Santander</option>
+          <option value="Caixa">Caixa</option>
+          <option value="Banco do Brasil">Banco do Brasil</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+
+      <div class="af-upload" id="af-upload" role="button" tabindex="0" aria-label="Selecionar PDF da fatura">
+        <p><strong>Clique ou arraste o PDF da fatura aqui</strong></p>
+        <p class="af-upload-hint">Somente PDF. O arquivo não sai do seu navegador.</p>
+      </div>
+      <input type="file" id="af-arquivo" accept="application/pdf,.pdf" hidden>
+
+      <details class="af-paste">
+        <summary>ou colar o texto da fatura manualmente</summary>
+        <textarea id="af-texto" rows="8" placeholder="Cole aqui a seção 'Lançamentos' da fatura (uma linha por compra, com data, descrição e valor)..."></textarea>
+        <button type="button" class="btn btn-primary" id="af-analisar-texto">Analisar texto colado</button>
+      </details>
+
+      <div id="af-msg" class="af-msg" hidden></div>
+    </section>
+
+    <section class="af-secao" id="af-resultado" hidden>
+      <div class="af-resultado-head">
+        <h2>2. Resultado</h2>
+        <div class="af-competencia">
+          <label for="af-comp">Competência (mês da fatura)</label>
+          <input type="month" id="af-comp">
+        </div>
+      </div>
+
+      <p style="font-size:0.9rem;color:var(--cor-texto-light);margin-top:0;">
+        Marque apenas os cartões que você quer incluir na análise.
+      </p>
+      <div class="af-cartoes-filtro" id="af-cartoes-filtro"></div>
+
+      <div class="af-tiles" id="af-tiles"></div>
+
+      <h3>Gastos por categoria</h3>
+      <div id="af-categorias" class="af-categorias"></div>
+
+      <h3 style="margin-top:var(--espacamento-xl);">Por cartão</h3>
+      <div id="af-por-cartao" class="af-por-cartao"></div>
+
+      <div id="af-pagamentos" class="af-pagamentos" hidden></div>
+
+      <div class="af-acoes">
+        <button type="button" class="btn btn-primary" id="af-salvar">Salvar análise</button>
+        <button type="button" class="btn btn-secondary" id="af-csv">Baixar CSV</button>
+      </div>
+    </section>
+
+    <section class="af-secao" id="af-historico-secao" hidden>
+      <h2>Análises salvas</h2>
+      <div id="af-historico" class="af-historico"></div>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li><a href="./despesas-fixas.html">Despesas Fixas</a> — cadastre as assinaturas recorrentes que aparecerem aqui</li>
+        <li><a href="./parcelas-cartao.html">Parcelas de Cartão</a> — acompanhe o que já está comprometido nas próximas faturas</li>
+        <li><a href="./cartoes.html">Meus Cartões</a> — registre limites e datas de fechamento de cada cartão</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Análise processada apenas no seu navegador — nenhum dado de fatura é enviado ou armazenado fora dele.</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/lembretes.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/analise-fatura.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      renderizarMenu();
+      inicializarAnaliseFatura();
+    });
+  </script>
+</body>
+</html>

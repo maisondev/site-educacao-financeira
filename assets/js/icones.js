@@ -14,6 +14,8 @@ const ICONES = {
   x: '<path d="M18 6 6 18M6 6l12 12"/>',
   lampada: '<path d="M9 18h6M10 22h4M15.09 14c.18-.98.65-1.74 1.41-2.5A5 5 0 1 0 7.5 8a5 5 0 0 0 1.5 3.5c.76.76 1.23 1.52 1.41 2.5"/>',
   'seta-externa': '<path d="M7 17 17 7M8 7h9v9"/>',
+  olho: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  'olho-fechado': '<path d="M2 12s3.5-7 10-7c1.7 0 3.2.4 4.6 1.1M22 12s-3.5 7-10 7c-1.7 0-3.2-.4-4.6-1.1"/><path d="M3 3l18 18"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
 };
 
 // Retorna a string SVG de um ícone. tamanho em px (largura = altura).

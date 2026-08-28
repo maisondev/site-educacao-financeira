@@ -42,6 +42,7 @@ const MENU_ITEMS = [
     submenu: [
       { label: 'Balanço Patrimonial', href: './balanco-patrimonial.html' },
       { label: 'Contracheque', href: './analise-contracheque.html' },
+      { label: 'Fatura de Cartão', href: './analise-fatura.html' },
       { label: 'Relatórios', href: './relatorios.html' }
     ]
   },
