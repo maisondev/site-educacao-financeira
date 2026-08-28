@@ -142,6 +142,80 @@ function smDividasDoMes(competencia) {
   }, 0);
 }
 
+// "AAAA-MM-DD" → "DD/MM/AAAA", só para exibir no detalhamento.
+function smDataBR(iso) {
+  const p = String(iso || '').split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : (iso || '');
+}
+
+function smEscapar(texto) {
+  const div = document.createElement('div');
+  div.textContent = texto == null ? '' : String(texto);
+  return div.innerHTML;
+}
+
+// Quais dívidas compõem a linha "Dívidas com vencimento no mês" e por quê.
+// Segue exatamente a mesma regra de smDividasDoMes().
+function smDetalheDividasDoMes(competencia) {
+  const mesAtual = smCompetenciaAtual();
+  const itens = [];
+
+  smListaDividas().forEach(d => {
+    if (smFaltanteDivida(d) <= 0) return;
+    const credor = d.credor || 'Dívida sem credor';
+
+    if (d.parcelado) {
+      if (competencia < mesAtual) return;
+      const valor = Number(d.valorParcela) || 0;
+      if (valor <= 0) return;
+      const num = Number(d.numParcelas) || 0;
+      const pagas = Math.min(Number(d.parcelasPagas) || 0, num);
+      const restantes = Math.max(0, num - pagas);
+      itens.push({
+        credor,
+        valor,
+        motivo: num ? `parcela mensal — ${restantes} de ${num} restantes` : 'parcela mensal'
+      });
+      return;
+    }
+
+    if (!smNaCompetencia(d.vencimento, competencia)) return;
+    itens.push({ credor, valor: smFaltanteDivida(d), motivo: `vence em ${smDataBR(d.vencimento)}` });
+  });
+
+  return itens;
+}
+
+// Linha "Dívidas com vencimento no mês" com detalhamento expansível por dívida
+// e link para a página de Dívidas. Sem valor no mês, não renderiza nada.
+function smLinhaDividas(r) {
+  if (!r.dividas) return '';
+
+  const itens = smDetalheDividasDoMes(r.competencia);
+  const linhas = itens.map(i => `
+        <div class="sm-detalhe-item">
+          <span>${smEscapar(i.credor)} <em>(${smEscapar(i.motivo)})</em></span>
+          <span>− ${formatarMoedaBrasileira(i.valor)}</span>
+        </div>`).join('');
+
+  return `
+      <div class="sm-linha">
+        <span class="sm-rotulo">Dívidas com vencimento no mês</span>
+        <span class="sm-valor">− ${formatarMoedaBrasileira(r.dividas)}</span>
+      </div>
+      <details class="sm-detalhe">
+        <summary>Ver o que compõe este valor</summary>
+        <div class="sm-detalhe-corpo">
+          ${linhas || '<p class="sm-detalhe-vazio">Sem itens para listar.</p>'}
+          <p class="sm-detalhe-nota">
+            Parcelas de dívidas parceladas entram todo mês, do mês atual em diante.
+            Dívidas de valor único entram inteiras no mês do vencimento.
+          </p>
+          <a href="./dividas.html">Abrir a página de Dívidas para ver e editar</a>
+        </div>
+      </details>`;
+}
+
 function smReservaAtual() {
   const reserva = Store.ler(Store.CHAVES.RESERVA, null);
   if (!reserva) return 0;
@@ -284,7 +358,7 @@ function renderizarSaldoDoMes() {
       ${smLinha('Despesas variáveis lançadas', r.despesasVariaveis, '− ')}
       ${smLinha('Faturas de cartão que vencem no mês', r.faturas, '− ')}
       ${smLinha('Parcelas de compras parceladas', r.parcelas, '− ')}
-      ${smLinha('Dívidas com vencimento no mês', r.dividas, '− ')}
+      ${smLinhaDividas(r)}
       ${smLinha('Saídas avulsas (ajustes)', r.ajustesSaidas, '− ')}
       <div class="sm-linha sm-subtotal">
         <span class="sm-rotulo">Total de saídas</span>

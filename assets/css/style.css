@@ -1118,3 +1118,48 @@ hr {
     padding: 6px;
   }
 }
+
+/* Detalhamento da linha "Dívidas com vencimento no mês" (saldo-mes.js) */
+.sm-detalhe {
+  max-width: 560px;
+  margin: 2px 0 8px;
+  font-size: 14px;
+}
+
+.sm-detalhe > summary {
+  cursor: pointer;
+  color: var(--cor-azul);
+  padding: 4px 0;
+}
+
+.sm-detalhe-corpo {
+  padding: var(--espacamento-sm) 0 4px;
+}
+
+.sm-detalhe-item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacamento-md);
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--cor-borda);
+}
+
+.sm-detalhe-item em {
+  color: var(--cor-texto-leve);
+  font-style: normal;
+}
+
+.sm-detalhe-item span:last-child {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sm-detalhe-nota {
+  color: var(--cor-texto-leve);
+  margin: var(--espacamento-sm) 0;
+}
+
+.sm-detalhe-vazio {
+  color: var(--cor-texto-leve);
+  margin: 0 0 var(--espacamento-sm);
+}
