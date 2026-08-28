@@ -92,14 +92,35 @@ function smParcelasDoMes(competencia) {
   }, 0);
 }
 
-// Dívidas entram no mês do vencimento, pelo que ainda falta pagar.
-function smDividasDoMes(competencia) {
+// Dívida parcelada compromete a parcela do mês enquanto houver parcelas;
+// dívida em valor único entra inteira no mês do vencimento.
+// Espelha metricasDivida() de dividas.js.
+function smFaltanteDivida(d) {
+  if (d.parcelado) {
+    const numParcelas = Number(d.numParcelas) || 0;
+    const pagas = Math.min(Number(d.parcelasPagas) || 0, numParcelas);
+    return Math.max(0, numParcelas - pagas) * (Number(d.valorParcela) || 0);
+  }
+  return Math.max(0, (Number(d.valorTotal) || 0) - (Number(d.valorPago) || 0));
+}
+
+function smListaDividas() {
   const dados = Store.ler(Store.CHAVES.DIVIDAS, { dividas: [] });
-  const lista = Array.isArray(dados) ? dados : (dados.dividas || []);
-  return lista.reduce((total, d) => {
+  return Array.isArray(dados) ? dados : (dados.dividas || []);
+}
+
+function smDividasDoMes(competencia) {
+  const mesAtual = smCompetenciaAtual();
+  return smListaDividas().reduce((total, d) => {
+    if (smFaltanteDivida(d) <= 0) return total;
+
+    if (d.parcelado) {
+      // Parcela só entra do mês corrente em diante — meses passados já foram pagos.
+      return competencia >= mesAtual ? total + (Number(d.valorParcela) || 0) : total;
+    }
+
     if (!smNaCompetencia(d.vencimento, competencia)) return total;
-    const faltante = (Number(d.valorTotal) || 0) - (Number(d.valorPago) || 0);
-    return total + Math.max(faltante, 0);
+    return total + smFaltanteDivida(d);
   }, 0);
 }
 

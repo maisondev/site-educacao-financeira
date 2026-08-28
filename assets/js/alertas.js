@@ -78,22 +78,29 @@ function altAlertasCartoes() {
 }
 
 function altAlertasDividas() {
-  const dados = Store.ler(Store.CHAVES.DIVIDAS, { dividas: [] });
-  const lista = Array.isArray(dados) ? dados : (dados.dividas || []);
+  const lista = typeof smListaDividas === 'function' ? smListaDividas() : [];
 
   return lista.reduce((alertas, divida) => {
-    const faltante = (Number(divida.valorTotal) || 0) - (Number(divida.valorPago) || 0);
+    const faltante = typeof smFaltanteDivida === 'function' ? smFaltanteDivida(divida) : 0;
     if (faltante <= 0) return alertas;
 
-    const dias = altDiasAte(divida.vencimento);
+    // Parcelada vence todo mês num dia fixo; a de valor único tem data própria.
+    const dias = divida.parcelado
+      ? altDiasAteDiaDoMes(divida.diaVencimento)
+      : altDiasAte(divida.vencimento);
     if (dias === null || dias > ALERTA_DIAS_DIVIDA) return alertas;
 
+    const valor = divida.parcelado ? (Number(divida.valorParcela) || 0) : faltante;
+    const rotulo = divida.parcelado ? 'Parcela' : 'Dívida';
+
     alertas.push(altAlerta(
-      dias < 0 ? 'critico' : (dias <= 2 ? 'critico' : 'atencao'),
+      dias <= 2 ? 'critico' : 'atencao',
       dias < 0
-        ? `Dívida com ${divida.credor} venceu ${altPrazoEmTexto(dias)}`
-        : `Dívida com ${divida.credor} vence ${altPrazoEmTexto(dias)}`,
-      `Falta pagar ${formatarMoedaBrasileira(faltante)}.`,
+        ? `${rotulo} de ${divida.credor} venceu ${altPrazoEmTexto(dias)}`
+        : `${rotulo} de ${divida.credor} vence ${altPrazoEmTexto(dias)}`,
+      divida.parcelado
+        ? `${formatarMoedaBrasileira(valor)} por mês · faltam ${formatarMoedaBrasileira(faltante)}.`
+        : `Falta pagar ${formatarMoedaBrasileira(faltante)}.`,
       './dividas.html',
       'Ver dívidas'
     ));
