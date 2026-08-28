@@ -1,5 +1,8 @@
 let cartaoEmEdicaoId = null;
 
+const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const MESES_COMPLETOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
 function inicializarCartoes() {
   atualizarVisualizacao();
   sincronizarFaturasExistentes();
@@ -344,7 +347,9 @@ function obterSaldoMesAtual(cartao) {
 function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   if (datas.length === 0) return null;
-  const ordenadas = [...datas].sort((a, b) => {
+  const comSaldo = datas.filter(d => d.saldo && d.saldo > 0);
+  if (comSaldo.length === 0) return null;
+  const ordenadas = [...comSaldo].sort((a, b) => {
     const aMês = parseInt(a.mes.replace('-', ''));
     const bMês = parseInt(b.mes.replace('-', ''));
     return bMês - aMês;
