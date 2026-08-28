@@ -193,10 +193,15 @@
       border-radius: 8px;
       padding: var(--espacamento-lg);
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: var(--espacamento-md);
       border-left: 4px solid var(--cor-primaria);
       position: relative;
+    }
+
+    .despesa-info {
+      flex: 1;
+      min-width: 0;
     }
 
     .despesa-info h3 {
@@ -211,6 +216,8 @@
     }
 
     .despesa-valor {
+      flex-shrink: 0;
+      min-width: 160px;
       text-align: right;
     }
 
@@ -248,6 +255,7 @@
       display: flex;
       align-items: center;
       gap: 4px;
+      flex-shrink: 0;
     }
 
     .btn-editar {
@@ -266,6 +274,54 @@
 
     .btn-editar:hover {
       color: var(--cor-primaria);
+    }
+
+    .btn-ocultar {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-ocultar:hover,
+    .btn-ocultar.ativo {
+      color: var(--cor-primaria);
+    }
+
+    .despesa-item.oculta {
+      opacity: 0.55;
+      border-style: dashed;
+    }
+
+    .despesa-badge-oculta {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: var(--cor-texto-leve);
+      vertical-align: middle;
+    }
+
+    .info-ocultas {
+      margin: 0 0 var(--espacamento-md);
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      background: var(--cor-cinza-leve);
+      border-left: 3px solid var(--cor-primaria);
+      border-radius: 4px;
+      font-size: 13px;
+      color: var(--cor-texto-leve);
     }
 
     .btn-adicionar {
@@ -412,6 +468,72 @@
       background-color: #e8e8e8;
     }
 
+    .despesa-vencimento {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--cor-texto-leve);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .despesa-vencimento .icone {
+      width: 14px;
+      height: 14px;
+    }
+
+    .despesa-vencimento.urgente {
+      color: var(--cor-vermelho);
+      font-weight: 600;
+    }
+
+    .resumo-categorias {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .resumo-categorias h3 {
+      margin: 0 0 var(--espacamento-md);
+      font-size: 16px;
+    }
+
+    .cat-linha {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2px var(--espacamento-md);
+      align-items: center;
+      margin-bottom: var(--espacamento-sm);
+      font-size: 14px;
+    }
+
+    .cat-valor {
+      text-align: right;
+      font-weight: 600;
+      color: var(--cor-primaria);
+    }
+
+    .cat-valor em {
+      font-style: normal;
+      font-weight: 400;
+      color: var(--cor-texto-leve);
+    }
+
+    .cat-barra {
+      grid-column: 1 / -1;
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .cat-barra-fill {
+      background-color: var(--cor-primaria);
+      height: 100%;
+    }
+
     @media (max-width: 640px) {
       .resumo-despesas {
         grid-template-columns: 1fr;
@@ -496,6 +618,8 @@
         </div>
       </div>
 
+      <p id="info-ocultas" class="info-ocultas" hidden></p>
+
       <div id="alerta-container"></div>
 
       <div class="progresso-despesas">
@@ -513,6 +637,8 @@
           <span id="status-percentual">Dentro do esperado</span>
         </div>
       </div>
+
+      <div class="resumo-categorias" id="resumo-categorias" hidden></div>
 
       <section>
         <h2>Suas Despesas Fixas</h2>
@@ -539,7 +665,7 @@
   </main>
 
   <!-- Modal para adicionar despesa -->
-  <div id="modal-despesa" class="modal" hidden>
+  <div id="modal-despesa" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-despesa-titulo">
     <div class="modal-content">
       <div class="modal-header">
         <h2 id="modal-despesa-titulo">Adicionar Despesa Fixa</h2>
@@ -575,6 +701,10 @@
         <div class="form-group">
           <label for="input-valor">Valor (R$) *</label>
           <input type="text" id="input-valor" data-moeda placeholder="Ex: 1.500,00" required>
+        </div>
+        <div class="form-group">
+          <label for="input-vencimento-dia">Dia de Vencimento *</label>
+          <input type="number" id="input-vencimento-dia" min="1" max="31" inputmode="numeric" placeholder="Ex: 10" required>
         </div>
       </div>
       <div class="modal-footer">

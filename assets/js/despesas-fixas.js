@@ -26,9 +26,47 @@ function inicializarDespesasFixas() {
   }
 }
 
+function gerarId() {
+  if (window.crypto && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function obterDados() {
-  const dados = localStorage.getItem('despesas_fixas');
-  return dados ? JSON.parse(dados) : { salario: 0, despesas: [] };
+  let dados;
+  try {
+    const bruto = localStorage.getItem('despesas_fixas');
+    dados = bruto ? JSON.parse(bruto) : null;
+  } catch (erro) {
+    console.error('Erro ao carregar despesas fixas (dados ignorados):', erro);
+    dados = null;
+  }
+
+  if (!dados || typeof dados !== 'object') {
+    dados = { salario: 0, despesas: [] };
+  }
+  if (!Array.isArray(dados.despesas)) {
+    dados.despesas = [];
+  }
+
+  // Normaliza ids para string (compatibilidade com dados antigos que usavam Date.now())
+  dados.despesas.forEach(d => {
+    d.id = d.id != null ? String(d.id) : gerarId();
+  });
+
+  return dados;
+}
+
+// Dias até o próximo vencimento (considera virada de mês)
+function diasAteVencimento(dia) {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  let alvo = new Date(hoje.getFullYear(), hoje.getMonth(), dia);
+  if (alvo < hoje) {
+    alvo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, dia);
+  }
+  return Math.round((alvo - hoje) / 86400000);
 }
 
 function salvarDados(dados) {
@@ -87,6 +125,7 @@ function abrirModalDespesa() {
   document.getElementById('input-nome').value = '';
   document.getElementById('select-categoria').value = '';
   document.getElementById('input-valor').value = '';
+  document.getElementById('input-vencimento-dia').value = '';
   document.getElementById('modal-despesa').removeAttribute('hidden');
   document.getElementById('input-nome').focus();
 }
@@ -102,6 +141,7 @@ function abrirModalDespesaEdicao(id) {
   document.getElementById('input-nome').value = despesa.nome;
   document.getElementById('select-categoria').value = despesa.categoria;
   document.getElementById('input-valor').value = formatarNumeroBrasileiro(despesa.valor);
+  document.getElementById('input-vencimento-dia').value = despesa.vencimentoDia || '';
   document.getElementById('modal-despesa').removeAttribute('hidden');
   document.getElementById('input-nome').focus();
 }
@@ -115,6 +155,7 @@ function salvarDespesa() {
   const nome = document.getElementById('input-nome').value.trim();
   const categoria = document.getElementById('select-categoria').value;
   let valor = parseValorBrasileiro(document.getElementById('input-valor').value);
+  const vencimentoDia = parseInt(document.getElementById('input-vencimento-dia').value, 10);
 
   if (!nome) {
     alert('Por favor, insira um nome para a despesa');
@@ -131,6 +172,11 @@ function salvarDespesa() {
     return;
   }
 
+  if (!vencimentoDia || vencimentoDia < 1 || vencimentoDia > 31) {
+    alert('Por favor, insira o dia de vencimento (entre 1 e 31)');
+    return;
+  }
+
   valor = Math.round(valor * 100) / 100;
 
   const dados = obterDados();
@@ -141,13 +187,15 @@ function salvarDespesa() {
       despesa.nome = nome;
       despesa.categoria = categoria;
       despesa.valor = valor;
+      despesa.vencimentoDia = vencimentoDia;
     }
   } else {
     dados.despesas.push({
-      id: Date.now(),
+      id: gerarId(),
       nome,
       categoria,
       valor,
+      vencimentoDia,
       dataCriacao: new Date().toISOString()
     });
   }
@@ -165,9 +213,17 @@ function atualizarVisualizacao() {
     return;
   }
 
-  const totalDespesas = dados.despesas.reduce((sum, d) => sum + d.valor, 0);
+  // Despesas ocultas ficam de fora do cálculo (para simular o impacto delas no total)
+  const despesasNoCalculo = dados.despesas.filter(d => !d.oculta);
+  const despesasOcultas = dados.despesas.filter(d => d.oculta);
+
+  const totalDespesas = despesasNoCalculo.reduce((sum, d) => sum + d.valor, 0);
+  const totalOcultas = despesasOcultas.reduce((sum, d) => sum + d.valor, 0);
   const disponivel = dados.salario - totalDespesas;
   const percentual = dados.salario > 0 ? (totalDespesas / dados.salario) * 100 : 0;
+  const percentualComOcultas = dados.salario > 0
+    ? ((totalDespesas + totalOcultas) / dados.salario) * 100
+    : 0;
 
   // Atualizar cards
   document.getElementById('valor-total-despesas').textContent = formatarMoedaBrasileira(totalDespesas);
@@ -235,7 +291,32 @@ function atualizarVisualizacao() {
     `;
   }
 
+  // Info sobre despesas fora do cálculo
+  const infoOcultas = document.getElementById('info-ocultas');
+  if (despesasOcultas.length > 0) {
+    const plural = despesasOcultas.length > 1 ? 's' : '';
+    const diferenca = percentualComOcultas - percentual;
+    infoOcultas.innerHTML = `
+      ${despesasOcultas.length} despesa${plural} fora do cálculo (${formatarMoedaBrasileira(totalOcultas)}).
+      Com ela${plural}, o comprometimento seria <strong>${percentualComOcultas.toFixed(1)}%</strong>
+      (+${diferenca.toFixed(1)} p.p.).
+    `;
+    infoOcultas.removeAttribute('hidden');
+  } else {
+    infoOcultas.setAttribute('hidden', '');
+  }
+
+  atualizarResumoCategorias(despesasNoCalculo, totalDespesas);
   atualizarListaDespesas();
+}
+
+function toggleOcultarDespesa(id) {
+  const dados = obterDados();
+  const despesa = dados.despesas.find(d => d.id === id);
+  if (!despesa) return;
+  despesa.oculta = !despesa.oculta;
+  salvarDados(dados);
+  atualizarVisualizacao();
 }
 
 function atualizarListaDespesas() {
@@ -252,24 +333,71 @@ function atualizarListaDespesas() {
 
   lista.innerHTML = despesasOrdenadas.map((despesa) => {
     const percentualDespesa = dados.salario > 0 ? (despesa.valor / dados.salario) * 100 : 0;
+    const oculta = !!despesa.oculta;
+    const acaoOcultar = oculta ? 'Incluir no cálculo' : 'Tirar do cálculo';
+
+    let vencimentoHtml = '';
+    if (despesa.vencimentoDia) {
+      const dias = diasAteVencimento(despesa.vencimentoDia);
+      let sufixo = '';
+      if (dias === 0) sufixo = ' · hoje';
+      else if (dias === 1) sufixo = ' · amanhã';
+      else if (dias <= 5) sufixo = ` · em ${dias} dias`;
+      const urgente = dias <= 5;
+      vencimentoHtml = `<p class="despesa-vencimento${urgente ? ' urgente' : ''}">${icone('calendario')} Vence dia ${despesa.vencimentoDia}${sufixo}</p>`;
+    }
 
     return `
-      <div class="despesa-item">
+      <div class="despesa-item${oculta ? ' oculta' : ''}">
         <div class="despesa-info">
-          <h3>${escaparTexto(despesa.nome)}</h3>
+          <h3>${escaparTexto(despesa.nome)}${oculta ? ' <span class="despesa-badge-oculta">fora do cálculo</span>' : ''}</h3>
           <p class="despesa-categoria">${obterNomeCategoria(despesa.categoria)}</p>
+          ${vencimentoHtml}
         </div>
         <div class="despesa-valor">
           <div class="despesa-valor-principal">${formatarMoedaBrasileira(despesa.valor)}</div>
           <div class="despesa-percentual">${percentualDespesa.toFixed(1)}% do salário</div>
         </div>
         <div class="despesa-acoes">
-          <button class="btn-editar" onclick="abrirModalDespesaEdicao(${despesa.id})" title="Editar despesa">✎</button>
-          <button class="btn-remover" onclick="removerDespesa(${despesa.id})" title="Remover despesa">×</button>
+          <button class="btn-ocultar${oculta ? ' ativo' : ''}" onclick="toggleOcultarDespesa('${despesa.id}')" title="${acaoOcultar}" aria-label="${acaoOcultar}">${icone(oculta ? 'olho-fechado' : 'olho')}</button>
+          <button class="btn-editar" onclick="abrirModalDespesaEdicao('${despesa.id}')" title="Editar despesa" aria-label="Editar despesa">${icone('lapis')}</button>
+          <button class="btn-remover" onclick="removerDespesa('${despesa.id}')" title="Remover despesa" aria-label="Remover despesa">${icone('lixeira')}</button>
         </div>
       </div>
     `;
   }).join('');
+}
+
+function atualizarResumoCategorias(despesasNoCalculo, totalDespesas) {
+  const container = document.getElementById('resumo-categorias');
+  if (!container) return;
+
+  if (despesasNoCalculo.length === 0) {
+    container.setAttribute('hidden', '');
+    container.innerHTML = '';
+    return;
+  }
+
+  const porCategoria = {};
+  despesasNoCalculo.forEach(d => {
+    porCategoria[d.categoria] = (porCategoria[d.categoria] || 0) + d.valor;
+  });
+
+  const linhas = Object.entries(porCategoria)
+    .sort((a, b) => b[1] - a[1])
+    .map(([categoria, total]) => {
+      const pct = totalDespesas > 0 ? (total / totalDespesas) * 100 : 0;
+      return `
+        <div class="cat-linha">
+          <span class="cat-nome">${obterNomeCategoria(categoria)}</span>
+          <span class="cat-valor">${formatarMoedaBrasileira(total)} <em>(${pct.toFixed(0)}%)</em></span>
+          <div class="cat-barra"><div class="cat-barra-fill" style="width: ${Math.min(pct, 100)}%"></div></div>
+        </div>
+      `;
+    }).join('');
+
+  container.innerHTML = `<h3>Por categoria</h3>${linhas}`;
+  container.removeAttribute('hidden');
 }
 
 function removerDespesa(id) {
@@ -307,6 +435,15 @@ function obterNomeCategoria(categoria) {
 document.addEventListener('click', function(event) {
   const modal = document.getElementById('modal-despesa');
   if (event.target === modal) {
+    fecharModalDespesa();
+  }
+});
+
+// Fechar modal com a tecla Esc
+document.addEventListener('keydown', function(event) {
+  if (event.key !== 'Escape') return;
+  const modal = document.getElementById('modal-despesa');
+  if (modal && !modal.hasAttribute('hidden')) {
     fecharModalDespesa();
   }
 });
