@@ -135,6 +135,22 @@
       text-align: left;
     }
 
+    .tabela-historico th.th-ordenavel {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tabela-historico th.th-ordenavel:hover {
+      color: var(--cor-primaria);
+    }
+
+    .ord-seta {
+      display: inline-block;
+      margin-left: 0.35rem;
+      font-size: 0.8em;
+      color: var(--cor-texto-leve);
+    }
+
     .tabela-historico td {
       padding: 0.75rem;
       border-bottom: 1px solid var(--cor-borda);
@@ -390,10 +406,10 @@
       <table class="tabela-historico">
         <thead>
           <tr>
-            <th>Competência</th>
-            <th>Bruto</th>
-            <th>Descontos</th>
-            <th>Líquido</th>
+            <th class="th-ordenavel" onclick="ordenarHistorico('competencia')">Competência<span class="ord-seta" data-col="competencia"></span></th>
+            <th class="th-ordenavel" onclick="ordenarHistorico('totalBruto')">Bruto<span class="ord-seta" data-col="totalBruto"></span></th>
+            <th class="th-ordenavel" onclick="ordenarHistorico('totalDescontos')">Descontos<span class="ord-seta" data-col="totalDescontos"></span></th>
+            <th class="th-ordenavel" onclick="ordenarHistorico('salarioLiquido')">Líquido<span class="ord-seta" data-col="salarioLiquido"></span></th>
           </tr>
         </thead>
         <tbody id="tabela-historico"></tbody>

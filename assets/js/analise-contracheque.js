@@ -4,6 +4,10 @@ const CHAVE_CONTRACHEQUES = 'contracheques_historico';
 
 let contrachequeAtual = null;
 
+// Ordenação da tabela do Histórico de Contracheques.
+// campo: 'competencia' | 'totalBruto' | 'totalDescontos' | 'salarioLiquido'
+let ordemHistorico = { campo: 'competencia', dir: 'desc' };
+
 // Tabela progressiva mensal do IRRF vigente em 2026
 const TABELA_IRRF_2026 = [
   { ate: 2428.80, aliquota: 0, deduzir: 0 },
@@ -746,12 +750,17 @@ function carregarHistorico() {
 
   const tbody = document.getElementById('tabela-historico');
 
-  // Calcular totais
+  // Calcular totais (independe da ordem)
   const totalBruto = historico.reduce((sum, c) => sum + (c.totalBruto || 0), 0);
   const totalDescontos = historico.reduce((sum, c) => sum + (c.totalDescontos || 0), 0);
   const totalLiquido = historico.reduce((sum, c) => sum + (c.salarioLiquido || 0), 0);
 
-  tbody.innerHTML = historico.map(contrato => `
+  const ordenado = [...historico].sort((a, b) => {
+    const cmp = compararHistorico(a, b, ordemHistorico.campo);
+    return ordemHistorico.dir === 'asc' ? cmp : -cmp;
+  });
+
+  tbody.innerHTML = ordenado.map(contrato => `
     <tr class="linha-historico" style="cursor: pointer;" onclick="verDetalheHistorico('${contrato.competencia}')" title="Clique para ver o detalhamento">
       <td>${contrato.competencia || 'Desconhecida'}</td>
       <td>${formatarMoeda(contrato.totalBruto || 0)}</td>
@@ -767,7 +776,35 @@ function carregarHistorico() {
     </tr>
   `;
 
+  atualizarSetasOrdenacao();
   desenharGraficoEvolucao(historico);
+}
+
+// Comparador base (crescente) para as colunas do histórico.
+function compararHistorico(a, b, campo) {
+  if (campo === 'competencia') {
+    return new Date(a.data || 0) - new Date(b.data || 0);
+  }
+  return (a[campo] || 0) - (b[campo] || 0);
+}
+
+// Clique no cabeçalho: alterna asc/desc na mesma coluna, ou começa em desc numa nova.
+function ordenarHistorico(campo) {
+  if (ordemHistorico.campo === campo) {
+    ordemHistorico.dir = ordemHistorico.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    ordemHistorico.campo = campo;
+    ordemHistorico.dir = 'desc';
+  }
+  carregarHistorico();
+}
+
+function atualizarSetasOrdenacao() {
+  document.querySelectorAll('.tabela-historico .ord-seta').forEach(el => {
+    el.textContent = el.dataset.col === ordemHistorico.campo
+      ? (ordemHistorico.dir === 'asc' ? '▲' : '▼')
+      : '';
+  });
 }
 
 function desenharGraficoEvolucao(historico) {
