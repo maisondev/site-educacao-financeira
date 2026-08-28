@@ -215,6 +215,8 @@ function formatarDataLembrete(data) {
 // Renderizar menu quando o DOM carregar
 document.addEventListener('DOMContentLoaded', function() {
   renderizarMenu();
+  // O menu é montado aqui; (re)liga o hambúrguer e os submenus agora que o .site-nav existe
+  if (typeof initMenu === 'function') initMenu();
   // Atualizar notificações assim que lembretes estiver precarregado
   let tentativas = 0;
   const intervalo = setInterval(function() {

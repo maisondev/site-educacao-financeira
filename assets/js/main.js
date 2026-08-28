@@ -1,31 +1,42 @@
 // Menu responsivo com hambúrguer
 document.addEventListener('DOMContentLoaded', initMenu);
 
+let _menuGlobaisRegistrados = false;
+
 function initMenu() {
   const menuToggle = document.querySelector('.menu-toggle');
   const siteNav = document.querySelector('.site-nav');
 
+  // O menu é montado dinamicamente por menu.js; se ainda não existe,
+  // menu.js chama initMenu() novamente após renderizar.
   if (!menuToggle || !siteNav) return;
 
-  // Toggle menu ao clicar no hambúrguer
-  menuToggle.addEventListener('click', function(e) {
-    e.stopPropagation();
-    toggleMenu();
-  });
+  // Toggle menu ao clicar no hambúrguer (evita bind duplicado)
+  if (!menuToggle.dataset.bound) {
+    menuToggle.dataset.bound = '1';
+    menuToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleMenu();
+    });
+  }
 
-  // Fechar menu ao clicar fora
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.site-header')) {
-      closeMenu();
-    }
-  });
+  if (!_menuGlobaisRegistrados) {
+    _menuGlobaisRegistrados = true;
 
-  // Fechar menu ao redimensionar para desktop
-  window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-      closeMenu();
-    }
-  });
+    // Fechar menu ao clicar fora
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.site-header')) {
+        closeMenu();
+      }
+    });
+
+    // Fechar menu ao redimensionar para desktop
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) {
+        closeMenu();
+      }
+    });
+  }
 
   // Submenu mobile
   const menuItems = siteNav.querySelectorAll('.has-submenu > a');
