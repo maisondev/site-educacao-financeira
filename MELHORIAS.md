@@ -46,7 +46,7 @@ compras_parceladas, hacks_nubank_dados, cursos_lista
 
 ---
 
-### 3. Dashboard com o número que importa: saldo do mês (≈1h30)
+### 3. ✅ Dashboard com o número que importa: saldo do mês (≈1h30) — feito em 2026-08-28
 
 **Problema:** `dashboard.js` só lê metas, envelopes, cartões, despesas fixas, despesas variáveis, reserva e cursos. Ele **ignora receitas, rendas extras, dívidas, investimentos e parcelas de cartão**. Ou seja, a tela inicial não responde à pergunta mais útil: *"sobra ou falta dinheiro este mês?"*
 

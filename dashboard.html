@@ -187,6 +187,98 @@
       gap: var(--espacamento-md);
       flex-wrap: wrap;
     }
+    .secao-saldo-mes {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .secao-saldo-mes h2 {
+      margin-top: 0;
+      text-transform: capitalize;
+    }
+
+    .sm-vazio {
+      color: var(--cor-texto-leve);
+      max-width: 70ch;
+    }
+
+    .sm-extrato {
+      max-width: 560px;
+    }
+
+    .sm-linha {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--espacamento-md);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .sm-linha .sm-valor {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .sm-subtotal {
+      font-weight: 600;
+    }
+
+    .sm-total {
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: none;
+      border-top: 2px solid var(--cor-borda);
+      margin-top: 4px;
+      padding-top: 12px;
+    }
+
+    .sm-positivo .sm-valor {
+      color: var(--cor-sucesso);
+    }
+
+    .sm-negativo .sm-valor {
+      color: var(--cor-erro);
+    }
+
+    .sm-indicadores {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .sm-indicador {
+      flex: 1 1 160px;
+      border: 1px solid var(--cor-borda);
+      border-left-width: 4px;
+      border-radius: 6px;
+      padding: var(--espacamento-md);
+    }
+
+    .sm-indicador-valor {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .sm-indicador-label {
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+    }
+
+    .sm-indicador-bom {
+      border-left-color: var(--cor-sucesso);
+    }
+
+    .sm-indicador-atencao {
+      border-left-color: var(--cor-aviso);
+    }
+
+    .sm-indicador-ruim {
+      border-left-color: var(--cor-erro);
+    }
   </style>
 </head>
 <body>
@@ -207,6 +299,10 @@
     <p style="color: var(--cor-texto-leve); font-size: 16px;">
       Veja um resumo consolidado de todas as suas finanças em um único lugar.
     </p>
+
+    <section id="container-saldo-mes" class="secao-saldo-mes">
+      <!-- Renderizado por saldo-mes.js -->
+    </section>
 
     <div id="dashboard-grid">
       <!-- Preenchido por JavaScript -->
@@ -233,6 +329,7 @@
   <script src="./assets/js/lembretes.js"></script>
   <script src="./assets/js/menu.js"></script>
   <script src="./assets/js/backup.js"></script>
+  <script src="./assets/js/saldo-mes.js"></script>
   <script src="./assets/js/dashboard.js"></script>
 </body>
 </html>
