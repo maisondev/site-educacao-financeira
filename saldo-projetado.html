@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saldo Projetado | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    /* Seletor de mês (renderizado por competencia.js) */
+    .cmp-seletor {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .cmp-label { font-weight: 500; }
+
+    .cmp-select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+      text-transform: capitalize;
+    }
+
+    .cmp-fechado {
+      background: var(--cor-cinza-leve);
+      color: var(--cor-texto-leve);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 13px;
+    }
+
+    /* Extrato do saldo projetado (renderizado por saldo-mes.js) */
+    .secao-saldo-mes {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .secao-saldo-mes h2 {
+      margin-top: 0;
+      text-transform: capitalize;
+    }
+
+    .sm-vazio {
+      color: var(--cor-texto-leve);
+      max-width: 70ch;
+    }
+
+    .sm-extrato {
+      max-width: 560px;
+    }
+
+    .sm-linha {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--espacamento-md);
+      padding: 8px 0;
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .sm-linha .sm-valor {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .sm-subtotal { font-weight: 600; }
+
+    .sm-total {
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: none;
+      border-top: 2px solid var(--cor-borda);
+      margin-top: 4px;
+      padding-top: 12px;
+    }
+
+    .sm-positivo .sm-valor { color: var(--cor-sucesso); }
+    .sm-negativo .sm-valor { color: var(--cor-erro); }
+
+    .sm-indicadores {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+      margin-top: var(--espacamento-lg);
+    }
+
+    .sm-indicador {
+      flex: 1 1 160px;
+      border: 1px solid var(--cor-borda);
+      border-left-width: 4px;
+      border-radius: 6px;
+      padding: var(--espacamento-md);
+    }
+
+    .sm-indicador-valor { font-size: 22px; font-weight: 700; }
+    .sm-indicador-label { color: var(--cor-texto-leve); font-size: 14px; }
+    .sm-indicador-bom { border-left-color: var(--cor-sucesso); }
+    .sm-indicador-atencao { border-left-color: var(--cor-aviso); }
+    .sm-indicador-ruim { border-left-color: var(--cor-erro); }
+
+    /* Ajustes manuais */
+    .sp-form {
+      background: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .sp-form h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .sp-form-linha {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+      align-items: flex-end;
+    }
+
+    .sp-campo {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sp-campo label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--cor-texto-leve);
+    }
+
+    .sp-campo input,
+    .sp-campo select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    .sp-campo-descricao { flex: 1 1 220px; }
+    .sp-campo-descricao input { width: 100%; }
+
+    .sp-mensagem {
+      margin-top: var(--espacamento-md);
+      font-size: 14px;
+    }
+
+    .sp-mensagem-sucesso { color: var(--cor-sucesso); }
+    .sp-mensagem-erro { color: var(--cor-erro); }
+    .sp-mensagem-neutro { color: var(--cor-texto-leve); }
+
+    .sp-lista {
+      display: grid;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .sp-vazio {
+      color: var(--cor-texto-leve);
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .sp-item {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-left-width: 4px;
+      border-radius: 6px;
+      background: var(--cor-fundo);
+    }
+
+    .sp-item.sp-entrada { border-left-color: var(--cor-sucesso); }
+    .sp-item.sp-saida { border-left-color: var(--cor-erro); }
+
+    .sp-item-desc { flex: 1; min-width: 0; }
+
+    .sp-item-valor {
+      font-weight: bold;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .sp-item.sp-entrada .sp-item-valor { color: var(--cor-sucesso); }
+    .sp-item.sp-saida .sp-item-valor { color: var(--cor-erro); }
+
+    .sp-item-acoes {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .sp-mini-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--cor-texto-leve);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .sp-mini-btn:hover { color: var(--cor-primaria); }
+
+    .sp-edicao {
+      flex-wrap: wrap;
+    }
+
+    .sp-edicao input,
+    .sp-edicao select {
+      padding: var(--espacamento-sm);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    .sp-ed-descricao { flex: 1 1 180px; }
+    .sp-ed-valor { width: 120px; }
+
+    @media (max-width: 640px) {
+      .sp-form-linha { flex-direction: column; align-items: stretch; }
+      .sp-campo { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Saldo Projetado</p>
+
+    <h1>Saldo Projetado</h1>
+
+    <p>
+      Veja quanto sobra ou falta em um mês, somando renda, despesas fixas e variáveis,
+      faturas, parcelas e dívidas. Escolha o mês para projetar meses futuros e some
+      <strong>ajustes manuais</strong> — entradas e saídas avulsas que não estão em nenhuma
+      outra tela. Os ajustes também entram no cálculo do Painel.
+    </p>
+
+    <div id="sp-seletor-competencia" class="cmp-seletor"></div>
+
+    <section id="container-saldo-mes" class="secao-saldo-mes">
+      <!-- Renderizado por saldo-mes.js -->
+    </section>
+
+    <section class="sp-form">
+      <h2>Adicionar ajuste manual</h2>
+      <div class="sp-form-linha">
+        <div class="sp-campo">
+          <label for="sp-tipo">Tipo</label>
+          <select id="sp-tipo">
+            <option value="saida">Saída</option>
+            <option value="entrada">Entrada</option>
+          </select>
+        </div>
+        <div class="sp-campo sp-campo-descricao">
+          <label for="sp-descricao">Descrição</label>
+          <input type="text" id="sp-descricao" placeholder="Ex: presente de aniversário" autocomplete="off">
+        </div>
+        <div class="sp-campo">
+          <label for="sp-valor">Valor (R$)</label>
+          <input type="text" id="sp-valor" inputmode="decimal" placeholder="300,00" autocomplete="off">
+        </div>
+        <button type="button" class="btn btn-primary" id="sp-adicionar">Adicionar</button>
+      </div>
+      <div id="sp-mensagem"></div>
+    </section>
+
+    <h2>Ajustes deste mês</h2>
+    <div id="sp-lista" class="sp-lista"></div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/competencia.js"></script>
+  <script src="./assets/js/saldo-mes.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/saldo-projetado.js"></script>
+</body>
+</html>

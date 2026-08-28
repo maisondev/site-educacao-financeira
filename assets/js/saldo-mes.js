@@ -149,6 +149,21 @@ function smReservaAtual() {
   return Number(reserva.valorAtual) || 0;
 }
 
+// Ajustes manuais da página "Saldo projetado": entradas/saídas avulsas por
+// competência que não vêm de nenhuma outra tela. Estrutura no localStorage:
+// { "AAAA-MM": [ { id, tipo: 'entrada' | 'saida', descricao, valor } ] }.
+const SM_AJUSTES_CHAVE = 'saldo_ajustes';
+
+function smLerAjustes() {
+  const dados = Store.ler(SM_AJUSTES_CHAVE, {});
+  return dados && typeof dados === 'object' && !Array.isArray(dados) ? dados : {};
+}
+
+function smAjustesDoMes(competencia) {
+  const lista = smLerAjustes()[competencia];
+  return Array.isArray(lista) ? lista : [];
+}
+
 function calcularSaldoDoMes(competencia = smCompetenciaEmFoco()) {
   const renda = smReceitasDoMes(competencia);
   const rendasExtras = smRendasExtrasDoMes(competencia);
@@ -158,14 +173,24 @@ function calcularSaldoDoMes(competencia = smCompetenciaEmFoco()) {
   const parcelas = smParcelasDoMes(competencia);
   const dividas = smDividasDoMes(competencia);
 
-  const receitas = renda + rendasExtras;
-  const saidas = despesasFixas + despesasVariaveis + faturas + parcelas + dividas;
+  const ajustes = smAjustesDoMes(competencia);
+  const ajustesEntradas = ajustes
+    .filter(a => a.tipo === 'entrada')
+    .reduce((total, a) => total + (Number(a.valor) || 0), 0);
+  const ajustesSaidas = ajustes
+    .filter(a => a.tipo === 'saida')
+    .reduce((total, a) => total + (Number(a.valor) || 0), 0);
+
+  const receitas = renda + rendasExtras + ajustesEntradas;
+  const saidas = despesasFixas + despesasVariaveis + faturas + parcelas + dividas + ajustesSaidas;
   const saldo = receitas - saidas;
 
   return {
     competencia,
     renda,
     rendasExtras,
+    ajustesEntradas,
+    ajustesSaidas,
     receitas,
     despesasFixas,
     despesasVariaveis,
@@ -250,6 +275,7 @@ function renderizarSaldoDoMes() {
     <div class="sm-extrato">
       ${smLinha('Renda do mês', r.renda, '')}
       ${smLinha('Rendas extras', r.rendasExtras, '')}
+      ${smLinha('Entradas avulsas (ajustes)', r.ajustesEntradas, '')}
       <div class="sm-linha sm-subtotal">
         <span class="sm-rotulo">Total de receitas</span>
         <span class="sm-valor">${formatarMoedaBrasileira(r.receitas)}</span>
@@ -259,6 +285,7 @@ function renderizarSaldoDoMes() {
       ${smLinha('Faturas de cartão que vencem no mês', r.faturas, '− ')}
       ${smLinha('Parcelas de compras parceladas', r.parcelas, '− ')}
       ${smLinha('Dívidas com vencimento no mês', r.dividas, '− ')}
+      ${smLinha('Saídas avulsas (ajustes)', r.ajustesSaidas, '− ')}
       <div class="sm-linha sm-subtotal">
         <span class="sm-rotulo">Total de saídas</span>
         <span class="sm-valor">${formatarMoedaBrasileira(r.saidas)}</span>
