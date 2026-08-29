@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificação | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .verif-resumo {
+      font-size: 18px;
+      font-weight: 700;
+      padding: var(--espacamento-md);
+      border-radius: 6px;
+      margin: var(--espacamento-lg) 0;
+    }
+    .verif-resumo.tudo-ok { background: #f0f9f0; border-left: 4px solid var(--cor-verde); }
+    .verif-resumo.tem-falha { background: #fff3f3; border-left: 4px solid var(--cor-vermelho); }
+
+    .verif-lista { list-style: none; padding: 0; margin: 0; }
+    .verif-lista li {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+      font-size: 14px;
+      display: flex;
+      gap: var(--espacamento-sm);
+    }
+    .verif-lista li .marca { font-weight: 700; flex-shrink: 0; }
+    .verif-lista li.ok .marca { color: var(--cor-verde); }
+    .verif-lista li.fail .marca { color: var(--cor-vermelho); }
+    .verif-lista li.fail { background: #fff3f3; }
+    .verif-erro { display: block; color: var(--cor-vermelho); font-size: 13px; margin-top: 2px; }
+    .verif-nota { color: var(--cor-texto-leve); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Verificação</p>
+    <h1>Verificação</h1>
+    <p class="verif-nota">
+      Testes de fumaça que rodam no seu navegador, sobre os seus próprios dados. Servem para
+      pegar em silêncio uma regressão de armazenamento ou de cálculo. O teste de <em>fixture</em>
+      do saldo mexe temporariamente em algumas chaves e as restaura ao final.
+    </p>
+
+    <button type="button" class="btn btn-primary" id="btn-rodar">Rodar testes de novo</button>
+
+    <div id="verif-resumo" class="verif-resumo" hidden></div>
+    <ul id="verif-lista" class="verif-lista"></ul>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/cadastros-dados.js"></script>
+  <script src="./assets/js/competencia.js"></script>
+  <script src="./assets/js/saldo-mes.js"></script>
+  <script>
+    const testes = [];
+    function teste(nome, fn) { testes.push({ nome, fn }); }
+
+    function assert(cond, msg) {
+      if (!cond) throw new Error(msg || 'condição falsa');
+    }
+    function assertEq(obtido, esperado, msg) {
+      const a = JSON.stringify(obtido);
+      const b = JSON.stringify(esperado);
+      if (a !== b) throw new Error(`${msg || 'valores diferentes'} — esperado ${b}, obtido ${a}`);
+    }
+
+    function snapshot(chaves) {
+      const s = {};
+      chaves.forEach(k => { s[k] = localStorage.getItem(k); });
+      return s;
+    }
+    function restaurar(s) {
+      Object.keys(s).forEach(k => {
+        if (s[k] === null) localStorage.removeItem(k);
+        else localStorage.setItem(k, s[k]);
+      });
+    }
+
+    // --- Testes -------------------------------------------------------------
+
+    teste('Store.CHAVES: valores são strings únicas', () => {
+      const vals = Object.values(Store.CHAVES);
+      vals.forEach(v => assert(typeof v === 'string' && v.length > 0, 'chave não-string: ' + v));
+      assert(new Set(vals).size === vals.length, 'há chaves duplicadas no catálogo');
+    });
+
+    teste('Store.ler não quebra em nenhuma chave do catálogo', () => {
+      Object.values(Store.CHAVES).forEach(k => {
+        Store.ler(k, null); // não pode lançar
+      });
+    });
+
+    teste('Store: round-trip preserva objeto aninhado', () => {
+      const chave = '__verif_roundtrip__';
+      const valor = { a: 1, b: [2, 3], c: { d: 'x', e: null } };
+      try {
+        assert(Store.gravar(chave, valor), 'gravar retornou false');
+        assertEq(Store.ler(chave, null), valor, 'objeto lido difere do gravado');
+        Store.remover(chave);
+        assertEq(Store.ler(chave, 'PADRAO'), 'PADRAO', 'chave não foi removida');
+      } finally {
+        localStorage.removeItem(chave);
+      }
+    });
+
+    teste('Store.ler devolve o padrão quando o JSON está corrompido', () => {
+      const chave = '__verif_corrompido__';
+      try {
+        localStorage.setItem(chave, '{isto não é json');
+        assertEq(Store.ler(chave, { ok: true }), { ok: true }, 'não caiu no padrão');
+      } finally {
+        localStorage.removeItem(chave);
+      }
+    });
+
+    teste('migrarCompetencias é idempotente (2ª passada não muda nada)', () => {
+      if (typeof migrarCompetencias !== 'function') throw new Error('migrarCompetencias indisponível');
+      const chaves = ['despesas_variaveis', 'receitas_lista', 'rendas_extras',
+        'envelopes_financeiros', 'reserva_emergencia'];
+      migrarCompetencias();
+      const antes = chaves.map(k => localStorage.getItem(k));
+      const ajustes = migrarCompetencias();
+      const depois = chaves.map(k => localStorage.getItem(k));
+      assertEq(ajustes, 0, '2ª passada ainda carimbou competência');
+      assertEq(depois, antes, '2ª passada alterou os dados');
+    });
+
+    teste('consts CHAVE_* dos módulos batem com o catálogo', () => {
+      if (typeof CHAVE_COMPETENCIA_SELECIONADA !== 'undefined') {
+        assertEq(CHAVE_COMPETENCIA_SELECIONADA, Store.CHAVES.COMPETENCIA_SELECIONADA, 'competência selecionada');
+      }
+      if (typeof CHAVE_HISTORICO_MENSAL !== 'undefined') {
+        assertEq(CHAVE_HISTORICO_MENSAL, Store.CHAVES.HISTORICO_MENSAL, 'histórico mensal');
+      }
+      if (typeof CAD_CHAVE !== 'undefined') {
+        assertEq(CAD_CHAVE, Store.CHAVES.CADASTROS, 'cadastros gerais');
+      }
+    });
+
+    teste('calcularSaldoDoMes bate com a soma manual (fixture isolado)', () => {
+      if (typeof calcularSaldoDoMes !== 'function') throw new Error('calcularSaldoDoMes indisponível');
+      const comp = '2099-12';
+      const chaves = [
+        Store.CHAVES.RECEITAS, Store.CHAVES.RENDA, Store.CHAVES.RENDA_POR_COMPETENCIA,
+        Store.CHAVES.RENDAS_EXTRAS, Store.CHAVES.DESPESAS_FIXAS, Store.CHAVES.DESPESAS_VARIAVEIS,
+        Store.CHAVES.CARTOES, Store.CHAVES.COMPRAS_PARCELADAS, Store.CHAVES.DIVIDAS, 'saldo_ajustes'
+      ];
+      const snap = snapshot(chaves);
+      try {
+        Store.gravar(Store.CHAVES.RECEITAS, [{ id: 1, valor: 5000, competencia: comp, data: comp + '-05' }]);
+        Store.gravar(Store.CHAVES.RENDAS_EXTRAS, []);
+        Store.gravar(Store.CHAVES.RENDA_POR_COMPETENCIA, {});
+        localStorage.setItem(Store.CHAVES.RENDA, '0');
+        Store.gravar(Store.CHAVES.DESPESAS_FIXAS, { salario: 0, despesas: [{ id: 'a', nome: 'Aluguel', valor: 1200 }] });
+        Store.gravar(Store.CHAVES.DESPESAS_VARIAVEIS, [{ id: 2, valor: 300, competencia: comp, data: comp + '-10', categoria: 'alimentacao' }]);
+        Store.gravar(Store.CHAVES.CARTOES, []);
+        Store.gravar(Store.CHAVES.COMPRAS_PARCELADAS, []);
+        Store.gravar(Store.CHAVES.DIVIDAS, { dividas: [] });
+        localStorage.setItem('saldo_ajustes', JSON.stringify({ [comp]: [{ id: 1, tipo: 'saida', descricao: 'teste', valor: 100 }] }));
+
+        const r = calcularSaldoDoMes(comp);
+        assertEq(r.receitas, 5000, 'receitas');
+        assertEq(r.despesasFixas, 1200, 'despesas fixas');
+        assertEq(r.despesasVariaveis, 300, 'despesas variáveis');
+        assertEq(r.faturas, 0, 'faturas');
+        assertEq(r.parcelas, 0, 'parcelas');
+        assertEq(r.dividas, 0, 'dívidas');
+        assertEq(r.saidas, 1600, 'saídas (1200 + 300 + 100)');
+        assertEq(Math.round(r.saldo), 3400, 'saldo (5000 − 1600)');
+      } finally {
+        restaurar(snap);
+      }
+    });
+
+    teste('formatação BRL: ida e volta preserva o valor', () => {
+      if (typeof formatarMoedaBrasileira !== 'function' || typeof parseValorBrasileiro !== 'function') {
+        throw new Error('funções de formatacao.js indisponíveis');
+      }
+      const v = parseValorBrasileiro(formatarMoedaBrasileira(1234.56));
+      assert(Math.abs(v - 1234.56) < 0.01, 'esperado ~1234,56 e obtido ' + v);
+    });
+
+    // --- Runner ----------------------------------------------------------
+
+    function rodar() {
+      const lista = document.getElementById('verif-lista');
+      const resumo = document.getElementById('verif-resumo');
+      lista.innerHTML = '';
+      let passaram = 0;
+
+      testes.forEach(({ nome, fn }) => {
+        const li = document.createElement('li');
+        let erro = null;
+        try {
+          fn();
+          passaram++;
+        } catch (e) {
+          erro = e && e.message ? e.message : String(e);
+        }
+        li.className = erro ? 'fail' : 'ok';
+        li.innerHTML = `<span class="marca">${erro ? '✗' : '✓'}</span><span>${nome}${erro ? `<span class="verif-erro">${erro.replace(/</g, '&lt;')}</span>` : ''}</span>`;
+        lista.appendChild(li);
+      });
+
+      const total = testes.length;
+      resumo.hidden = false;
+      resumo.className = 'verif-resumo ' + (passaram === total ? 'tudo-ok' : 'tem-falha');
+      resumo.textContent = passaram === total
+        ? `Tudo certo — ${passaram} de ${total} testes passaram.`
+        : `${total - passaram} de ${total} testes falharam.`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      renderizarMenu();
+      rodar();
+      document.getElementById('btn-rodar').addEventListener('click', rodar);
+    });
+  </script>
+</body>
+</html>

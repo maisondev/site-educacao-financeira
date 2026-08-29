@@ -66,7 +66,8 @@ const MENU_ITEMS = [
       { label: 'Links Úteis', href: './links-uteis.html' },
       { label: 'Meus Cursos', href: './cursos.html' },
       { label: 'Cadastros Gerais', href: './cadastros.html' },
-      { label: 'Registrato (BCB)', href: './registrato.html' }
+      { label: 'Registrato (BCB)', href: './registrato.html' },
+      { label: 'Verificação (testes)', href: './verificacao.html' }
     ]
   },
   {

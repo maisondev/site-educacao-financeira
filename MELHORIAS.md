@@ -255,9 +255,15 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 > **Resta:** só o `index.html` tem as tags no HTML; as demais dependem da injeção via `main.js`
 > (suficiente para o Chrome, mas convém colar no `TEMPLATE_PAGINA.html` nas próximas edições).
 
-#### N11. Página de verificação / testes de fumaça sem framework (≈2h)
+#### N11. Página de verificação / testes de fumaça sem framework (≈2h) — ✅ FEITO 2026-08-29
 
-`verificacao.html` que carrega todos os módulos e roda *asserts* no navegador (verde/vermelho): migrações idempotentes (rodar 2× não muda nada), `calcularSaldoDoMes` bate com a soma manual de um *fixture*, todas as `Store.CHAVES` legíveis, nenhum `const CHAVE_*` divergente do catálogo. Com 46 scripts, cada refactor de storage hoje arrisca quebrar algo em silêncio.
+> `verificacao.html`: mini-runner inline (`teste()` / `assert` / `assertEq`) que roda no
+> `DOMContentLoaded` e mostra verde/vermelho + resumo. Cobre: catálogo `Store.CHAVES` (strings
+> únicas, todas legíveis sem lançar), round-trip de objeto aninhado, `Store.ler` caindo no padrão
+> com JSON corrompido, `migrarCompetencias` idempotente (2ª passada retorna 0 e não muda os dados),
+> `CHAVE_COMPETENCIA_SELECIONADA`/`CHAVE_HISTORICO_MENSAL`/`CAD_CHAVE` batendo com o catálogo,
+> `calcularSaldoDoMes` contra um fixture isolado em `2099-12` (snapshot/restauração das chaves no
+> `finally`), e round-trip de formatação BRL. No menu (Referência) e na home.
 
 #### N12. Resumo do mês para impressão / PDF (≈1h)
 
