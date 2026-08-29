@@ -13,7 +13,17 @@ function atualizarDataRelatorio() {
   const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-  document.getElementById('mes-ano').textContent = `Relatório de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`;
+  // O relatório é do mês em foco no seletor de competência, não do mês do calendário.
+  const comp = typeof competenciaSelecionada === 'function' ? competenciaSelecionada() : null;
+  let rotulo;
+  if (comp && /^\d{4}-\d{2}$/.test(comp)) {
+    const [ano, mes] = comp.split('-').map(Number);
+    rotulo = `Relatório de ${meses[mes - 1]} de ${ano}`;
+  } else {
+    rotulo = `Relatório de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`;
+  }
+
+  document.getElementById('mes-ano').textContent = rotulo;
   document.getElementById('data-geracao').textContent = hoje.toLocaleDateString('pt-BR');
 }
 

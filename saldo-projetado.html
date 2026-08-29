@@ -259,6 +259,38 @@
       .sp-form-linha { flex-direction: column; align-items: stretch; }
       .sp-campo { width: 100%; }
     }
+
+    .sp-acoes-print {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: var(--espacamento-md);
+    }
+
+    @page { margin: 1.5cm; }
+
+    @media print {
+      .site-header,
+      .site-footer,
+      .breadcrumb,
+      .sp-acoes-print,
+      #sp-seletor-competencia,
+      .sp-form,
+      .proximos-passos,
+      .notificacoes-container,
+      .data-container { display: none !important; }
+
+      body { background: #fff; color: #000; }
+      main { max-width: none; margin: 0; padding: 0; }
+      h1 { font-size: 18pt; margin-bottom: 4pt; }
+
+      .secao-saldo-mes,
+      .sm-pode-gastar,
+      .sm-indicadores,
+      .sp-lista { break-inside: avoid; }
+
+      .sm-pode-gastar { background: #fff !important; border: 1px solid #999; }
+      a[href]::after { content: ""; }
+    }
   </style>
 </head>
 <body>
@@ -287,6 +319,10 @@
     </p>
 
     <div id="sp-seletor-competencia" class="cmp-seletor"></div>
+
+    <div class="sp-acoes-print">
+      <button type="button" class="btn btn-secondary" onclick="window.print()">Imprimir resumo do mês</button>
+    </div>
 
     <section id="container-saldo-mes" class="secao-saldo-mes">
       <!-- Renderizado por saldo-mes.js -->

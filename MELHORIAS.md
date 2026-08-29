@@ -265,9 +265,15 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 > `calcularSaldoDoMes` contra um fixture isolado em `2099-12` (snapshot/restauração das chaves no
 > `finally`), e round-trip de formatação BRL. No menu (Referência) e na home.
 
-#### N12. Resumo do mês para impressão / PDF (≈1h)
+#### N12. Resumo do mês para impressão / PDF (≈1h) — ✅ FEITO 2026-08-29
 
-`@media print` decente em `relatorios.html` e `saldo-projetado.html` + botão "Imprimir resumo do mês". Fecha o ciclo mensal — guardar o PDF na pasta do mês no Drive, como já é a rotina das faturas.
+> `saldo-projetado.html`: botão **"Imprimir resumo do mês"** + `@media print` (esconde header/
+> footer/seletor/formulário/widgets, mantém o extrato, o "quanto posso gastar" e a lista de
+> ajustes; `@page` 1,5 cm). `relatorios.html`: `@media print` reescrito — antes escondia o
+> `.periodo-relatorio` inteiro (o PDF saía sem o título do mês); agora mantém `.periodo-info`
+> (mês + data de geração), esconde só os botões/seletor/nav/rodapé, tipografia em pt, seções e
+> gráficos com `break-inside: avoid`. `relatorios.js`: o título "Relatório de <mês>" passou a
+> seguir a competência do seletor, não o mês do calendário.
 
 #### N13. Limpeza de repo (≈15min)
 

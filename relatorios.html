@@ -214,26 +214,45 @@
       font-style: italic;
     }
 
+    @page { margin: 1.5cm; }
+
     @media print {
-      .periodo-relatorio,
+      .site-header,
+      .site-footer,
+      .breadcrumb,
       .botoes-relatorio,
-      .proximos-passos {
-        display: none;
+      #container-competencia,
+      .proximos-passos,
+      .notificacoes-container,
+      .data-container {
+        display: none !important;
       }
 
-      body {
-        background: white;
-      }
+      body { background: #fff; color: #000; font-size: 11pt; }
+      main { max-width: none; margin: 0; padding: 0; }
+
+      h1 { font-size: 18pt; margin: 0 0 2pt; }
+      .periodo-relatorio { display: block; margin-bottom: 10pt; }
+      .periodo-info h2 { font-size: 13pt; margin: 0; }
+      .periodo-info p { margin: 2pt 0 0; color: #333; }
 
       .secoes-relatorio {
         grid-template-columns: 1fr;
+        gap: 10pt;
       }
 
+      .resumo-geral,
       .secao-relatorio,
-      .resumo-geral {
+      #secao-gasto-categoria .secao-relatorio,
+      #container-graficos > * {
         page-break-inside: avoid;
         break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #999;
       }
+
+      #container-graficos svg { max-width: 100%; height: auto; }
+      a[href]::after { content: ""; }
     }
 
     @media (max-width: 640px) {
