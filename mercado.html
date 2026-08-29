@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mercado | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .cmp-seletor {
+      display: flex;
+      align-items: center;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .cmp-label { font-weight: 500; }
+
+    .cmp-select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      font-size: 16px;
+      font-family: inherit;
+      text-transform: capitalize;
+    }
+
+    .configurar-bloco {
+      background-color: var(--cor-cinza-leve);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .configurar-bloco h2 { margin-top: 0; font-size: 18px; }
+
+    .input-grupo {
+      display: flex;
+      gap: var(--espacamento-md);
+    }
+
+    .input-grupo input {
+      flex: 1;
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .input-grupo button {
+      padding: var(--espacamento-sm) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .input-grupo button:hover { background-color: var(--cor-primaria-hover); }
+
+    .resumo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .card-info {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      text-align: center;
+    }
+
+    .card-info p { margin: 0 0 var(--espacamento-sm) 0; color: var(--cor-texto-leve); font-size: 14px; }
+    .card-info .valor { font-size: 26px; font-weight: bold; color: var(--cor-primaria); margin: 0; }
+    .card-info.sucesso .valor { color: var(--cor-verde); }
+    .card-info.alerta .valor { color: var(--cor-amarelo); }
+    .card-info.erro .valor { color: #c53030; }
+
+    .barra-progresso {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 8px;
+      height: 22px;
+      overflow: hidden;
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .barra-progresso-fill {
+      background-color: var(--cor-primaria);
+      height: 100%;
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .barra-progresso-fill.alerta { background-color: var(--cor-amarelo); }
+    .barra-progresso-fill.erro { background-color: #c53030; }
+
+    .info-linha {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .btn-adicionar {
+      padding: var(--espacamento-md) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .btn-adicionar:hover { background-color: var(--cor-primaria-hover); }
+
+    .lista-compras { display: grid; gap: var(--espacamento-md); }
+
+    .compra-item {
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-left: 4px solid var(--cor-primaria);
+      border-radius: 8px;
+      padding: var(--espacamento-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--espacamento-md);
+    }
+
+    .compra-info h4 { margin: 0 0 4px 0; font-size: 16px; }
+    .compra-data { margin: 0; font-size: 13px; color: var(--cor-texto-leve); }
+    .compra-cats { margin: 6px 0 0 0; font-size: 13px; color: var(--cor-texto); }
+    .compra-obs { margin: 4px 0 0 0; font-size: 13px; color: var(--cor-texto-leve); font-style: italic; }
+
+    .compra-acoes { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+    .compra-valor { font-size: 18px; font-weight: bold; color: var(--cor-primaria); }
+
+    .btn-editar {
+      background: none;
+      border: 1px solid var(--cor-borda);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .btn-editar:hover { background-color: #f0e6ff; }
+
+    .btn-remover {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--cor-texto-leve);
+      padding: 0;
+      width: 28px;
+      height: 28px;
+    }
+
+    .btn-remover:hover { color: #c53030; }
+
+    .lista-vazia {
+      text-align: center;
+      padding: var(--espacamento-xl);
+      color: var(--cor-texto-leve);
+      background-color: var(--cor-cinza-leve);
+      border-radius: 4px;
+    }
+
+    .lista-vazia p { margin: 0; }
+
+    /* Categorias */
+    .cat-linha { margin-bottom: var(--espacamento-md); }
+    .cat-topo { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+    .cat-nome { font-weight: 500; }
+    .cat-valor { font-weight: bold; color: var(--cor-primaria); }
+    .cat-pct { color: var(--cor-texto-leve); font-weight: normal; font-size: 13px; }
+
+    .cat-barra {
+      background-color: var(--cor-cinza-leve);
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .cat-barra-fill { background-color: var(--cor-azul); height: 100%; }
+
+    .cat-comp { display: inline-block; margin-top: 4px; font-size: 12px; }
+    .cat-comp.sobe { color: #c53030; }
+    .cat-comp.desce { color: var(--cor-verde); }
+
+    /* Histórico */
+    .historico-meses {
+      display: flex;
+      align-items: flex-end;
+      gap: var(--espacamento-md);
+      min-height: 160px;
+      padding-top: var(--espacamento-md);
+      overflow-x: auto;
+    }
+
+    .hist-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; min-width: 60px; }
+    .hist-valor { font-size: 12px; color: var(--cor-texto-leve); }
+    .hist-barra { width: 32px; height: 110px; background-color: var(--cor-cinza-leve); border-radius: 4px; display: flex; align-items: flex-end; overflow: hidden; }
+    .hist-barra-fill { width: 100%; background-color: var(--cor-primaria); }
+    .hist-barra-fill.erro { background-color: #c53030; }
+    .hist-mes { font-size: 12px; font-weight: 500; }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: var(--espacamento-lg);
+    }
+
+    .modal[hidden] { display: none; }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--espacamento-lg);
+      border-bottom: 1px solid var(--cor-borda);
+    }
+
+    .modal-header h2 { margin: 0; font-size: 20px; }
+
+    .btn-fechar {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .modal-body { padding: var(--espacamento-lg); }
+
+    .form-group { margin-bottom: var(--espacamento-md); display: flex; flex-direction: column; }
+    .form-group label { font-weight: 500; margin-bottom: var(--espacamento-sm); }
+
+    .form-group input,
+    .form-group select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 16px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .item-linha {
+      display: grid;
+      grid-template-columns: 1fr 110px 32px;
+      gap: var(--espacamento-sm);
+      margin-bottom: var(--espacamento-sm);
+    }
+
+    .item-linha select,
+    .item-linha input {
+      padding: var(--espacamento-sm);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 15px;
+      font-family: var(--fonte-sistema);
+    }
+
+    .btn-remover-item {
+      background: none;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--cor-texto-leve);
+    }
+
+    .btn-add-item {
+      background: none;
+      border: 1px dashed var(--cor-borda);
+      border-radius: 4px;
+      padding: 8px;
+      width: 100%;
+      cursor: pointer;
+      color: var(--cor-azul);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: var(--espacamento-md);
+      padding: var(--espacamento-lg);
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .modal-footer button {
+      flex: 1;
+      padding: var(--espacamento-md);
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-salvar { background-color: var(--cor-primaria); color: white; }
+    .btn-salvar:hover { background-color: var(--cor-primaria-hover); }
+    .btn-cancelar { background-color: var(--cor-cinza-leve); color: var(--cor-texto); border: 1px solid var(--cor-borda); }
+    .btn-cancelar:hover { background-color: #e8e8e8; }
+
+    .dicas-mercado h3 { margin-top: var(--espacamento-xl); font-size: 17px; }
+    .dicas-mercado ul { padding-left: var(--espacamento-xl); }
+    .dicas-mercado li { margin-bottom: var(--espacamento-sm); }
+
+    /* Lista de compras (antes de ir ao mercado) */
+    .lista-mkt-grupo { margin-bottom: var(--espacamento-md); }
+    .lista-mkt-grupo h4 {
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--cor-texto-leve);
+    }
+
+    .lista-mkt-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background-color: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .lista-mkt-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; }
+    .lista-mkt-item label { flex: 1; cursor: pointer; }
+    .lista-mkt-item.comprado label { text-decoration: line-through; color: var(--cor-texto-leve); }
+
+    .lista-mkt-resumo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--espacamento-md);
+      font-size: 14px;
+      color: var(--cor-texto-leve);
+      margin: var(--espacamento-md) 0;
+    }
+
+    .lista-mkt-resumo button {
+      background: none;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--cor-primaria);
+    }
+
+    .lista-mkt-resumo button:hover { background-color: #f0e6ff; }
+
+    @media (max-width: 640px) {
+      .resumo-grid { grid-template-columns: 1fr; }
+      .input-grupo { flex-direction: column; }
+      .compra-item { flex-direction: column; }
+      .dicas-mercado table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Mercado</p>
+
+    <h1>Área do Mercado</h1>
+
+    <p>
+      O supermercado costuma ser a maior <a class="link-glossario" href="./glossario.html#termo-despesa-variavel">despesa variável</a>
+      da casa — e uma das poucas em que dá pra cortar 15% a 30% só mudando hábitos, sem passar aperto.
+      Registre cada nota (aproveitando o CPF que você já pede no caixa), acompanhe para onde o dinheiro
+      vai <strong>por categoria</strong> e use as dicas no fim da página para gastar melhor.
+    </p>
+
+    <div class="maxima">
+      <p>
+        <strong>O que não é medido não é gerenciado.</strong> Quem não sabe quanto gasta de carne, de
+        limpeza ou de "besteira" no mês não tem onde cortar. A categoria mostra o alvo; o teto mensal
+        mantém o rumo.
+      </p>
+    </div>
+
+    <div id="container-competencia" class="cmp-seletor"><!-- seletor de mês --></div>
+
+    <section class="configurar-bloco">
+      <h2>Teto mensal do mercado</h2>
+      <div class="input-grupo">
+        <input type="text" id="input-teto" data-moeda placeholder="Ex: 1.200,00">
+        <button onclick="definirTetoMercado()">Definir teto</button>
+      </div>
+      <small id="hint-teto" style="color: var(--cor-texto-leve); margin-top: 6px; display: block;">
+        Defina quanto pretende gastar de mercado por mês. Serve de referência, não de trava.
+      </small>
+    </section>
+
+    <section>
+      <div class="resumo-grid">
+        <div class="card-info">
+          <p>Teto do mês</p>
+          <p class="valor" id="valor-teto">—</p>
+        </div>
+        <div class="card-info">
+          <p>Gasto no mês</p>
+          <p class="valor" id="valor-gasto">R$ 0,00</p>
+        </div>
+        <div class="card-info" id="card-saldo">
+          <p id="label-saldo">Disponível</p>
+          <p class="valor" id="valor-saldo">—</p>
+        </div>
+      </div>
+
+      <div class="barra-progresso">
+        <div class="barra-progresso-fill" id="barra-fill" style="width: 0%"><span id="texto-barra"></span></div>
+      </div>
+      <div class="info-linha">
+        <span>Consumo do teto: <strong id="percentual-progresso">—</strong></span>
+        <span id="info-media"></span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Lista de compras</h2>
+      <p style="color: var(--cor-texto-leve); font-size: 14px;">
+        Monte a lista antes de ir ao mercado e vá marcando cada item ao colocar no carrinho.
+        Fica salva no navegador e não some ao trocar de mês.
+      </p>
+      <div class="input-grupo">
+        <input type="text" id="input-item-lista" placeholder="Ex: Café, Detergente, Banana">
+        <select id="select-item-cat" class="cmp-select"></select>
+        <button onclick="adicionarItemLista()">Adicionar</button>
+      </div>
+      <div id="lista-mercado-itens"></div>
+    </section>
+
+    <section>
+      <h2>Compras do mês</h2>
+      <button class="btn-adicionar" onclick="abrirModalCompra()">Registrar compra</button>
+      <div id="lista-compras" class="lista-compras"></div>
+    </section>
+
+    <section style="margin-top: var(--espacamento-xl);">
+      <h2>Gastos por categoria</h2>
+      <p style="color: var(--cor-texto-leve); font-size: 14px;">
+        Onde o dinheiro do mercado foi neste mês. O comparativo usa a média dos até 3 meses anteriores.
+      </p>
+      <div id="lista-categorias"></div>
+    </section>
+
+    <section style="margin-top: var(--espacamento-xl);">
+      <h2>Histórico mensal</h2>
+      <div id="historico-meses" class="historico-meses"></div>
+    </section>
+
+    <section class="dicas-mercado" style="margin-top: var(--espacamento-xl);">
+      <h2>Como diminuir a conta do mercado (sem passar aperto)</h2>
+
+      <h3>Antes de sair de casa</h3>
+      <ul>
+        <li><strong>Monte o cardápio da semana</strong> e compre só o que ele exige. Sem cardápio, você compra por impulso e joga comida fora.</li>
+        <li><strong>Faça a lista e leve ela</strong> — no papel ou no celular. Estudos de varejo mostram que quem vai com lista gasta bem menos.</li>
+        <li><strong>Confira o que já tem</strong> na despensa, geladeira e freezer antes de listar. Comida esquecida no fundo do armário é dinheiro no lixo.</li>
+        <li><strong>Nunca vá com fome.</strong> Fome no corredor do mercado vira carrinho cheio de supérfluo.</li>
+        <li><strong>Estabeleça um valor-alvo</strong> para a compra e acompanhe no app enquanto anda pelos corredores.</li>
+      </ul>
+
+      <h3>Dentro do mercado</h3>
+      <ul>
+        <li><strong>Compare por preço/kg ou preço/litro</strong>, não pelo preço da embalagem. A etiqueta traz esse número — use.</li>
+        <li><strong>Marca própria do supermercado</strong> costuma custar 20% a 40% menos com qualidade parecida em arroz, feijão, leite, limpeza e higiene.</li>
+        <li><strong>Olhe as prateleiras de baixo e de cima.</strong> As de altura dos olhos ficam com os produtos mais caros.</li>
+        <li><strong>Cuidado com "leve 3 pague 2"</strong> de coisas que você não ia comprar. Promoção só economiza no que já está na lista.</li>
+        <li><strong>Hortifrúti da estação</strong> é mais barato e mais gostoso. Fora de época, o preço dobra.</li>
+        <li><strong>Evite produtos ultraprocessados e porcionados</strong> (queijo ralado, salada lavada, frango temperado): você paga caro pela mão de obra.</li>
+      </ul>
+
+      <h3>Estratégia do mês</h3>
+      <ul>
+        <li><strong>Compra grande mensal + reposições pequenas</strong> de hortifrúti e pães. Ir ao mercado "toda hora" multiplica os impulsos.</li>
+        <li><strong>Divida por tipo de loja:</strong> atacarejo para não perecíveis e limpeza, feira/hortifrúti para frutas e verduras, mercado de bairro só para emergência.</li>
+        <li><strong>Congele.</strong> Carne em promoção, pão, e até frutas maduras. Reduz desperdício e trava o preço.</li>
+        <li><strong>Acompanhe a categoria que mais subiu</strong> aqui no app e ataque essa primeiro — normalmente é carne, bebida ou "besteira".</li>
+        <li><strong>Programa Nota Fiscal do seu estado</strong> (ex.: Nota Fiscal Paulista): pedindo o CPF você já acumula um pequeno retorno. Veja também <a href="./hacks-nubank.html">outros hacks</a>.</li>
+      </ul>
+
+      <div class="maxima">
+        <p>Não é sobre comprar o mais barato de tudo — é sobre não comprar o que você não vai usar. Desperdício é o gasto invisível do mercado.</p>
+      </div>
+    </section>
+
+    <section class="proximos-passos">
+      <h2>Próximos passos</h2>
+      <ul>
+        <li>Defina o teto mensal e registre as compras deste mês por categoria</li>
+        <li>Depois de 2 ou 3 meses, veja qual categoria mais pesa e foque nela</li>
+        <li>Leve o valor total para <a href="./despesas-variaveis.html">Despesas Variáveis</a> ou para o envelope de essenciais em <a href="./envelopes.html">Envelopes</a></li>
+        <li><a href="./temas/orcamento-pessoal/metodo-50-30-20.html">Entenda quanto o mercado deveria pesar no seu orçamento</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- Modal registrar/editar compra -->
+  <div id="modal-compra" class="modal" hidden>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-compra-titulo">Registrar compra</h2>
+        <button class="btn-fechar" onclick="fecharModalCompra()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-compra-data">Data *</label>
+          <input type="date" id="input-compra-data">
+        </div>
+        <div class="form-group">
+          <label for="input-compra-estabelecimento">Estabelecimento</label>
+          <input type="text" id="input-compra-estabelecimento" list="opcoes-mercados" placeholder="Ex: Atacadão, Feira, Mercado do bairro">
+          <datalist id="opcoes-mercados">
+            <option value="Atacado"></option>
+            <option value="Supermercado"></option>
+            <option value="Feira"></option>
+            <option value="Hortifrúti"></option>
+            <option value="Mercado do bairro"></option>
+            <option value="Açougue"></option>
+          </datalist>
+        </div>
+        <div class="form-group">
+          <label>Valores por categoria *</label>
+          <div id="itens-compra"></div>
+          <button type="button" class="btn-add-item" onclick="adicionarLinhaItem()">+ adicionar categoria</button>
+        </div>
+        <div class="form-group">
+          <label for="input-compra-obs">Observação (opcional)</label>
+          <input type="text" id="input-compra-obs" placeholder="Ex: compra grande do mês">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-salvar" id="btn-salvar-compra" onclick="salvarCompraMercado()">Registrar</button>
+        <button class="btn-cancelar" onclick="fecharModalCompra()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/competencia.js"></script>
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/mercado.js"></script>
+  <script src="./assets/js/menu.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      configurarTodosCamposMoeda();
+    });
+  </script>
+</body>
+</html>
