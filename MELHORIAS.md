@@ -58,7 +58,7 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 | 7 | Fluxo de caixa futuro completo | ✅ **feito (2026-08-29)** — projeção de 12 meses somando faturas, dívidas e receitas via `calcularSaldoDoMes` (N7) |
 | 8 | Central de alertas | ✅ feito |
 | 9 | Lançamento rápido | ✅ feito |
-| 10 | PWA + uso no celular | ✗ pendente → ver **N10** |
+| 10 | PWA + uso no celular | ✅ **feito (2026-08-29)** — manifest + service worker + ícone (N10) |
 | 11 | Gráficos nos relatórios | ✅ feito |
 | 12 | Simulador de quitação de dívidas | ✅ feito |
 
@@ -243,9 +243,17 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 > ganhou early-return quando não há a UI de dívidas na página. (A gravação via `Store` já tinha
 > sido feita antes; o que faltava era a dívida sair de dentro do `registrato.js`.)
 
-#### N10. PWA (item 10) (≈1h30)
+#### N10. PWA (item 10) (≈1h30) — ✅ FEITO 2026-08-29
 
-`manifest.json` + service worker mínimo cacheando os estáticos. Com o backup pronto, o celular pode ser base e restaurar no desktop. Sem framework, ~40 linhas de SW.
+> `manifest.json` (nome, ícones, `theme_color` #4a154b, `display: standalone`, `start_url`/`scope`
+> relativos — funciona no subpath do GitHub Pages), `assets/icon.svg` (ícone "EF", `any maskable`)
+> e `sw.js` (~45 linhas): cache-first com revalidação em segundo plano para GET do mesmo domínio,
+> navegação offline cai no `index.html`, versão de cache `financas-v2` com limpeza das antigas no
+> `activate`. `main.js` (carregado em ~todas as páginas) deduz a raiz do site do próprio `src`,
+> injeta `<link rel="manifest">` + `theme-color` onde faltar e registra o SW só em `http(s)`.
+> `index.html` ganhou as tags estáticas de manifest/ícone/apple-touch.
+> **Resta:** só o `index.html` tem as tags no HTML; as demais dependem da injeção via `main.js`
+> (suficiente para o Chrome, mas convém colar no `TEMPLATE_PAGINA.html` nas próximas edições).
 
 #### N11. Página de verificação / testes de fumaça sem framework (≈2h)
 

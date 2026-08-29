@@ -85,6 +85,38 @@ function toggleSubmenu(parent) {
   parent.classList.toggle('active');
 }
 
+// ---------------------------------------------------------------------------
+// PWA: registra o service worker e injeta o manifest onde faltar.
+// O caminho da raiz do site é deduzido do src deste próprio main.js, para
+// funcionar tanto na raiz quanto em páginas dentro de temas/<tema>/.
+// ---------------------------------------------------------------------------
+(function inicializarPWA() {
+  const script = document.querySelector('script[src$="assets/js/main.js"]');
+  const base = script
+    ? script.getAttribute('src').replace(/assets\/js\/main\.js.*$/, '')
+    : './';
+
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = base + 'manifest.json';
+    document.head.appendChild(link);
+  }
+  if (!document.querySelector('meta[name="theme-color"]')) {
+    const meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    meta.content = '#4a154b';
+    document.head.appendChild(meta);
+  }
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register(base + 'sw.js', { scope: base })
+        .catch((e) => console.warn('Service worker não registrou:', e));
+    });
+  }
+})();
+
 // Gera um link para a definição de um termo no glossário.
 // `prefixo` ajusta o caminho relativo (páginas em subpastas passam '../' ou '../../').
 function linkGlossario(slug, texto, prefixo) {
