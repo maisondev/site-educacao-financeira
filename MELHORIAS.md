@@ -177,7 +177,16 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ---
 
-#### N6. Auditoria de navegação + home com hierarquia (≈1h)
+#### N6. Auditoria de navegação + home com hierarquia (≈1h) — ✅ FEITO 2026-08-29
+
+> Órfãs ligadas no `menu.js`: `parcelas-cartao.html` e `cartao.html` (mantida — o Relatórios
+> ainda lê `cartao_credito`; rotulada "Cartão de Crédito (resumo)") no submenu Acompanhamento;
+> `links-uteis.html` em Referência; `ferramentas/calculadora-inflacao.html` em Ferramentas.
+> `index.html`: os ~26 cards planos viraram 6 grupos (`<h3 class="grupo-secoes">`) espelhando o
+> menu — Painel / Acompanhar o mês / Analisar / Aprender / Referência / Ferramentas — e ganharam
+> os cards que faltavam (Despesas Variáveis, Receitas, Envelopes, Saldo Projetado, Meus Cursos,
+> as 3 calculadoras, Cartão de Crédito). CSS `.grupo-secoes` / `.intro-secoes` no `<style>`.
+> **Resta:** `fluxo-caixa-futuro.html` continua fora do menu (fica com o N7).
 
 **Problema:**
 - Páginas **fora do menu** mas linkadas na home: `parcelas-cartao.html`, `links-uteis.html`, `cartao.html` (esta parece órfã — substituída por `cartoes.html`, mas ainda referenciada por 5 páginas). `ferramentas/calculadora-inflacao.html` não está no menu nem na home. Isso viola a regra do `CLAUDE.md`: "toda página → link no menu **e** card na home".

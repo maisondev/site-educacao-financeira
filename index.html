@@ -6,6 +6,20 @@
   <title>Educação Financeira</title>
   <link rel="stylesheet" href="./assets/css/style.css">
   <style>
+    .intro-secoes {
+      color: var(--cor-texto-light);
+      margin: 0 0 var(--espacamento-lg) 0;
+      max-width: 60ch;
+    }
+
+    .grupo-secoes {
+      margin: var(--espacamento-xl) 0 var(--espacamento-md);
+      padding-bottom: var(--espacamento-xs, 4px);
+      border-bottom: 2px solid var(--cor-primaria);
+      color: var(--cor-primaria);
+      font-size: 1.15rem;
+    }
+
     .fluxo-ideal {
       list-style: none;
       counter-reset: passo;
@@ -110,6 +124,10 @@
         <div class="fluxo-descricao">Aluguel, internet, escola — tudo que se repete todo mês. Mostra quanto do salário já está comprometido.</div>
       </li>
       <li>
+        <div class="fluxo-titulo"><a href="./mercado.html">Acompanhe o mercado</a></div>
+        <div class="fluxo-descricao">A maior despesa variável da casa. Defina um teto mensal e registre as compras por categoria (com o CPF que você já pede na nota) pra saber onde dá pra cortar.</div>
+      </li>
+      <li>
         <div class="fluxo-titulo"><a href="./reserva-emergencia.html">Defina a meta de Reserva de Emergência</a></div>
         <div class="fluxo-descricao">Quantos meses de salário você quer guardado. É o colchão antes de investir em qualquer outra coisa.</div>
       </li>
@@ -128,7 +146,9 @@
     </ol>
 
     <h2>Seções Principais</h2>
+    <p class="intro-secoes">Organizadas nos mesmos grupos do menu: primeiro o painel, depois acompanhar o mês, analisar, aprender, referência e ferramentas.</p>
 
+    <h3 class="grupo-secoes">Painel</h3>
     <div class="indice-temas">
       <div class="card-tema">
         <h3>Painel de Controle</h3>
@@ -137,23 +157,72 @@
         </p>
         <a href="./dashboard.html">Abrir painel</a>
       </div>
+    </div>
 
+    <h3 class="grupo-secoes">Acompanhar o mês</h3>
+    <div class="indice-temas">
       <div class="card-tema">
-        <h3>Aprender</h3>
+        <h3>Despesas Fixas</h3>
         <p>
-          Acesse os temas de educação financeira: orçamento, reserva de emergência, juros e investimentos.
-          Cada tema tem conceitos, exemplos práticos e grande máximas.
+          Registre suas despesas mensais (aluguel, internet, etc) e veja quanto do seu salário
+          está comprometido. Mantenha despesas fixas abaixo de 50% da renda.
         </p>
-        <a href="./temas/index.html">Acessar temas</a>
+        <a href="./despesas-fixas.html">Acompanhar despesas</a>
       </div>
 
       <div class="card-tema">
-        <h3>Roadmap de Estudos</h3>
+        <h3>Despesas Variáveis</h3>
         <p>
-          Trilha progressiva do básico ao avançado para estudar finanças e construção de riqueza,
-          com referências de cursos (a maioria gratuitos) para cada módulo.
+          Lance os gastos do dia a dia por categoria e competência. Veja o total do mês em foco
+          e a média dos últimos meses para cada categoria.
         </p>
-        <a href="./roadmap.html">Ver roadmap</a>
+        <a href="./despesas-variaveis.html">Lançar despesas</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Mercado</h3>
+        <p>
+          Controle o supermercado — sua maior despesa variável. Registre cada nota (com o CPF
+          que você já pede), veja para onde o dinheiro vai por categoria e siga as dicas para
+          gastar menos sem passar aperto.
+        </p>
+        <a href="./mercado.html">Abrir área do mercado</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Receitas</h3>
+        <p>
+          Registre o salário e as entradas de cada mês por competência. É a base do saldo
+          projetado e dos relatórios mensais.
+        </p>
+        <a href="./receitas.html">Registrar receitas</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Renda Extra</h3>
+        <p>
+          Acompanhe suas diferentes fontes de renda extra. Registre qual rende melhor,
+          visualize o total mensal e anual, e identifique quais valem mais a pena.
+        </p>
+        <a href="./renda-extra.html">Gerenciar rendas</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Envelopes</h3>
+        <p>
+          Distribua a renda do mês em envelopes por porcentagem e acompanhe, em tempo real,
+          quanto já foi gasto e quanto ainda resta em cada um.
+        </p>
+        <a href="./envelopes.html">Abrir envelopes</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Dívidas</h3>
+        <p>
+          Registre todas as suas dívidas e acompanhe o progresso de pagamento. Visualize quanto
+          falta pagar e organize-se para quitar suas obrigações de forma estruturada.
+        </p>
+        <a href="./dividas.html">Gerenciar dívidas</a>
       </div>
 
       <div class="card-tema">
@@ -175,15 +244,6 @@
       </div>
 
       <div class="card-tema">
-        <h3>Dívidas</h3>
-        <p>
-          Registre todas as suas dívidas e acompanhe o progresso de pagamento. Visualize quanto
-          falta pagar e organize-se para quitar suas obrigações de forma estruturada.
-        </p>
-        <a href="./dividas.html">Gerenciar dívidas</a>
-      </div>
-
-      <div class="card-tema">
         <h3>Carro</h3>
         <p>
           Área dedicada ao carro: histórico de manutenções, plano preventivo por km e tempo,
@@ -202,12 +262,12 @@
       </div>
 
       <div class="card-tema">
-        <h3>Despesas Fixas</h3>
+        <h3>FGTS</h3>
         <p>
-          Registre suas despesas mensais (aluguel, internet, etc) e veja quanto do seu salário
-          está comprometido. Mantenha despesas fixas abaixo de 50% da renda.
+          Registre o saldo das suas contas de FGTS a partir do extrato e acompanhe a evolução.
+          Veja o valor para fins rescisórios (com a multa de 40%) e a projeção de saldo.
         </p>
-        <a href="./despesas-fixas.html">Acompanhar despesas</a>
+        <a href="./fgts.html">Acompanhar FGTS</a>
       </div>
 
       <div class="card-tema">
@@ -220,48 +280,12 @@
       </div>
 
       <div class="card-tema">
-        <h3>FGTS</h3>
-        <p>
-          Registre o saldo das suas contas de FGTS a partir do extrato e acompanhe a evolução.
-          Veja o valor para fins rescisórios (com a multa de 40%) e a projeção de saldo.
-        </p>
-        <a href="./fgts.html">Acompanhar FGTS</a>
-      </div>
-
-      <div class="card-tema">
-        <h3>Balanço Patrimonial</h3>
-        <p>
-          Visualize seu patrimônio: o que você possui (Ativo) menos o que você deve (Passivo).
-          Acompanhe sua riqueza real com o patrimônio líquido.
-        </p>
-        <a href="./balanco-patrimonial.html">Ver balanço</a>
-      </div>
-
-      <div class="card-tema">
-        <h3>Relatórios</h3>
-        <p>
-          Gere relatórios mensais agregando dados de todas as áreas: despesas, dívidas,
-          reserva e investimentos. Imprima ou exporte em PDF.
-        </p>
-        <a href="./relatorios.html">Ver relatórios</a>
-      </div>
-
-      <div class="card-tema">
         <h3>Meus Cartões</h3>
         <p>
           Cadastre seus cartões de crédito, registre os últimos dígitos, limite e ciclo de fatura.
           Acompanhe quando sua fatura fecha e quando vence.
         </p>
         <a href="./cartoes.html">Gerenciar cartões</a>
-      </div>
-
-      <div class="card-tema">
-        <h3>Hacks Nubank</h3>
-        <p>
-          Checklist mensal com os 20 maiores hacks e otimizações do Nubank.
-          Marque conforme completa e acompanhe economia potencial e progresso.
-        </p>
-        <a href="./hacks-nubank.html">Ver checklist</a>
       </div>
 
       <div class="card-tema">
@@ -284,6 +308,54 @@
       </div>
 
       <div class="card-tema">
+        <h3>Cartão de Crédito (resumo)</h3>
+        <p>
+          Lançamento simples das faturas de cartão de crédito, com limite e disponível.
+          Alimenta a seção de cartões do Relatório mensal.
+        </p>
+        <a href="./cartao.html">Abrir resumo</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Hacks Nubank</h3>
+        <p>
+          Checklist mensal com os 20 maiores hacks e otimizações do Nubank.
+          Marque conforme completa e acompanhe economia potencial e progresso.
+        </p>
+        <a href="./hacks-nubank.html">Ver checklist</a>
+      </div>
+    </div>
+
+    <h3 class="grupo-secoes">Analisar</h3>
+    <div class="indice-temas">
+      <div class="card-tema">
+        <h3>Saldo Projetado</h3>
+        <p>
+          Receitas menos todas as saídas previstas do mês (fixas, variáveis, faturas, parcelas
+          e dívidas), com ajustes avulsos por competência.
+        </p>
+        <a href="./saldo-projetado.html">Ver saldo do mês</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Relatórios</h3>
+        <p>
+          Gere relatórios mensais agregando dados de todas as áreas: despesas, dívidas,
+          reserva e investimentos. Imprima ou exporte em PDF.
+        </p>
+        <a href="./relatorios.html">Ver relatórios</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Balanço Patrimonial</h3>
+        <p>
+          Visualize seu patrimônio: o que você possui (Ativo) menos o que você deve (Passivo).
+          Acompanhe sua riqueza real com o patrimônio líquido.
+        </p>
+        <a href="./balanco-patrimonial.html">Ver balanço</a>
+      </div>
+
+      <div class="card-tema">
         <h3>Análise de Contracheque</h3>
         <p>
           Faça upload de seus contracheques e visualize sua composição de renda, descontos e histórico mensal.
@@ -299,6 +371,39 @@
           organizados por categoria, com os lançamentos de cada uma. Processado só no navegador.
         </p>
         <a href="./analise-fatura.html">Analisar fatura</a>
+      </div>
+    </div>
+
+    <h3 class="grupo-secoes">Aprender</h3>
+    <div class="indice-temas">
+      <div class="card-tema">
+        <h3>Aprender</h3>
+        <p>
+          Acesse os temas de educação financeira: orçamento, reserva de emergência, juros e investimentos.
+          Cada tema tem conceitos, exemplos práticos e grande máximas.
+        </p>
+        <a href="./temas/index.html">Acessar temas</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Roadmap de Estudos</h3>
+        <p>
+          Trilha progressiva do básico ao avançado para estudar finanças e construção de riqueza,
+          com referências de cursos (a maioria gratuitos) para cada módulo.
+        </p>
+        <a href="./roadmap.html">Ver roadmap</a>
+      </div>
+    </div>
+
+    <h3 class="grupo-secoes">Referência</h3>
+    <div class="indice-temas">
+      <div class="card-tema">
+        <h3>Glossário</h3>
+        <p>
+          Dicionário de termos financeiros explicados de forma simples e clara.
+          Busque ou filtre por categoria para entender conceitos-chave.
+        </p>
+        <a href="./glossario.html">Acessar glossário</a>
       </div>
 
       <div class="card-tema">
@@ -320,21 +425,21 @@
       </div>
 
       <div class="card-tema">
-        <h3>Glossário</h3>
+        <h3>Meus Cursos</h3>
         <p>
-          Dicionário de termos financeiros explicados de forma simples e clara.
-          Busque ou filtre por categoria para entender conceitos-chave.
+          Catálogo dos cursos de finanças que você já fez ou pretende fazer, com status,
+          fonte e anotações de cada um.
         </p>
-        <a href="./glossario.html">Acessar glossário</a>
+        <a href="./cursos.html">Ver cursos</a>
       </div>
 
       <div class="card-tema">
-        <h3>Renda Extra</h3>
+        <h3>Links Úteis</h3>
         <p>
-          Acompanhe suas diferentes fontes de renda extra. Registre qual rende melhor,
-          visualize o total mensal e anual, e identifique quais valem mais a pena.
+          Curadoria de links importantes para finanças: Tesouro Direto, B3, Serasa, órgãos governamentais,
+          educação financeira e ferramentas úteis para gerenciar suas finanças.
         </p>
-        <a href="./renda-extra.html">Gerenciar rendas</a>
+        <a href="./links-uteis.html">Acessar links</a>
       </div>
 
       <div class="card-tema">
@@ -363,14 +468,34 @@
         </p>
         <a href="./livros.html">Explorar livros</a>
       </div>
+    </div>
+
+    <h3 class="grupo-secoes">Ferramentas</h3>
+    <div class="indice-temas">
+      <div class="card-tema">
+        <h3>Calculadora de Juros Compostos</h3>
+        <p>
+          Simule o efeito dos juros compostos ao longo do tempo, com aporte inicial e aportes
+          mensais, e veja quanto do total é rendimento.
+        </p>
+        <a href="./ferramentas/calculadora-juros-compostos.html">Abrir calculadora</a>
+      </div>
 
       <div class="card-tema">
-        <h3>Links Úteis</h3>
+        <h3>Calculadora de Juros Simples</h3>
         <p>
-          Curadoria de links importantes para finanças: Tesouro Direto, B3, Serasa, órgãos governamentais,
-          educação financeira e ferramentas úteis para gerenciar suas finanças.
+          Calcule juros simples e compare com os compostos para entender a diferença na prática.
         </p>
-        <a href="./links-uteis.html">Acessar links</a>
+        <a href="./ferramentas/calculadora-juros-simples.html">Abrir calculadora</a>
+      </div>
+
+      <div class="card-tema">
+        <h3>Correção pela Inflação</h3>
+        <p>
+          Atualize um valor do passado pela inflação e veja quanto ele representa em poder de
+          compra hoje.
+        </p>
+        <a href="./ferramentas/calculadora-inflacao.html">Abrir calculadora</a>
       </div>
     </div>
 
