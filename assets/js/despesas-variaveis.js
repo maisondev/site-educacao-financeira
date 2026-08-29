@@ -1,5 +1,5 @@
-const CHAVE_DESPESAS_VARIAVEIS = 'despesas_variaveis';
-const CHAVE_CATEGORIAS_COLAPSADAS = 'despesas_variaveis_colapsadas';
+const CHAVE_DESPESAS_VARIAVEIS = Store.CHAVES.DESPESAS_VARIAVEIS;
+const CHAVE_CATEGORIAS_COLAPSADAS = Store.CHAVES.DESPESAS_VARIAVEIS_COLAPSADAS;
 
 // Rótulos alinhados com o <select> de despesas-variaveis.html
 const CATEGORIAS = {
@@ -55,15 +55,12 @@ function definirDataPadraoVariavel() {
 }
 
 function obterCategoriasColapsadas() {
-  try {
-    return JSON.parse(localStorage.getItem(CHAVE_CATEGORIAS_COLAPSADAS)) || [];
-  } catch (e) {
-    return [];
-  }
+  const lista = Store.ler(CHAVE_CATEGORIAS_COLAPSADAS, []);
+  return Array.isArray(lista) ? lista : [];
 }
 
 function definirCategoriasColapsadas(lista) {
-  localStorage.setItem(CHAVE_CATEGORIAS_COLAPSADAS, JSON.stringify(lista));
+  Store.gravar(CHAVE_CATEGORIAS_COLAPSADAS, lista);
 }
 
 function toggleCategoria(categoria) {
@@ -84,17 +81,12 @@ function mesDaDespesa(despesa) {
 }
 
 function obterDespesasVariaveis() {
-  try {
-    const dados = localStorage.getItem(CHAVE_DESPESAS_VARIAVEIS);
-    return dados ? JSON.parse(dados) : [];
-  } catch (erro) {
-    console.error('Erro ao carregar despesas variáveis:', erro);
-    return [];
-  }
+  const dados = Store.ler(CHAVE_DESPESAS_VARIAVEIS, []);
+  return Array.isArray(dados) ? dados : [];
 }
 
 function salvarDespesasVariaveis(despesas) {
-  localStorage.setItem(CHAVE_DESPESAS_VARIAVEIS, JSON.stringify(despesas));
+  Store.gravar(CHAVE_DESPESAS_VARIAVEIS, despesas);
 }
 
 // Identifica de qual cartão é uma despesa (para manter só 1 fatura por cartão).

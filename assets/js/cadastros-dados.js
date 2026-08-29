@@ -3,7 +3,8 @@
 // Persistem no localStorage sob a chave 'cadastros_gerais'.
 // A página cadastros.html gerencia esses dados; as demais páginas só leem.
 
-const CAD_CHAVE = 'cadastros_gerais';
+const CAD_CHAVE = (typeof Store !== 'undefined' && Store.CHAVES)
+  ? Store.CHAVES.CADASTROS : 'cadastros_gerais';
 
 // Padrões embutidos — sempre presentes, não podem ser removidos.
 const CAD_CATEGORIAS_PADRAO = {
@@ -30,15 +31,11 @@ const CAD_PAGAMENTOS_PADRAO = {
 
 const Cadastros = {
   ler() {
-    try {
-      return JSON.parse(localStorage.getItem(CAD_CHAVE)) || {};
-    } catch (e) {
-      return {};
-    }
+    return Store.ler(CAD_CHAVE, {}) || {};
   },
 
   gravar(dados) {
-    localStorage.setItem(CAD_CHAVE, JSON.stringify(dados));
+    Store.gravar(CAD_CHAVE, dados);
   },
 
   // Transforma um rótulo em chave: "Pet / Animais" -> "pet-animais"

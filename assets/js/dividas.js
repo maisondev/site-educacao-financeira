@@ -82,14 +82,13 @@ function escaparHtml(texto) {
 }
 
 function obterDados() {
-  const dados = localStorage.getItem('dividas');
-  const parsed = dados ? JSON.parse(dados) : { dividas: [] };
+  const parsed = Store.ler(Store.CHAVES.DIVIDAS, { dividas: [] }) || { dividas: [] };
   if (!Array.isArray(parsed.dividas)) parsed.dividas = [];
   return parsed;
 }
 
 function salvarDados(dados) {
-  localStorage.setItem('dividas', JSON.stringify(dados));
+  Store.gravar(Store.CHAVES.DIVIDAS, dados);
 }
 
 // ---------------------------------------------------------------------------
@@ -320,7 +319,7 @@ function atualizarVisualizacao() {
   const elComp = document.getElementById('valor-comprometimento');
   elComp.textContent = formatarMoeda(comprometimento);
 
-  const renda = parseFloat((localStorage.getItem('renda_mensal') || '').replace(',', '.'));
+  const renda = parseFloat((Store.lerTexto(Store.CHAVES.RENDA, '') || '').replace(',', '.'));
   const elCompPct = document.getElementById('comprometimento-pct');
   if (renda > 0 && comprometimento > 0) {
     const pct = (comprometimento / renda) * 100;
@@ -495,12 +494,7 @@ function deletarDivida(index) {
 // ---------------------------------------------------------------------------
 function renderFaturasCartao() {
   const container = document.getElementById('faturas-cartao-container');
-  let cartoes;
-  try {
-    cartoes = JSON.parse(localStorage.getItem('cartoes_financeiros') || '[]');
-  } catch (e) {
-    cartoes = [];
-  }
+  let cartoes = Store.ler(Store.CHAVES.CARTOES_FINANCEIROS, []);
   if (!Array.isArray(cartoes)) cartoes = [];
 
   const abertas = [];

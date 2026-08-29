@@ -574,6 +574,20 @@
       background-color: #e8e8e8;
     }
 
+    .despesa-forma {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--cor-texto-leve);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .despesa-forma .icone {
+      width: 14px;
+      height: 14px;
+    }
+
     .despesa-vencimento {
       margin: 4px 0 0;
       font-size: 12px;
@@ -873,6 +887,18 @@
           <label for="input-vencimento-dia">Dia de Vencimento *</label>
           <input type="number" id="input-vencimento-dia" min="1" max="31" inputmode="numeric" placeholder="Ex: 10" required>
         </div>
+        <div class="form-group">
+          <label for="select-forma-pagamento">Forma de Pagamento</label>
+          <select id="select-forma-pagamento">
+            <option value="">Não informada</option>
+            <option value="debito-automatico">Débito automático</option>
+            <option value="debito">Débito</option>
+            <option value="pix">Pix</option>
+            <option value="cartao">Cartão de crédito</option>
+            <option value="boleto">Boleto</option>
+            <option value="dinheiro">Dinheiro</option>
+          </select>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn-salvar" id="btn-salvar-despesa" onclick="salvarDespesa()">Adicionar</button>
@@ -885,6 +911,7 @@
     <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
   </footer>
 
+  <script src="./assets/js/storage.js"></script>
   <script src="./assets/js/icones.js"></script>
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/formatacao.js"></script>

@@ -18,13 +18,9 @@ function escaparTextoCartao(texto) {
 // (declaracao de funcao) sobrescreve esta e prevalece.
 if (typeof adicionarDespesaDeCartao !== 'function') {
   window.adicionarDespesaDeCartao = function (descricao, valor, data, ultimosDigitos) {
-    const CHAVE = 'despesas_variaveis';
-    let despesas;
-    try {
-      despesas = JSON.parse(localStorage.getItem(CHAVE)) || [];
-    } catch (e) {
-      despesas = [];
-    }
+    const CHAVE = Store.CHAVES.DESPESAS_VARIAVEIS;
+    let despesas = Store.ler(CHAVE, []);
+    if (!Array.isArray(despesas)) despesas = [];
 
     const chaveDoCartao = (d) => {
       if (d['ultimosDígitos']) return 'd:' + d['ultimosDígitos'];
@@ -53,7 +49,7 @@ if (typeof adicionarDespesaDeCartao !== 'function') {
       return d.categoria !== 'cartao' || chaveDoCartao(d) !== chave;
     });
     filtradas.push(obj);
-    localStorage.setItem(CHAVE, JSON.stringify(filtradas));
+    Store.gravar(CHAVE, filtradas);
   };
 }
 
@@ -248,12 +244,12 @@ function sincronizarFaturasExistentes() {
 }
 
 function obterCartoes() {
-  const dados = localStorage.getItem('cartoes');
-  return dados ? JSON.parse(dados) : [];
+  const dados = Store.ler(Store.CHAVES.CARTOES, []);
+  return Array.isArray(dados) ? dados : [];
 }
 
 function salvarCartoes(cartoes) {
-  localStorage.setItem('cartoes', JSON.stringify(cartoes));
+  Store.gravar(Store.CHAVES.CARTOES, cartoes);
 }
 
 function limparFormularioCartao() {

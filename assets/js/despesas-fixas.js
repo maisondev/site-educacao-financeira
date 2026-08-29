@@ -38,15 +38,10 @@ function gerarId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+const CHAVE_DESPESAS_FIXAS = Store.CHAVES.DESPESAS_FIXAS;
+
 function obterDados() {
-  let dados;
-  try {
-    const bruto = localStorage.getItem('despesas_fixas');
-    dados = bruto ? JSON.parse(bruto) : null;
-  } catch (erro) {
-    console.error('Erro ao carregar despesas fixas (dados ignorados):', erro);
-    dados = null;
-  }
+  let dados = Store.ler(CHAVE_DESPESAS_FIXAS, null);
 
   if (!dados || typeof dados !== 'object') {
     dados = { salario: 0, despesas: [] };
@@ -90,7 +85,7 @@ function formatarDataBR(iso) {
 }
 
 function salvarDados(dados) {
-  localStorage.setItem('despesas_fixas', JSON.stringify(dados));
+  Store.gravar(CHAVE_DESPESAS_FIXAS, dados);
 }
 
 function definirSalario() {
@@ -146,6 +141,7 @@ function abrirModalDespesa() {
   document.getElementById('select-categoria').value = '';
   document.getElementById('input-valor').value = '';
   document.getElementById('input-vencimento-dia').value = '';
+  document.getElementById('select-forma-pagamento').value = '';
   document.getElementById('modal-despesa').removeAttribute('hidden');
   document.getElementById('input-nome').focus();
 }
@@ -162,6 +158,7 @@ function abrirModalDespesaEdicao(id) {
   document.getElementById('select-categoria').value = despesa.categoria;
   document.getElementById('input-valor').value = formatarNumeroBrasileiro(despesa.valor);
   document.getElementById('input-vencimento-dia').value = despesa.vencimentoDia || '';
+  document.getElementById('select-forma-pagamento').value = despesa.formaPagamento || '';
   document.getElementById('modal-despesa').removeAttribute('hidden');
   document.getElementById('input-nome').focus();
 }
@@ -176,6 +173,7 @@ function salvarDespesa() {
   const categoria = document.getElementById('select-categoria').value;
   let valor = parseValorBrasileiro(document.getElementById('input-valor').value);
   const vencimentoDia = parseInt(document.getElementById('input-vencimento-dia').value, 10);
+  const formaPagamento = document.getElementById('select-forma-pagamento').value;
 
   if (!nome) {
     alert('Por favor, insira um nome para a despesa');
@@ -208,6 +206,7 @@ function salvarDespesa() {
       despesa.categoria = categoria;
       despesa.valor = valor;
       despesa.vencimentoDia = vencimentoDia;
+      despesa.formaPagamento = formaPagamento;
     }
   } else {
     dados.despesas.push({
@@ -216,6 +215,7 @@ function salvarDespesa() {
       categoria,
       valor,
       vencimentoDia,
+      formaPagamento,
       dataCriacao: new Date().toISOString()
     });
   }
@@ -466,6 +466,11 @@ function atualizarListaDespesas() {
       vencimentoHtml = `<p class="despesa-vencimento${urgente ? ' urgente' : ''}">${icone('calendario')} Vence dia ${despesa.vencimentoDia}${sufixo}</p>`;
     }
 
+    const nomeForma = obterNomeFormaPagamento(despesa.formaPagamento);
+    const formaHtml = nomeForma
+      ? `<p class="despesa-forma">${icone('carteira')} ${nomeForma}</p>`
+      : '';
+
     const pago = !!despesa.pagoEm;
     const pagoHtml = pago
       ? `<p class="despesa-pago">${icone('check')} Pago em ${formatarDataBR(despesa.pagoEm)}</p>`
@@ -483,6 +488,7 @@ function atualizarListaDespesas() {
         <div class="despesa-info">
           <h3>${escaparTexto(despesa.nome)}${oculta ? ' <span class="despesa-badge-oculta">fora do cálculo</span>' : ''}</h3>
           <p class="despesa-categoria">${obterNomeCategoria(despesa.categoria)}</p>
+          ${formaHtml}
           ${vencimentoHtml}
           ${provisionadaHtml}
           ${pagoHtml}
@@ -564,6 +570,18 @@ function obterNomeCategoria(categoria) {
     'outro': 'Outro'
   };
   return nomes[categoria] || categoria;
+}
+
+function obterNomeFormaPagamento(forma) {
+  const nomes = {
+    'debito-automatico': 'Débito automático',
+    'debito': 'Débito',
+    'pix': 'Pix',
+    'cartao': 'Cartão de crédito',
+    'boleto': 'Boleto',
+    'dinheiro': 'Dinheiro'
+  };
+  return nomes[forma] || '';
 }
 
 // Fechar modal ao clicar fora

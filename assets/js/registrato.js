@@ -3,7 +3,8 @@
 // Empréstimos e Financiamentos (SCR). Tudo fica só neste navegador,
 // na chave 'registrato_bcb' do localStorage.
 
-const REG_CHAVE = 'registrato_bcb';
+const REG_CHAVE = (typeof Store !== 'undefined' && Store.CHAVES)
+  ? Store.CHAVES.REGISTRATO : 'registrato_bcb';
 
 // Dados iniciais extraídos dos relatórios emitidos em 28/08/2026.
 // Servem de ponto de partida — dá para editar, remover e adicionar linhas.
@@ -99,20 +100,16 @@ const REG_TIPOS_PIX = ['CPF', 'CNPJ', 'E-mail', 'Celular', 'Aleatória'];
 const REG_TIPOS_CONTA = ['Conta corrente', 'Conta de pagamento', 'Conta poupança', 'Conta salário'];
 
 function regLer() {
-  try {
-    const dados = JSON.parse(localStorage.getItem(REG_CHAVE));
-    if (!dados) return null;
-    dados.relacionamentos = dados.relacionamentos || [];
-    dados.pix = dados.pix || [];
-    dados.dividas = dados.dividas || [];
-    return dados;
-  } catch (e) {
-    return null;
-  }
+  const dados = Store.ler(REG_CHAVE, null);
+  if (!dados) return null;
+  dados.relacionamentos = dados.relacionamentos || [];
+  dados.pix = dados.pix || [];
+  dados.dividas = dados.dividas || [];
+  return dados;
 }
 
 function regGravar(dados) {
-  localStorage.setItem(REG_CHAVE, JSON.stringify(dados));
+  Store.gravar(REG_CHAVE, dados);
 }
 
 function regEstado() {
@@ -389,14 +386,6 @@ function regNaturezaDivida(tipo) {
   return (tipo === 'outro') ? 'curto-prazo' : 'onerosa';
 }
 
-function regFimDoMes() {
-  const hoje = new Date();
-  const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-  const mm = String(fim.getMonth() + 1).padStart(2, '0');
-  const dd = String(fim.getDate()).padStart(2, '0');
-  return `${fim.getFullYear()}-${mm}-${dd}`;
-}
-
 function regEnviarParaDividas() {
   const d = regEstado();
   const pendentes = d.dividas.filter(x => ((Number(x.emDia) || 0) + (Number(x.vencida) || 0)) > 0);
@@ -406,12 +395,7 @@ function regEnviarParaDividas() {
     return;
   }
 
-  let store;
-  try {
-    store = JSON.parse(localStorage.getItem('dividas')) || { dividas: [] };
-  } catch (e) {
-    store = { dividas: [] };
-  }
+  const store = Store.ler(Store.CHAVES.DIVIDAS, { dividas: [] }) || { dividas: [] };
   if (!Array.isArray(store.dividas)) store.dividas = [];
 
   const ref = d.referenciaScr || '';
@@ -423,11 +407,20 @@ function regEnviarParaDividas() {
     const valorTotal = Math.round(((Number(x.emDia) || 0) + (Number(x.vencida) || 0)) * 100) / 100;
     const existente = store.dividas.find(y => y.origem === 'registrato' && y.origemId === origemId);
 
+    // O SCR traz o saldo devedor TOTAL da operação (inclui parcelas futuras
+    // de compras no cartão), não uma obrigação do mês corrente. Por isso a
+    // dívida entra sem data de vencimento — assim não é jogada inteira no
+    // Saldo do Mês. Ajuste o vencimento manualmente na página de Dívidas se
+    // souber a data real de quitação.
+    const obs = `Importado do Registrato (SCR ${ref}). Saldo devedor total da `
+      + `operação, incluindo parcelas futuras — não é uma dívida do mês.`;
+
     if (existente) {
       existente.credor = x.instituicao;
       existente.tipo = tipo;
       existente.valorTotal = valorTotal;
-      existente.observacoes = `Importado do Registrato (SCR ${ref}).`;
+      existente.observacoes = obs;
+      if (!existente.vencimentoAjustadoManualmente) existente.vencimento = '';
       atualizadas++;
     } else {
       store.dividas.push({
@@ -439,10 +432,10 @@ function regEnviarParaDividas() {
         natureza: regNaturezaDivida(tipo),
         taxa: 0,
         debitoAutomatico: false,
-        observacoes: `Importado do Registrato (SCR ${ref}).`,
+        observacoes: obs,
         parcelado: false,
         valorTotal,
-        vencimento: regFimDoMes(),
+        vencimento: '',
         valorPago: 0,
         dataCriacao: new Date().toISOString(),
         pagamentos: []
@@ -451,7 +444,7 @@ function regEnviarParaDividas() {
     }
   });
 
-  localStorage.setItem('dividas', JSON.stringify(store));
+  Store.gravar(Store.CHAVES.DIVIDAS, store);
 
   const msg = `Acompanhador de Dívidas atualizado: ${novas} nova(s), ${atualizadas} atualizada(s).\n\nAbrir o Acompanhador agora?`;
   if (confirm(msg)) location.href = './dividas.html';
@@ -465,7 +458,7 @@ function regRestaurarPadrao() {
 
 function regLimparTudo() {
   if (!confirm('Isto apaga todos os dados desta página neste navegador. Continuar?')) return;
-  localStorage.removeItem(REG_CHAVE);
+  Store.remover(REG_CHAVE);
   regGravar({ emissao: '', referenciaScr: '', relacionamentos: [], pix: [], dividas: [] });
   regRenderTudo();
 }

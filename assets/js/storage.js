@@ -32,7 +32,9 @@ const Store = {
     ANALISE_FATURAS: 'analise_faturas',
     BACKUP_ULTIMA_DATA: 'backup_ultima_data',
     COMPETENCIA_SELECIONADA: 'competencia_selecionada',
-    HISTORICO_MENSAL: 'historico_mensal'
+    HISTORICO_MENSAL: 'historico_mensal',
+    CADASTROS: 'cadastros_gerais',
+    REGISTRATO: 'registrato_bcb'
   },
 
   // Lê e desserializa. Devolve `padrao` quando a chave não existe ou o

@@ -9,12 +9,13 @@ function inicializarInvestimentos() {
 }
 
 function obterDados() {
-  const dados = localStorage.getItem('investimentos');
-  return dados ? JSON.parse(dados) : { investimentos: [] };
+  const dados = Store.ler(Store.CHAVES.INVESTIMENTOS, { investimentos: [] }) || { investimentos: [] };
+  if (!Array.isArray(dados.investimentos)) dados.investimentos = [];
+  return dados;
 }
 
 function salvarDados(dados) {
-  localStorage.setItem('investimentos', JSON.stringify(dados));
+  Store.gravar(Store.CHAVES.INVESTIMENTOS, dados);
 }
 
 function adicionarInvestimento() {

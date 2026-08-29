@@ -21,8 +21,9 @@ function inicializarReserva() {
 let aporteEditandoId = null;
 
 function obterDados() {
-  const dados = localStorage.getItem('reserva_emergencia');
-  const parsed = dados ? JSON.parse(dados) : { salario: 0, meses: 0, aportes: [] };
+  const parsed = Store.ler(Store.CHAVES.RESERVA, { salario: 0, meses: 0, aportes: [] })
+    || { salario: 0, meses: 0, aportes: [] };
+  if (!Array.isArray(parsed.aportes)) parsed.aportes = [];
 
   // Garantir que todo aporte tenha um id (aportes antigos podem não ter)
   let precisaSalvar = false;
@@ -33,14 +34,14 @@ function obterDados() {
     }
   });
   if (precisaSalvar) {
-    localStorage.setItem('reserva_emergencia', JSON.stringify(parsed));
+    Store.gravar(Store.CHAVES.RESERVA, parsed);
   }
 
   return parsed;
 }
 
 function salvarDados(dados) {
-  localStorage.setItem('reserva_emergencia', JSON.stringify(dados));
+  Store.gravar(Store.CHAVES.RESERVA, dados);
 }
 
 function atualizarConfiguracao() {
@@ -322,7 +323,7 @@ function removerAporte(id) {
 
 function limparDados() {
   if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
-    localStorage.removeItem('reserva_emergencia');
+    Store.remover(Store.CHAVES.RESERVA);
     document.getElementById('input-salario').value = '';
     document.getElementById('select-meses').value = '';
     document.getElementById('resumo-container').setAttribute('hidden', '');

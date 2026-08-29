@@ -6,24 +6,22 @@ let ativoEditandoId = null;
 let passivoEditandoId = null;
 
 function obterDados() {
-  const dados = localStorage.getItem('balanco_patrimonial');
-  return dados ? JSON.parse(dados) : { ativos: [], passivos: [] };
+  const dados = Store.ler(Store.CHAVES.BALANCO, { ativos: [], passivos: [] })
+    || { ativos: [], passivos: [] };
+  if (!Array.isArray(dados.ativos)) dados.ativos = [];
+  if (!Array.isArray(dados.passivos)) dados.passivos = [];
+  return dados;
 }
 
 function salvarDados(dados) {
-  localStorage.setItem('balanco_patrimonial', JSON.stringify(dados));
+  Store.gravar(Store.CHAVES.BALANCO, dados);
 }
 
 // Saldo total do FGTS, puxado da página FGTS (chave 'fgts').
 // Soma o último registro de saldo de cada conta vinculada. Entra como ativo
 // automático no balanço — não é editável aqui.
 function obterSaldoFgts() {
-  let dados;
-  try {
-    dados = JSON.parse(localStorage.getItem('fgts'));
-  } catch (e) {
-    return 0;
-  }
+  const dados = Store.ler(Store.CHAVES.FGTS, null);
   if (!dados || !Array.isArray(dados.contas)) return 0;
 
   return dados.contas.reduce((total, conta) => {
