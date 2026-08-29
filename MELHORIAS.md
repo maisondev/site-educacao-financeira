@@ -50,7 +50,7 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 | # | Item | Status |
 |---|------|--------|
 | 1 | Backup exportar/importar | ✅ feito |
-| 2 | Camada única de storage | ◑ **parcial** — `Store` existe, mas **24 scripts** ainda usam `localStorage` direto → ver **N1** |
+| 2 | Camada única de storage | ✅ **feito (2026-08-29)** — catálogo com `CADASTROS`/`REGISTRATO`; leitores críticos (`despesas-fixas`, `despesas-variaveis`, `dividas`, `cartoes`, `reserva-emergencia`, `investimentos`, `balanco-patrimonial`, `registrato`, `cadastros-dados`) migrados para `Store.ler`/`Store.gravar` |
 | 3 | Saldo do mês no dashboard | ✅ feito |
 | 4 | Competência mensal | ✅ base feita — só `despesas_variaveis` e `receitas_lista` têm competência → ampliação em **N8** |
 | 5 | Categorias unificadas | ◑ **parcial** — `cadastros.html` cadastra as listas, mas os formulários não as consomem → ver **N3** |
@@ -68,7 +68,14 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ### P0 — Fazer amanhã
 
-#### N1. Fechar a migração para `Store` + chaves fora do catálogo (≈1h30)
+#### N1. Fechar a migração para `Store` + chaves fora do catálogo (≈1h30) — ✅ FEITO 2026-08-29
+
+> `Store.CHAVES` ganhou `CADASTROS` e `REGISTRATO`. `storage.js` passou a ser carregado em
+> despesas-fixas, dividas, cartoes, reserva-emergencia, investimentos, balanco-patrimonial,
+> registrato e cadastros. Nove scripts migrados para `Store.ler`/`Store.gravar`. `http.log`
+> (não versionado) removido; `*.log` já estava no `.gitignore` (N13 resolvido).
+> **Resta:** ~15 scripts menores ainda com `localStorage` direto (lembretes, carro, cursos,
+> fluxo-caixa-futuro, hacks-nubank, glossario, renda-extra, desapego, analise-*, cartoes-adicionais…).
 
 **Problema:**
 - `Store.CHAVES` **não inclui** `cadastros_gerais` (`assets/js/cadastros-dados.js:6`) nem `registrato_bcb` (`assets/js/registrato.js:6`). O `backup.js` só as pega no *sweep* do `localStorage` se já existirem no momento da exportação — não estão declaradas em lugar nenhum.
