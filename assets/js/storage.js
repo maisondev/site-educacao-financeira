@@ -30,6 +30,7 @@ const Store = {
     CURSOS: 'cursos_lista',
     DESAPEGO: 'desapego_itens',
     ANALISE_FATURAS: 'analise_faturas',
+    REGRAS_CATEGORIZACAO: 'regras_categorizacao',
     BACKUP_ULTIMA_DATA: 'backup_ultima_data',
     COMPETENCIA_SELECIONADA: 'competencia_selecionada',
     HISTORICO_MENSAL: 'historico_mensal',

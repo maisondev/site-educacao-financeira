@@ -6,6 +6,29 @@
 const AF_STORAGE_KEY = 'analise_faturas';
 const AF_SEM_CARTAO = '__sem__';
 
+// Chave das regras aprendidas de categorização (trecho da descrição -> categoria AF).
+const AF_REGRAS_KEY = (typeof Store !== 'undefined' && Store.CHAVES.REGRAS_CATEGORIZACAO)
+  || 'regras_categorizacao';
+
+// De/para: categoria da análise de fatura -> categoria de despesas-variaveis.html.
+// O que não tem correspondente direto cai em "outro".
+const AF_PARA_CATEGORIA_DV = {
+  mercado: 'alimentacao',
+  restaurante: 'alimentacao',
+  transporte: 'combustivel',
+  assinatura: 'streaming',
+  casa: 'manutencao',
+  saude: 'outro',
+  online: 'outro',
+  vestuario: 'outro',
+  educacao: 'outro',
+  servicos: 'outro',
+  lazer: 'outro',
+  pets: 'outro',
+  impostos: 'outro',
+  outro: 'outro'
+};
+
 // --- Categorias (chave -> rótulo + cor da barra) --------------------------------
 const AF_CATEGORIAS = {
   mercado:     { nome: 'Mercado / alimentação',      cor: '#4a154b' },
@@ -245,8 +268,53 @@ function afParsearFatura(textoBruto) {
   return { competencia, lancamentos };
 }
 
+// Regras aprendidas: { "TRECHO EM MAIUSCULAS": "categoriaAF" }
+function afLerRegras() {
+  if (typeof Store !== 'undefined') {
+    const r = Store.ler(AF_REGRAS_KEY, {});
+    return r && typeof r === 'object' ? r : {};
+  }
+  try {
+    return JSON.parse(localStorage.getItem(AF_REGRAS_KEY) || '{}') || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function afGravarRegras(regras) {
+  if (typeof Store !== 'undefined') return Store.gravar(AF_REGRAS_KEY, regras);
+  try {
+    localStorage.setItem(AF_REGRAS_KEY, JSON.stringify(regras));
+  } catch (e) {
+    console.error('Não foi possível salvar as regras de categorização:', e);
+  }
+}
+
+// Guarda a correção manual como regra: descrição inteira (em maiúsculas) -> categoria.
+function afAprenderRegra(descricao, categoria) {
+  const trecho = String(descricao || '').toUpperCase().trim();
+  if (!trecho || !AF_CATEGORIAS[categoria]) return;
+  const regras = afLerRegras();
+  if (regras[trecho] === categoria) return;
+  regras[trecho] = categoria;
+  afGravarRegras(regras);
+}
+
+function afCategoriaPorRegra(lanc) {
+  const alvo = `${lanc.descricao} ${lanc.cidade}`.toUpperCase();
+  const regras = afLerRegras();
+  for (const trecho of Object.keys(regras)) {
+    if (trecho && alvo.includes(trecho) && AF_CATEGORIAS[regras[trecho]]) {
+      return regras[trecho];
+    }
+  }
+  return null;
+}
+
 function afCategorizar(lanc) {
   if (lanc.tipo === 'encargo') return 'impostos';
+  const aprendida = afCategoriaPorRegra(lanc);
+  if (aprendida) return aprendida;
   const alvo = `${lanc.descricao} ${lanc.cidade}`.toUpperCase();
   for (const [chave, re] of AF_REGRAS) {
     if (re.test(alvo)) return chave;
@@ -580,6 +648,7 @@ function afAlterarCategoria(sel) {
   if (!lanc) return;
   lanc.categoria = sel.value;
   lanc.recorrente = afEhRecorrente(lanc, sel.value) || lanc.recorrente;
+  afAprenderRegra(lanc.descricao, sel.value);
   afAutoSalvarSeSalva();
   afRenderTiles();
   afRenderCategorias();
@@ -660,6 +729,121 @@ function afBaixarCSV() {
   URL.revokeObjectURL(url);
 }
 
+// --- lançar em Despesas Variáveis --------------------------------------------
+
+// Identidade de um lançamento para deduplicar reimportações da mesma fatura.
+function afHashLanc(l) {
+  return [
+    l.cartao || '',
+    l.data || '',
+    Number(l.valor || 0).toFixed(2),
+    (l.descricao || '').toUpperCase().replace(/\s+/g, ' ').trim()
+  ].join('|');
+}
+
+// "DD/MM" (sem ano) + competência da fatura -> data ISO "AAAA-MM-DD".
+// Se o mês da compra for maior que o da competência, é compra do ano anterior
+// (ex.: compra de dezembro na fatura de janeiro).
+function afDataISOde(l, comp) {
+  const m = /^(\d{2})\/(\d{2})$/.exec(l.data || '');
+  const c = /^(\d{4})-(\d{2})$/.exec(comp || '');
+  if (!m || !c) return `${comp || afMesAtualISO()}-01`;
+  let ano = parseInt(c[1], 10);
+  if (parseInt(m[2], 10) > parseInt(c[2], 10)) ano -= 1;
+  return `${ano}-${m[2]}-${m[1]}`;
+}
+
+function afLancarEmDespesas() {
+  if (!afEstado) return;
+  if (typeof Store === 'undefined') {
+    afMostrarMsg('Módulo de armazenamento não carregou. Recarregue a página.', 'erro');
+    return;
+  }
+
+  const comp = document.getElementById('af-comp').value || afEstado.competencia;
+  if (!/^\d{4}-\d{2}$/.test(comp)) {
+    afMostrarMsg('Defina a competência (mês da fatura) antes de lançar.', 'erro');
+    return;
+  }
+
+  const incluidos = afLancamentosIncluidos();
+  if (!incluidos.length) {
+    afMostrarMsg('Nenhum lançamento nos cartões selecionados para lançar.', 'erro');
+    return;
+  }
+
+  const despesas = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []);
+  const compras = Store.ler(Store.CHAVES.COMPRAS_PARCELADAS, []);
+  const listaDespesas = Array.isArray(despesas) ? despesas : [];
+  const listaCompras = Array.isArray(compras) ? compras : [];
+
+  const jaLancadas = new Set(
+    listaDespesas.filter(d => d.origem === 'fatura' && d.origemHash).map(d => d.origemHash)
+  );
+  const jaParceladas = new Set(
+    listaCompras.filter(c => c.origem === 'fatura' && c.origemHash).map(c => c.origemHash)
+  );
+
+  let nDespesas = 0;
+  let nParcelas = 0;
+  let nDuplicadas = 0;
+
+  incluidos.forEach(l => {
+    const hash = afHashLanc(l);
+    const ehParcela = l.parcelaAtual && l.parcelaTotal && l.parcelaTotal > 1;
+
+    if (ehParcela) {
+      if (jaParceladas.has(hash)) { nDuplicadas++; return; }
+      const inicio = typeof competenciaSomarMeses === 'function'
+        ? competenciaSomarMeses(comp, -(l.parcelaAtual - 1))
+        : comp;
+      listaCompras.push({
+        id: Date.now() + Math.random(),
+        descricao: l.descricao + (l.cartao ? ` (final ${l.cartao})` : ''),
+        cartao: l.cartao ? `Final ${l.cartao}` : 'Cartão de crédito',
+        valorTotal: Math.round(l.valor * l.parcelaTotal * 100) / 100,
+        numParcelas: l.parcelaTotal,
+        dataInicio: inicio,
+        origem: 'fatura',
+        origemHash: hash,
+        dataCriacao: new Date().toISOString()
+      });
+      jaParceladas.add(hash);
+      nParcelas++;
+    } else {
+      if (jaLancadas.has(hash)) { nDuplicadas++; return; }
+      listaDespesas.push({
+        id: Date.now() + Math.random(),
+        categoria: AF_PARA_CATEGORIA_DV[l.categoria] || 'outro',
+        descricao: l.descricao + (l.cartao ? ` · final ${l.cartao}` : ''),
+        valor: Math.round(l.valor * 100) / 100,
+        data: afDataISOde(l, comp),
+        competencia: comp,
+        origem: 'fatura',
+        origemHash: hash,
+        dataCriacao: new Date().toISOString()
+      });
+      jaLancadas.add(hash);
+      nDespesas++;
+    }
+  });
+
+  if (nDespesas && !Store.gravar(Store.CHAVES.DESPESAS_VARIAVEIS, listaDespesas)) return;
+  if (nParcelas && !Store.gravar(Store.CHAVES.COMPRAS_PARCELADAS, listaCompras)) return;
+
+  if (!nDespesas && !nParcelas) {
+    afMostrarMsg('Tudo desta fatura já tinha sido lançado antes — nada novo a fazer.', 'ok');
+    return;
+  }
+
+  const partes = [];
+  if (nDespesas) partes.push(`${nDespesas} despesa${nDespesas === 1 ? '' : 's'} variáve${nDespesas === 1 ? 'l' : 'is'}`);
+  if (nParcelas) partes.push(`${nParcelas} compra${nParcelas === 1 ? '' : 's'} parcelada${nParcelas === 1 ? '' : 's'}`);
+  let msg = `Lançado: ${partes.join(' e ')} na competência ${afFormatarCompetencia(comp)}.`;
+  if (nDuplicadas) msg += ` ${nDuplicadas} já existia${nDuplicadas === 1 ? '' : 'm'} e foi${nDuplicadas === 1 ? '' : 'ram'} ignorada${nDuplicadas === 1 ? '' : 's'}.`;
+  afMostrarMsg(msg, 'ok');
+}
+
 // --- fluxo de importação ----------------------------------------------------
 function afProcessarTexto(texto) {
   const banco = document.getElementById('af-banco').value;
@@ -734,6 +918,8 @@ function inicializarAnaliseFatura() {
 
   document.getElementById('af-salvar').addEventListener('click', afSalvarAnalise);
   document.getElementById('af-csv').addEventListener('click', afBaixarCSV);
+  const btnLancar = document.getElementById('af-lancar');
+  if (btnLancar) btnLancar.addEventListener('click', afLancarEmDespesas);
   document.getElementById('af-comp').addEventListener('change', (e) => {
     if (afEstado) afEstado.competencia = e.target.value;
   });

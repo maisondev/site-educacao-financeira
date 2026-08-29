@@ -482,8 +482,14 @@
 
       <div class="af-acoes">
         <button type="button" class="btn btn-primary" id="af-salvar">Salvar análise</button>
+        <button type="button" class="btn btn-primary" id="af-lancar">Lançar em Despesas Variáveis</button>
         <button type="button" class="btn btn-secondary" id="af-csv">Baixar CSV</button>
       </div>
+      <p style="font-size:0.85rem;color:var(--cor-texto-light);margin-top:var(--espacamento-sm);">
+        Cria uma despesa variável por lançamento selecionado, na competência da fatura.
+        Linhas parceladas (ex.: 03/10) vão para o Fluxo de Caixa Futuro. Reimportar a mesma
+        fatura não duplica.
+      </p>
     </section>
 
     <section class="af-secao" id="af-historico-secao" hidden>
@@ -516,6 +522,8 @@
   <script src="./assets/js/lembretes.js"></script>
   <script src="./assets/js/menu.js"></script>
   <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/competencia.js"></script>
   <script src="./assets/js/analise-fatura.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {

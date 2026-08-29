@@ -54,7 +54,7 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 | 3 | Saldo do mês no dashboard | ✅ feito |
 | 4 | Competência mensal | ✅ base feita — só `despesas_variaveis` e `receitas_lista` têm competência → ampliação em **N8** |
 | 5 | Categorias unificadas | ◑ **parcial** — `cadastros.html` cadastra as listas, mas os formulários não as consomem → ver **N3** |
-| 6 | Análise de fatura → lançamento automático | ✗ pendente (só o 6b, importar cartão, foi feito) → detalhado em **N2** |
+| 6 | Análise de fatura → lançamento automático | ✅ **feito (2026-08-29)** — botão "Lançar em Despesas Variáveis" (N2) |
 | 7 | Fluxo de caixa futuro completo | ✗ pendente → detalhado em **N7** |
 | 8 | Central de alertas | ✅ feito |
 | 9 | Lançamento rápido | ✅ feito |
@@ -91,7 +91,19 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ---
 
-#### N2. Análise de fatura → "Lançar em Despesas Variáveis" (≈2h)
+#### N2. Análise de fatura → "Lançar em Despesas Variáveis" (≈2h) — ✅ FEITO 2026-08-29
+
+> Botão **"Lançar em Despesas Variáveis"** em `analise-fatura.html` (ao lado de "Salvar análise").
+> `afLancarEmDespesas()` cria uma despesa variável por lançamento incluído, com `competencia` = mês
+> da fatura e `origem: 'fatura'` + `origemHash` (cartão + data + valor + descrição) para deduplicar
+> reimportações. Linhas parceladas (`03/10`) viram registro em `compras_parceladas` com `dataInicio`
+> recuada para a 1ª parcela. Correção manual de categoria é gravada em `regras_categorizacao`
+> (nova chave no catálogo) e reaplicada em `afCategorizar` nas próximas análises. `analise-fatura.html`
+> passou a carregar `storage.js` e `competencia.js`.
+> **Resta:** de/para de categorias AF→despesas-variáveis é grosseiro (`AF_PARA_CATEGORIA_DV`,
+> muita coisa cai em "outro") — some com o N3.
+
+**Resumo original:**
 
 **Problema:** `analise-fatura.js` categoriza cada linha (`afCategorizar`, `afAlterarCategoria`) e salva a análise em `analise_faturas` (`afGravarTodas:302`), mas **nunca cria despesas**. Todo o trabalho de ler e classificar a fatura é jogado fora e as compras precisam ser redigitadas em `despesas-variaveis.html`. É o maior desperdício de tempo da rotina mensal de faturas registrada na memória (`analise-faturas-cartao.md`).
 
