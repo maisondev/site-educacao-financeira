@@ -7,6 +7,7 @@ let compraEditandoId = null;
 document.addEventListener('DOMContentLoaded', function() {
   renderizarTabela();
   renderizarCalendario();
+  renderizarProjecao12Meses();
 
   // Pré-preencher data de hoje
   const dataInicio = document.getElementById('input-data-inicio');
@@ -93,6 +94,7 @@ function adicionarCompra() {
 
   renderizarTabela();
   renderizarCalendario();
+  renderizarProjecao12Meses();
 }
 
 function iniciarEdicaoCompra(id) {
@@ -144,6 +146,7 @@ function removerCompra(id) {
 
   renderizarTabela();
   renderizarCalendario();
+  renderizarProjecao12Meses();
 }
 
 function renderizarTabela() {
@@ -345,4 +348,76 @@ function sincronizarComDespesasFixas() {
   if (typeof atualizarVisualizacao === 'function') {
     atualizarVisualizacao();
   }
+}
+
+// --- Projeção de caixa dos próximos 12 meses --------------------------------
+// Reaproveita calcularSaldoDoMes (saldo-mes.js), o mesmo cálculo do card
+// "Saldo do mês" do Painel: receitas − despesas fixas − variáveis − faturas −
+// parcelas − dívidas + ajustes, mês a mês, e acumula o saldo ao longo do ano.
+
+function fcfMoeda(v) {
+  return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function renderizarProjecao12Meses() {
+  const container = document.getElementById('projecao-container');
+  if (!container) return;
+
+  if (typeof calcularSaldoDoMes !== 'function' || typeof competenciaSomarMeses !== 'function') {
+    container.innerHTML = '<p style="color: var(--cor-texto-leve);">Projeção indisponível: recarregue a página.</p>';
+    return;
+  }
+
+  const base = typeof competenciaAtual === 'function'
+    ? competenciaAtual()
+    : new Date().toISOString().slice(0, 7);
+
+  let acumulado = 0;
+  let primeiroNegativo = null;
+  const linhas = [];
+
+  for (let i = 0; i < 12; i++) {
+    const comp = competenciaSomarMeses(base, i);
+    const r = calcularSaldoDoMes(comp);
+    acumulado += r.saldo;
+
+    const mesNeg = r.saldo < -0.005;
+    const acumNeg = acumulado < -0.005;
+    if (primeiroNegativo === null && (mesNeg || acumNeg)) primeiroNegativo = comp;
+
+    linhas.push(`
+      <tr${mesNeg || acumNeg ? ' class="fcf-linha-alerta"' : ''}>
+        <td>${formatarMesAno(comp)}</td>
+        <td class="fcf-num">${fcfMoeda(r.receitas)}</td>
+        <td class="fcf-num">− ${fcfMoeda(r.saidas)}</td>
+        <td class="fcf-num${mesNeg ? ' fcf-neg' : ''}">${fcfMoeda(r.saldo)}</td>
+        <td class="fcf-num${acumNeg ? ' fcf-neg' : ''}"><strong>${fcfMoeda(acumulado)}</strong></td>
+      </tr>`);
+  }
+
+  const aviso = primeiroNegativo
+    ? `<div class="fcf-aviso">Primeiro mês no vermelho: <strong>${formatarMesAno(primeiroNegativo)}</strong>. É até aí que dá para antecipar a decisão.</div>`
+    : `<div class="fcf-aviso fcf-aviso-ok">Nenhum mês projetado fica negativo nos próximos 12 meses.</div>`;
+
+  container.innerHTML = `
+    ${aviso}
+    <div class="fcf-tabela-wrap">
+      <table class="fcf-tabela">
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th class="fcf-num">Receitas</th>
+            <th class="fcf-num">Saídas</th>
+            <th class="fcf-num">Saldo do mês</th>
+            <th class="fcf-num">Acumulado</th>
+          </tr>
+        </thead>
+        <tbody>${linhas.join('')}</tbody>
+      </table>
+    </div>
+    <p class="fcf-nota">
+      Inclui receitas (contracheque/renda da competência + rendas extras + ajustes), despesas fixas,
+      despesas variáveis lançadas, faturas de cartão que vencem no mês, parcelas de compras parceladas
+      e parcelas/vencimentos de dívidas — o mesmo cálculo do card "Saldo do mês" do Painel.
+    </p>`;
 }

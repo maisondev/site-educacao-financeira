@@ -55,7 +55,7 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 | 4 | Competência mensal | ✅ base feita — só `despesas_variaveis` e `receitas_lista` têm competência → ampliação em **N8** |
 | 5 | Categorias unificadas | ✅ **feito (2026-08-29)** — vocabulário único em `cadastros-dados.js`; fixas e variáveis consomem; relatório "gasto por categoria somando tudo" (N3) |
 | 6 | Análise de fatura → lançamento automático | ✅ **feito (2026-08-29)** — botão "Lançar em Despesas Variáveis" (N2) |
-| 7 | Fluxo de caixa futuro completo | ✗ pendente → detalhado em **N7** |
+| 7 | Fluxo de caixa futuro completo | ✅ **feito (2026-08-29)** — projeção de 12 meses somando faturas, dívidas e receitas via `calcularSaldoDoMes` (N7) |
 | 8 | Central de alertas | ✅ feito |
 | 9 | Lançamento rápido | ✅ feito |
 | 10 | PWA + uso no celular | ✗ pendente → ver **N10** |
@@ -198,7 +198,15 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ---
 
-#### N7. Fluxo de caixa futuro completo (item 7) (≈1h30)
+#### N7. Fluxo de caixa futuro completo (item 7) (≈1h30) — ✅ FEITO 2026-08-29
+
+> `renderizarProjecao12Meses()` (`fluxo-caixa-futuro.js`) reaproveita `calcularSaldoDoMes`
+> (saldo-mes.js) para os 12 meses a partir do mês corrente: tabela com receitas, saídas, saldo
+> do mês e **saldo acumulado**, meses negativos (do mês ou do acumulado) pintados de vermelho,
+> e destaque do **primeiro mês no vermelho**. Agora entram faturas de cartão, dívidas e receitas
+> recorrentes — não só despesas fixas + parcelas. Seção nova em `parcelas-cartao.html` (a página
+> viva; `fluxo-caixa-futuro.html` é duplicata órfã — candidata a remoção). `parcelas-cartao.html`
+> passou a carregar `storage.js` + `competencia.js` + `saldo-mes.js`.
 
 **Problema:** `fluxo-caixa-futuro.js` projeta despesas fixas + compras parceladas (`CHAVE_COMPRAS:3`), mas ignora `cartoes_financeiros` (faturas em aberto), `dividas` e receitas recorrentes. A projeção de 12 meses fica otimista demais para decidir.
 

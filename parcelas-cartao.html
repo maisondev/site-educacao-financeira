@@ -210,6 +210,44 @@
         padding: var(--espacamento-sm);
       }
     }
+
+    .fcf-tabela-wrap { overflow-x: auto; }
+    .fcf-tabela {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .fcf-tabela th,
+    .fcf-tabela td {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border-bottom: 1px solid var(--cor-borda);
+      white-space: nowrap;
+    }
+    .fcf-tabela thead th {
+      text-align: left;
+      color: var(--cor-texto-leve);
+      font-size: 13px;
+    }
+    .fcf-num { text-align: right; }
+    .fcf-neg { color: var(--cor-vermelho); font-weight: bold; }
+    .fcf-linha-alerta { background: #fff3f3; }
+    .fcf-aviso {
+      border-left: 4px solid var(--cor-vermelho);
+      background: #fff3f3;
+      padding: var(--espacamento-md);
+      border-radius: 4px;
+      margin-bottom: var(--espacamento-md);
+      font-size: 14px;
+    }
+    .fcf-aviso-ok {
+      border-left-color: var(--cor-verde);
+      background: #f0f9f0;
+    }
+    .fcf-nota {
+      font-size: 12px;
+      color: var(--cor-texto-leve);
+      margin-top: var(--espacamento-sm);
+    }
   </style>
 </head>
 <body>
@@ -249,6 +287,11 @@
       <a href="./despesas-fixas.html">Despesas Fixas</a> como uma obrigação mensal. Nos próximos meses,
       você verá o calendário aqui para se preparar.
     </div>
+
+    <section>
+      <h2>Projeção de caixa — próximos 12 meses</h2>
+      <div id="projecao-container"></div>
+    </section>
 
     <section class="secao-adicionar">
       <h2>Registrar Nova Compra Parcelada</h2>
@@ -331,6 +374,9 @@
   <script src="./assets/js/main.js"></script>
   <script src="./assets/js/formatacao.js"></script>
   <script src="./assets/js/config.js"></script>
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/competencia.js"></script>
+  <script src="./assets/js/saldo-mes.js"></script>
   <script src="./assets/js/fluxo-caixa-futuro.js"></script>
   <script src="./assets/js/menu.js"></script>
 </body>
