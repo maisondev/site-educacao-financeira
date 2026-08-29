@@ -140,6 +140,18 @@
     }
     .registro-card.corretiva { border-left-color: var(--cor-vermelho); }
 
+    .veiculo-card {
+      background: var(--cor-fundo);
+      border: 1px solid var(--cor-borda);
+      border-left: 4px solid var(--cor-borda);
+      border-radius: var(--border-radius-sm);
+      padding: var(--espacamento-md);
+    }
+    .veiculo-card.ativo {
+      border-left-color: var(--cor-primaria);
+      background: var(--cor-cinza-leve);
+    }
+
     .registro-topo { display: flex; justify-content: space-between; gap: var(--espacamento-md); }
     .registro-meta { margin: var(--espacamento-xs) 0 0; font-size: 13px; color: var(--cor-texto-light); }
     .registro-desc { margin: var(--espacamento-xs) 0 0; font-size: 14px; }
@@ -199,13 +211,20 @@
       <div class="card-info"><p>Fundo do carro</p><p class="valor" id="r-fundo">—</p></div>
     </div>
 
-    <!-- Veículo -->
+    <!-- Garagem -->
     <section class="bloco">
-      <h2>Meu veículo</h2>
+      <h2>Garagem</h2>
+      <p class="subtitulo-bloco">
+        Cadastre um ou mais veículos. Manutenções, abastecimentos, plano preventivo e fundo
+        são separados por veículo — a página inteira usa o veículo ativo.
+      </p>
+      <div id="lista-garagem" class="lista-registros" style="margin-bottom: var(--espacamento-lg);"></div>
+
+      <h3 id="titulo-form-veiculo" style="font-size: 15px; margin: 0 0 var(--espacamento-md);">Dados do veículo</h3>
       <div class="form-row tres">
         <div class="form-group">
           <label for="v-nome">Modelo *</label>
-          <input type="text" id="v-nome" placeholder="Ex: Onix 1.0 2019">
+          <input type="text" id="v-nome" placeholder="Ex: Fox 1.0 2012">
         </div>
         <div class="form-group">
           <label for="v-placa">Placa</label>
@@ -227,7 +246,90 @@
         </div>
       </div>
       <div class="acoes-form">
-        <button class="btn btn-primary" onclick="salvarVeiculo()">Salvar veículo</button>
+        <button class="btn btn-primary" id="btn-salvar-veiculo" onclick="salvarVeiculo()">Salvar veículo</button>
+        <button class="btn btn-secondary" id="btn-novo-veiculo" onclick="novoVeiculo()">+ Adicionar outro veículo</button>
+        <button class="btn btn-secondary" id="btn-cancelar-veiculo" onclick="cancelarNovoVeiculo()" style="display:none">Cancelar</button>
+        <span id="v-status" role="status" aria-live="polite" style="align-self: center; color: var(--cor-verde); font-size: 14px;"></span>
+      </div>
+    </section>
+
+    <!-- Ficha técnica do meu carro -->
+    <section class="bloco">
+      <h2>Ficha do carro — VW Fox 1.0 8V G2 (Total Flex), 2011/2012</h2>
+      <p class="subtitulo-bloco">
+        Motor EA111 1.0 8V, álcool/gasolina, câmbio manual de 5 marchas. Valores de referência —
+        confirme sempre no manual do proprietário e na etiqueta da coluna da porta do motorista.
+      </p>
+
+      <div class="cards-resumo">
+        <div class="card-info"><p>Tanque de combustível</p><p class="valor">~51 L</p></div>
+        <div class="card-info"><p>Tanque de partida a frio</p><p class="valor">~1 L</p></div>
+        <div class="card-info"><p>Óleo do motor (c/ filtro)</p><p class="valor">~3,7 L</p></div>
+        <div class="card-info"><p>Pneu original</p><p class="valor">175/70 R14</p></div>
+      </div>
+
+      <table class="plano">
+        <tbody>
+          <tr><th>Combustível</th><td>Álcool (etanol) ou gasolina comum, em qualquer proporção. Gasolina aditivada só ajuda na limpeza; <strong>premium/podium não traz ganho</strong> nesse motor.</td></tr>
+          <tr><th>Capacidade do tanque</th><td>Cerca de 51 litros (reserva acende com ~7 L). Abastecer R$ 250 a R$ 7,25/L = <strong>~34,5 litros</strong>.</td></tr>
+          <tr><th>Partida a frio</th><td>Possui reservatório de gasolina no cofre do motor. Rodando só com álcool, mantenha esse tanquinho cheio (peça no posto para "completar a partida a frio", ou ponha ~1 L de gasolina 1x por mês). Sem ele, partida ruim abaixo de ~15 °C.</td></tr>
+          <tr><th>Óleo do motor</th><td>5W40 sintético (norma VW 502 00 / 505 00). Troca a cada <strong>10.000 km ou 12 meses</strong> — rodando muito com álcool, antecipe para 7.500 km. ~3,7 L com filtro.</td></tr>
+          <tr><th>Velas de ignição</th><td>Trocar a cada <strong>20.000 km</strong> (uso flex/álcool desgasta mais rápido que o intervalo de catálogo).</td></tr>
+          <tr><th>Correia dentada + tensor</th><td>Motor com <strong>correia dentada</strong> (não corrente). Trocar a cada <strong>40.000 km</strong> ou 4 anos. Se arrebentar, entorta válvula e o conserto passa de R$ 3.000.</td></tr>
+          <tr><th>Filtro de combustível</th><td>A cada 20.000 km. Álcool suja mais o sistema — não pule.</td></tr>
+          <tr><th>Arrefecimento</th><td>Aditivo VW G12 (rosa/roxo), pré-diluído. Verificar nível com o motor frio; trocar a cada 5 anos ou 60.000 km.</td></tr>
+          <tr><th>Pneus / calibragem</th><td>175/70 R14. Calibrar a <strong>30 psi</strong> (dianteiros) e <strong>32 psi</strong> (traseiros) com o carro leve; com o carro cheio, +3 a +4 psi atrás. Sulco mínimo legal 1,6 mm.</td></tr>
+          <tr><th>Bateria</th><td>45–48 Ah. Vida média 3–4 anos.</td></tr>
+          <tr><th>Consumo esperado</th><td>Gasolina: ~11 km/l cidade, ~14 km/l estrada. Álcool: ~8 km/l cidade, ~10,5 km/l estrada.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="bloco" style="background: var(--cor-fundo); margin-top: var(--espacamento-lg); margin-bottom: 0;">
+        <h3 style="font-size: 15px; margin: 0 0 var(--espacamento-md);">Calculadora de paridade álcool x gasolina</h3>
+        <div class="form-row tres">
+          <div class="form-group">
+            <label for="par-gasolina">Preço da gasolina (R$/L)</label>
+            <input type="number" id="par-gasolina" min="0" step="0.01" value="7.25">
+          </div>
+          <div class="form-group">
+            <label for="par-alcool">Preço do álcool (R$/L)</label>
+            <input type="number" id="par-alcool" min="0" step="0.01" value="5.29">
+          </div>
+          <div class="form-group">
+            <label for="par-limite">Limite de vantagem (%)</label>
+            <input type="number" id="par-limite" min="1" max="100" step="1" value="70">
+          </div>
+        </div>
+        <p class="subtitulo-bloco" style="margin-top: 0;">
+          O Fox 1.0 rende menos com álcool. Regra prática: só compensa se o litro do álcool
+          custar até 70% do da gasolina (use 75% se dirige mais na estrada).
+        </p>
+        <div id="par-resultado" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="dicas-grid" style="margin-top: var(--espacamento-lg);">
+        <div>
+          <h3>Hacks de economia para o Fox 1.0</h3>
+          <ul>
+            <li>Complete no máximo até o 1º "clique" da bomba — abastecer demais transborda pelo respiro e você paga combustível que vai pro chão.</li>
+            <li>Etanol acima da paridade (R$ 5,08) = jogar dinheiro fora. Faça a conta no painel do posto.</li>
+            <li>Motor pequeno: ande em marcha alta e giro baixo (2.000–2.500 rpm). Forçar em 3ª a 60 km/h gasta mais.</li>
+            <li>Ar-condicionado na estrada custa menos que janela aberta acima de 80 km/h (arrasto). Na cidade, o contrário.</li>
+            <li>Pneu a 30/32 psi (não os 26 que os postos deixam) reduz consumo e desgaste — calibragem é economia grátis.</li>
+            <li>Tire o peso morto do porta-malas: cada 50 kg extra pesa no 1.0.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Pontos fracos conhecidos deste modelo</h3>
+          <ul>
+            <li><strong>Coxim/calço do motor</strong>: trepidação no ponto morto é o sintoma clássico. Peça relativamente barata.</li>
+            <li><strong>Bobina e cabos de vela</strong>: falha causa "engasgo" e luz de injeção — trocar em jogo.</li>
+            <li><strong>Tanquinho de partida a frio</strong>: se esvaziar, partida difícil no frio. Verifique de vez em quando.</li>
+            <li><strong>Sensor de nível de combustível</strong>: ponteiro que "trava" ou marca errado é comum.</li>
+            <li><strong>Bucha da barra estabilizadora</strong>: barulho de "toc-toc" em lombada; troca barata.</li>
+            <li><strong>Máquina de vidro elétrico</strong> (versões com): cabo de aço arrebenta com o tempo.</li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -475,5 +577,47 @@
   <script src="./assets/js/lembretes.js"></script>
   <script src="./assets/js/menu.js"></script>
   <script src="./assets/js/carro.js"></script>
+  <script>
+    // Calculadora de paridade álcool x gasolina (independente do resto da página)
+    (function() {
+      const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+      const gEl = document.getElementById('par-gasolina');
+      const aEl = document.getElementById('par-alcool');
+      const limEl = document.getElementById('par-limite');
+      const out = document.getElementById('par-resultado');
+      if (!gEl || !aEl || !limEl || !out) return;
+
+      function calcular() {
+        const g = parseFloat(gEl.value) || 0;
+        const a = parseFloat(aEl.value) || 0;
+        let lim = parseFloat(limEl.value) || 70;
+        lim = Math.min(100, Math.max(1, lim));
+        if (g <= 0 || a <= 0) {
+          out.innerHTML = '<p class="vazio-msg">Informe os dois preços.</p>';
+          return;
+        }
+        const razao = (a / g) * 100;
+        const equilibrio = g * (lim / 100);
+        const compensaAlcool = a <= equilibrio;
+        const economiaPercent = Math.abs(razao - lim);
+        out.innerHTML = `
+          <div class="valor-linha"><span>Relação álcool / gasolina</span><strong>${razao.toFixed(1)}% (limite ${lim.toFixed(0)}%)</strong></div>
+          <div class="valor-linha"><span>Ponto de equilíbrio do álcool</span><strong>${brl.format(equilibrio)}/L</strong></div>
+          <div class="valor-linha" style="border-bottom:none;">
+            <span>Veredito</span>
+            <span class="pill ${compensaAlcool ? 'pill-em-dia' : 'pill-atrasado'}">
+              ${compensaAlcool ? 'Abasteça álcool' : 'Abasteça gasolina'}
+            </span>
+          </div>
+          <p class="subtitulo-bloco" style="margin: var(--espacamento-sm) 0 0;">
+            O álcool está ${economiaPercent.toFixed(1)} ponto(s) percentual(is)
+            ${compensaAlcool ? 'abaixo' : 'acima'} do limite de vantagem.
+          </p>`;
+      }
+
+      [gEl, aEl, limEl].forEach(el => el.addEventListener('input', calcular));
+      calcular();
+    })();
+  </script>
 </body>
 </html>

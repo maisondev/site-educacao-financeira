@@ -22,7 +22,7 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 - **Lançamento rápido**: um único campo (`45,90 mercado`) cria a despesa variável na hora; a lista abre no mês vigente com navegação por mês (setas + "mês atual") e total do mês.
 
 ### Novas áreas de acompanhamento
-- **Carro** (`carro.html`): histórico de manutenções, plano preventivo por km/tempo, fundo de reserva mensal, custo por km, consumo e dicas de priorização/economia.
+- **Carro** (`carro.html`): garagem com vários veículos (veículo ativo, histórico separado por veículo), histórico de manutenções, plano preventivo por km/tempo, fundo de reserva mensal, custo por km, consumo e dicas de priorização/economia.
 - **FGTS** (`fgts.html`): contas de FGTS, registro de saldo por extrato (snapshot) e resumo consolidado.
 - **Desapego** (`desapego.html`): itens para vender, com valor esperado.
 - **Dívidas** reformulada (`dividas.js`): separa dívidas onerosas de contas de curto prazo, modo parcelado, saldo devedor, débito automático, faturas de cartão read-only, **simulador avalanche × bola de neve** e edição.

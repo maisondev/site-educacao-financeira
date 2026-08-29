@@ -1,11 +1,21 @@
-// Área do Carro — manutenções, plano preventivo, fundo e custo por km.
-// Persistência em localStorage sob a chave 'carro'.
+// Área do Carro — garagem com vários veículos, manutenções, plano preventivo,
+// fundo e custo por km. Persistência em localStorage sob a chave 'carro'.
+//
+// Formato dos dados:
+// {
+//   veiculos: [ { id, nome, placa, ano, kmAtual, kmAtualData } ],
+//   veiculoAtivoId: <id> | null,
+//   manutencoes:    [ { id, veiculoId, ... } ],
+//   abastecimentos: [ { id, veiculoId, ... } ],
+//   fundos: { <veiculoId>: { aporteMensal, saldoInicial, movimentos: [] } }
+// }
 
 const CHAVE_CARRO = 'carro';
 
 let manutencaoEditandoId = null;
 let abastecimentoEditandoId = null;
 let movimentoFundoEditandoId = null;
+let veiculoModoNovo = false;
 
 // Plano preventivo de referência. Intervalos típicos para carro de passeio flex.
 // Ajuste sempre pelo manual do fabricante — este é só um ponto de partida.
@@ -47,6 +57,13 @@ function num(v, casas = 1) {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }).format(v || 0);
 }
 
+function gerarId() {
+  return 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ---------------------------------------------------------------------------
+// Persistência + migração do formato antigo (um único veículo em d.veiculo)
+// ---------------------------------------------------------------------------
 function obterDadosCarro() {
   let d;
   try {
@@ -54,31 +71,158 @@ function obterDadosCarro() {
   } catch (e) {
     d = {};
   }
-  return {
-    veiculo: d.veiculo || { nome: '', placa: '', ano: '', kmAtual: 0, kmAtualData: '' },
-    manutencoes: Array.isArray(d.manutencoes) ? d.manutencoes : [],
-    abastecimentos: Array.isArray(d.abastecimentos) ? d.abastecimentos : [],
-    fundo: d.fundo || { aporteMensal: 0, saldoInicial: 0, movimentos: [] }
-  };
+
+  if (!Array.isArray(d.veiculos)) {
+    const antigo = d.veiculo || {};
+    const temDadosAntigos = !!(antigo.nome || antigo.kmAtual) ||
+      (Array.isArray(d.manutencoes) && d.manutencoes.length > 0) ||
+      (Array.isArray(d.abastecimentos) && d.abastecimentos.length > 0);
+
+    if (temDadosAntigos) {
+      const id = gerarId();
+      d = {
+        veiculos: [{
+          id,
+          nome: antigo.nome || 'Meu carro',
+          placa: antigo.placa || '',
+          ano: antigo.ano || '',
+          kmAtual: antigo.kmAtual || 0,
+          kmAtualData: antigo.kmAtualData || ''
+        }],
+        veiculoAtivoId: id,
+        manutencoes: (Array.isArray(d.manutencoes) ? d.manutencoes : []).map(m => ({ ...m, veiculoId: m.veiculoId || id })),
+        abastecimentos: (Array.isArray(d.abastecimentos) ? d.abastecimentos : []).map(a => ({ ...a, veiculoId: a.veiculoId || id })),
+        fundos: { [id]: d.fundo || { aporteMensal: 0, saldoInicial: 0, movimentos: [] } }
+      };
+    } else {
+      d = { veiculos: [], veiculoAtivoId: null, manutencoes: [], abastecimentos: [], fundos: {} };
+    }
+  }
+
+  // Normalização defensiva
+  d.veiculos = Array.isArray(d.veiculos) ? d.veiculos : [];
+  d.manutencoes = Array.isArray(d.manutencoes) ? d.manutencoes : [];
+  d.abastecimentos = Array.isArray(d.abastecimentos) ? d.abastecimentos : [];
+  d.fundos = (d.fundos && typeof d.fundos === 'object') ? d.fundos : {};
+  if (!d.veiculoAtivoId || !d.veiculos.some(v => v.id === d.veiculoAtivoId)) {
+    d.veiculoAtivoId = d.veiculos.length ? d.veiculos[0].id : null;
+  }
+  d.veiculos.forEach(v => {
+    if (!d.fundos[v.id]) d.fundos[v.id] = { aporteMensal: 0, saldoInicial: 0, movimentos: [] };
+  });
+
+  return d;
 }
 
 function salvarDadosCarro(d) {
   localStorage.setItem(CHAVE_CARRO, JSON.stringify(d));
 }
 
+// Acessores do veículo ativo
+function veiculoAtivo(d) {
+  return d.veiculos.find(v => v.id === d.veiculoAtivoId) || null;
+}
+function manutencoesAtivas(d) {
+  return d.manutencoes.filter(m => m.veiculoId === d.veiculoAtivoId);
+}
+function abastecimentosAtivos(d) {
+  return d.abastecimentos.filter(a => a.veiculoId === d.veiculoAtivoId);
+}
+function fundoAtivo(d) {
+  return d.fundos[d.veiculoAtivoId] || { aporteMensal: 0, saldoInicial: 0, movimentos: [] };
+}
+
 // ---------------------------------------------------------------------------
-// Veículo
+// Garagem (vários veículos)
 // ---------------------------------------------------------------------------
-function salvarVeiculo() {
-  const d = obterDadosCarro();
-  d.veiculo = {
+function mostrarStatusVeiculo(msg) {
+  const status = document.getElementById('v-status');
+  if (!status) return;
+  status.textContent = msg;
+  clearTimeout(mostrarStatusVeiculo._t);
+  mostrarStatusVeiculo._t = setTimeout(() => { status.textContent = ''; }, 3000);
+}
+
+function lerFormVeiculo() {
+  return {
     nome: document.getElementById('v-nome').value.trim(),
     placa: document.getElementById('v-placa').value.trim(),
     ano: document.getElementById('v-ano').value.trim(),
     kmAtual: parseInt(document.getElementById('v-km').value, 10) || 0,
     kmAtualData: document.getElementById('v-km-data').value || new Date().toISOString().split('T')[0]
   };
-  if (!d.veiculo.nome) { alert('Informe o nome/modelo do carro.'); return; }
+}
+
+function limparFormVeiculo() {
+  ['v-nome', 'v-placa', 'v-ano', 'v-km', 'v-km-data'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function salvarVeiculo() {
+  const d = obterDadosCarro();
+  const dados = lerFormVeiculo();
+  if (!dados.nome) { alert('Informe o nome/modelo do carro.'); return; }
+
+  if (veiculoModoNovo || d.veiculos.length === 0) {
+    const id = gerarId();
+    d.veiculos.push({ id, ...dados });
+    d.fundos[id] = { aporteMensal: 0, saldoInicial: 0, movimentos: [] };
+    d.veiculoAtivoId = id;
+    veiculoModoNovo = false;
+    mostrarStatusVeiculo('Veículo adicionado.');
+  } else {
+    const v = veiculoAtivo(d);
+    if (!v) return;
+    Object.assign(v, dados);
+    mostrarStatusVeiculo('Veículo salvo.');
+  }
+
+  salvarDadosCarro(d);
+  renderTudo();
+}
+
+function novoVeiculo() {
+  veiculoModoNovo = true;
+  limparFormVeiculo();
+  document.getElementById('titulo-form-veiculo').textContent = 'Novo veículo';
+  document.getElementById('btn-salvar-veiculo').textContent = 'Adicionar veículo';
+  document.getElementById('btn-cancelar-veiculo').style.display = '';
+  document.getElementById('v-nome').focus();
+}
+
+function cancelarNovoVeiculo() {
+  veiculoModoNovo = false;
+  document.getElementById('btn-salvar-veiculo').textContent = 'Salvar veículo';
+  document.getElementById('btn-cancelar-veiculo').style.display = 'none';
+  renderTudo();
+}
+
+function selecionarVeiculo(id) {
+  const d = obterDadosCarro();
+  if (!d.veiculos.some(v => v.id === id)) return;
+  d.veiculoAtivoId = id;
+  veiculoModoNovo = false;
+  document.getElementById('btn-salvar-veiculo').textContent = 'Salvar veículo';
+  document.getElementById('btn-cancelar-veiculo').style.display = 'none';
+  salvarDadosCarro(d);
+  renderTudo();
+}
+
+function removerVeiculo(id) {
+  const d = obterDadosCarro();
+  const v = d.veiculos.find(x => x.id === id);
+  if (!v) return;
+  if (!confirm(`Remover "${v.nome}" e todo o histórico dele (manutenções, abastecimentos e fundo)?`)) return;
+
+  d.veiculos = d.veiculos.filter(x => x.id !== id);
+  d.manutencoes = d.manutencoes.filter(m => m.veiculoId !== id);
+  d.abastecimentos = d.abastecimentos.filter(a => a.veiculoId !== id);
+  delete d.fundos[id];
+  if (d.veiculoAtivoId === id) {
+    d.veiculoAtivoId = d.veiculos.length ? d.veiculos[0].id : null;
+  }
+  veiculoModoNovo = false;
   salvarDadosCarro(d);
   renderTudo();
 }
@@ -88,8 +232,12 @@ function salvarVeiculo() {
 // ---------------------------------------------------------------------------
 function adicionarManutencao() {
   const d = obterDadosCarro();
+  const ativo = veiculoAtivo(d);
+  if (!ativo) { alert('Cadastre um veículo primeiro.'); return; }
+
   const m = {
     id: Date.now(),
+    veiculoId: ativo.id,
     data: document.getElementById('m-data').value,
     km: parseInt(document.getElementById('m-km').value, 10) || 0,
     tipo: document.getElementById('m-tipo').value,
@@ -106,11 +254,13 @@ function adicionarManutencao() {
     const idx = d.manutencoes.findIndex(x => x.id === manutencaoEditandoId);
     if (idx !== -1) {
       m.id = manutencaoEditandoId;
+      m.veiculoId = d.manutencoes[idx].veiculoId || ativo.id;
       d.manutencoes[idx] = m;
     }
-    if (m.km > (d.veiculo.kmAtual || 0)) {
-      d.veiculo.kmAtual = m.km;
-      d.veiculo.kmAtualData = m.data;
+    const alvo = d.veiculos.find(v => v.id === m.veiculoId) || ativo;
+    if (m.km > (alvo.kmAtual || 0)) {
+      alvo.kmAtual = m.km;
+      alvo.kmAtualData = m.data;
     }
     salvarDadosCarro(d);
     cancelarEdicaoManutencao();
@@ -123,8 +273,8 @@ function adicionarManutencao() {
 
   d.manutencoes.push(m);
   if (pagarComFundo && total > 0) {
-    d.fundo.movimentos = d.fundo.movimentos || [];
-    d.fundo.movimentos.push({
+    d.fundos[ativo.id].movimentos = d.fundos[ativo.id].movimentos || [];
+    d.fundos[ativo.id].movimentos.push({
       id: Date.now() + 1,
       data: m.data,
       tipo: 'retirada',
@@ -133,9 +283,9 @@ function adicionarManutencao() {
     });
   }
   // Atualiza o km atual do veículo se a manutenção for mais recente
-  if (m.km > (d.veiculo.kmAtual || 0)) {
-    d.veiculo.kmAtual = m.km;
-    d.veiculo.kmAtualData = m.data;
+  if (m.km > (ativo.kmAtual || 0)) {
+    ativo.kmAtual = m.km;
+    ativo.kmAtualData = m.data;
   }
 
   salvarDadosCarro(d);
@@ -197,6 +347,9 @@ function removerManutencao(id) {
 // ---------------------------------------------------------------------------
 function adicionarAbastecimento() {
   const d = obterDadosCarro();
+  const ativo = veiculoAtivo(d);
+  if (!ativo) { alert('Cadastre um veículo primeiro.'); return; }
+
   const litros = parseFloat(document.getElementById('a-litros').value) || 0;
   const valorLitro = parseFloat(document.getElementById('a-valor-litro').value) || 0;
   const valorTotalInput = parseFloat(document.getElementById('a-valor-total').value) || 0;
@@ -204,6 +357,7 @@ function adicionarAbastecimento() {
 
   const a = {
     id: Date.now(),
+    veiculoId: ativo.id,
     data: document.getElementById('a-data').value,
     km: parseInt(document.getElementById('a-km').value, 10) || 0,
     litros,
@@ -217,11 +371,13 @@ function adicionarAbastecimento() {
     const idx = d.abastecimentos.findIndex(x => x.id === abastecimentoEditandoId);
     if (idx !== -1) {
       a.id = abastecimentoEditandoId;
+      a.veiculoId = d.abastecimentos[idx].veiculoId || ativo.id;
       d.abastecimentos[idx] = a;
     }
-    if (a.km > (d.veiculo.kmAtual || 0)) {
-      d.veiculo.kmAtual = a.km;
-      d.veiculo.kmAtualData = a.data;
+    const alvo = d.veiculos.find(v => v.id === a.veiculoId) || ativo;
+    if (a.km > (alvo.kmAtual || 0)) {
+      alvo.kmAtual = a.km;
+      alvo.kmAtualData = a.data;
     }
     salvarDadosCarro(d);
     cancelarEdicaoAbastecimento();
@@ -230,9 +386,9 @@ function adicionarAbastecimento() {
   }
 
   d.abastecimentos.push(a);
-  if (a.km > (d.veiculo.kmAtual || 0)) {
-    d.veiculo.kmAtual = a.km;
-    d.veiculo.kmAtualData = a.data;
+  if (a.km > (ativo.kmAtual || 0)) {
+    ativo.kmAtual = a.km;
+    ativo.kmAtualData = a.data;
   }
   salvarDadosCarro(d);
   ['a-data', 'a-km', 'a-litros', 'a-valor-litro', 'a-valor-total'].forEach(id => document.getElementById(id).value = '');
@@ -275,25 +431,33 @@ function removerAbastecimento(id) {
 }
 
 // ---------------------------------------------------------------------------
-// Fundo do carro
+// Fundo do carro (por veículo)
 // ---------------------------------------------------------------------------
 function salvarConfigFundo() {
   const d = obterDadosCarro();
-  d.fundo.aporteMensal = parseFloat(document.getElementById('f-aporte').value) || 0;
-  d.fundo.saldoInicial = parseFloat(document.getElementById('f-saldo-inicial').value) || 0;
+  const ativo = veiculoAtivo(d);
+  if (!ativo) { alert('Cadastre um veículo primeiro.'); return; }
+  const fundo = d.fundos[ativo.id];
+  fundo.aporteMensal = parseFloat(document.getElementById('f-aporte').value) || 0;
+  fundo.saldoInicial = parseFloat(document.getElementById('f-saldo-inicial').value) || 0;
   salvarDadosCarro(d);
   renderTudo();
 }
 
 function movimentarFundo(tipo) {
+  const d = obterDadosCarro();
+  const ativo = veiculoAtivo(d);
+  if (!ativo) { alert('Cadastre um veículo primeiro.'); return; }
+
   const valor = parseFloat(document.getElementById('f-mov-valor').value) || 0;
   const descricao = document.getElementById('f-mov-desc').value.trim();
   if (valor <= 0) { alert('Informe um valor.'); return; }
-  const d = obterDadosCarro();
-  d.fundo.movimentos = d.fundo.movimentos || [];
+
+  const fundo = d.fundos[ativo.id];
+  fundo.movimentos = fundo.movimentos || [];
 
   if (movimentoFundoEditandoId !== null) {
-    const mv = d.fundo.movimentos.find(x => x.id === movimentoFundoEditandoId);
+    const mv = fundo.movimentos.find(x => x.id === movimentoFundoEditandoId);
     if (mv) {
       mv.tipo = tipo;
       mv.valor = valor;
@@ -305,7 +469,7 @@ function movimentarFundo(tipo) {
     return;
   }
 
-  d.fundo.movimentos.push({
+  fundo.movimentos.push({
     id: Date.now(),
     data: new Date().toISOString().split('T')[0],
     tipo,
@@ -320,7 +484,7 @@ function movimentarFundo(tipo) {
 
 function iniciarEdicaoMovimentoFundo(id) {
   const d = obterDadosCarro();
-  const mv = (d.fundo.movimentos || []).find(x => x.id === id);
+  const mv = (fundoAtivo(d).movimentos || []).find(x => x.id === id);
   if (!mv) return;
 
   movimentoFundoEditandoId = id;
@@ -343,13 +507,16 @@ function cancelarEdicaoMovimentoFundo() {
 
 function registrarAporteMensal() {
   const d = obterDadosCarro();
-  if (!d.fundo.aporteMensal) { alert('Configure o aporte mensal primeiro.'); return; }
-  d.fundo.movimentos = d.fundo.movimentos || [];
-  d.fundo.movimentos.push({
+  const ativo = veiculoAtivo(d);
+  if (!ativo) { alert('Cadastre um veículo primeiro.'); return; }
+  const fundo = d.fundos[ativo.id];
+  if (!fundo.aporteMensal) { alert('Configure o aporte mensal primeiro.'); return; }
+  fundo.movimentos = fundo.movimentos || [];
+  fundo.movimentos.push({
     id: Date.now(),
     data: new Date().toISOString().split('T')[0],
     tipo: 'aporte',
-    valor: d.fundo.aporteMensal,
+    valor: fundo.aporteMensal,
     descricao: 'Aporte do mês'
   });
   salvarDadosCarro(d);
@@ -358,14 +525,15 @@ function registrarAporteMensal() {
 
 function removerMovimentoFundo(id) {
   const d = obterDadosCarro();
-  d.fundo.movimentos = (d.fundo.movimentos || []).filter(mv => mv.id !== id);
+  const fundo = fundoAtivo(d);
+  fundo.movimentos = (fundo.movimentos || []).filter(mv => mv.id !== id);
   salvarDadosCarro(d);
   renderTudo();
 }
 
-function saldoFundo(d) {
-  const movs = d.fundo.movimentos || [];
-  return (d.fundo.saldoInicial || 0) + movs.reduce((s, mv) => s + (mv.tipo === 'aporte' ? mv.valor : -mv.valor), 0);
+function saldoFundo(fundo) {
+  const movs = (fundo && fundo.movimentos) || [];
+  return ((fundo && fundo.saldoInicial) || 0) + movs.reduce((s, mv) => s + (mv.tipo === 'aporte' ? mv.valor : -mv.valor), 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -384,17 +552,17 @@ function calcularConsumo(abastecimentos) {
   return medias.reduce((s, v) => s + v, 0) / medias.length;
 }
 
-function calcularCustos(d) {
+function calcularCustos(manutencoes, abastecimentos, veiculo) {
   const kms = [
-    ...d.manutencoes.map(m => m.km),
-    ...d.abastecimentos.map(a => a.km)
+    ...manutencoes.map(m => m.km),
+    ...abastecimentos.map(a => a.km)
   ].filter(k => k > 0);
-  const kmAtual = d.veiculo.kmAtual || (kms.length ? Math.max(...kms) : 0);
+  const kmAtual = (veiculo && veiculo.kmAtual) || (kms.length ? Math.max(...kms) : 0);
   const kmInicial = kms.length ? Math.min(...kms) : 0;
   const kmRodado = kmAtual - kmInicial;
 
-  const totalManut = d.manutencoes.reduce((s, m) => s + m.valorPecas + m.valorMaoObra, 0);
-  const totalComb = d.abastecimentos.reduce((s, a) => s + a.valorTotal, 0);
+  const totalManut = manutencoes.reduce((s, m) => s + m.valorPecas + m.valorMaoObra, 0);
+  const totalComb = abastecimentos.reduce((s, a) => s + a.valorTotal, 0);
 
   return {
     kmRodado,
@@ -415,12 +583,12 @@ function addMeses(dataStr, meses) {
   return dt;
 }
 
-function statusPlano(d) {
-  const kmAtual = d.veiculo.kmAtual || 0;
+function statusPlano(manutencoes, veiculo) {
+  const kmAtual = (veiculo && veiculo.kmAtual) || 0;
   const hoje = new Date();
 
   return PLANO_PADRAO.map(item => {
-    const feitas = d.manutencoes
+    const feitas = manutencoes
       .filter(m => m.categoria === item.id)
       .sort((a, b) => (b.km - a.km) || (new Date(b.data) - new Date(a.data)));
 
@@ -469,6 +637,7 @@ const ROTULO_STATUS = {
 // ---------------------------------------------------------------------------
 function renderTudo() {
   const d = obterDadosCarro();
+  renderGaragem(d);
   renderVeiculo(d);
   renderResumo(d);
   renderPlano(d);
@@ -493,21 +662,68 @@ function preencherSelectCategoria() {
   sel.appendChild(outro);
 }
 
+function renderGaragem(d) {
+  const wrap = document.getElementById('lista-garagem');
+  if (!wrap) return;
+
+  if (d.veiculos.length === 0) {
+    wrap.innerHTML = '<p class="vazio-msg">Nenhum veículo cadastrado. Preencha os dados abaixo e clique em "Salvar veículo".</p>';
+    return;
+  }
+
+  wrap.innerHTML = d.veiculos.map(v => {
+    const ativo = v.id === d.veiculoAtivoId;
+    const nManut = d.manutencoes.filter(m => m.veiculoId === v.id).length;
+    const nAbast = d.abastecimentos.filter(a => a.veiculoId === v.id).length;
+    const meta = [
+      v.placa ? escaparHtml(v.placa) : null,
+      v.ano ? 'Ano ' + escaparHtml(v.ano) : null,
+      num(v.kmAtual || 0, 0) + ' km',
+      `${nManut} manut. · ${nAbast} abast.`
+    ].filter(Boolean).join(' · ');
+
+    return `
+      <div class="veiculo-card${ativo ? ' ativo' : ''}">
+        <div class="registro-topo">
+          <strong>${escaparHtml(v.nome)}</strong>
+          ${ativo ? '<span class="tag-essencial">ativo</span>' : ''}
+        </div>
+        <p class="registro-meta">${meta}</p>
+        <div class="acoes-form" style="margin-top: var(--espacamento-sm);">
+          ${ativo ? '' : `<button class="btn btn-secondary" onclick="selecionarVeiculo('${v.id}')">Selecionar</button>`}
+          <button class="btn-link-remover" onclick="removerVeiculo('${v.id}')">Remover</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
 function renderVeiculo(d) {
-  document.getElementById('v-nome').value = d.veiculo.nome || '';
-  document.getElementById('v-placa').value = d.veiculo.placa || '';
-  document.getElementById('v-ano').value = d.veiculo.ano || '';
-  document.getElementById('v-km').value = d.veiculo.kmAtual || '';
-  document.getElementById('v-km-data').value = d.veiculo.kmAtualData || '';
+  if (veiculoModoNovo) return; // não sobrescrever o que o usuário está digitando
+
+  const v = veiculoAtivo(d);
+  document.getElementById('v-nome').value = (v && v.nome) || '';
+  document.getElementById('v-placa').value = (v && v.placa) || '';
+  document.getElementById('v-ano').value = (v && v.ano) || '';
+  document.getElementById('v-km').value = (v && v.kmAtual) || '';
+  document.getElementById('v-km-data').value = (v && v.kmAtualData) || '';
+
+  const titulo = document.getElementById('titulo-form-veiculo');
+  if (titulo) titulo.textContent = v ? 'Dados do veículo ativo' : 'Cadastrar primeiro veículo';
+  document.getElementById('btn-salvar-veiculo').textContent = 'Salvar veículo';
+  document.getElementById('btn-cancelar-veiculo').style.display = 'none';
 }
 
 function renderResumo(d) {
-  const custos = calcularCustos(d);
-  const consumo = calcularConsumo(d.abastecimentos);
-  document.getElementById('r-km').textContent = num(d.veiculo.kmAtual || 0, 0) + ' km';
+  const v = veiculoAtivo(d);
+  const manut = manutencoesAtivas(d);
+  const abast = abastecimentosAtivos(d);
+  const custos = calcularCustos(manut, abast, v);
+  const consumo = calcularConsumo(abast);
+
+  document.getElementById('r-km').textContent = num((v && v.kmAtual) || 0, 0) + ' km';
   document.getElementById('r-custo-km').textContent = custos.custoTotalKm > 0 ? moeda(custos.custoTotalKm) + '/km' : '—';
   document.getElementById('r-consumo').textContent = consumo ? num(consumo, 1) + ' km/l' : '—';
-  document.getElementById('r-fundo').textContent = moeda(saldoFundo(d));
+  document.getElementById('r-fundo').textContent = moeda(saldoFundo(fundoAtivo(d)));
 
   document.getElementById('detalhe-custos').innerHTML = custos.kmRodado > 0 ? `
     <div class="valor-linha"><span>Km rodados no período</span><strong>${num(custos.kmRodado, 0)} km</strong></div>
@@ -518,7 +734,7 @@ function renderResumo(d) {
 }
 
 function renderPlano(d) {
-  const linhas = statusPlano(d);
+  const linhas = statusPlano(manutencoesAtivas(d), veiculoAtivo(d));
   const tbody = document.getElementById('plano-body');
   tbody.innerHTML = linhas.map(l => `
     <tr>
@@ -544,13 +760,15 @@ function renderPlano(d) {
 function renderListaManutencoes(d) {
   const lista = document.getElementById('lista-manutencoes');
   const total = document.getElementById('total-manutencoes');
-  if (d.manutencoes.length === 0) {
+  const manut = manutencoesAtivas(d);
+
+  if (manut.length === 0) {
     lista.innerHTML = '<p class="vazio-msg">Nenhuma manutenção registrada.</p>';
     total.textContent = '';
     return;
   }
-  const ordenadas = [...d.manutencoes].sort((a, b) => new Date(b.data) - new Date(a.data));
-  const somaTotal = d.manutencoes.reduce((s, m) => s + m.valorPecas + m.valorMaoObra, 0);
+  const ordenadas = [...manut].sort((a, b) => new Date(b.data) - new Date(a.data));
+  const somaTotal = manut.reduce((s, m) => s + m.valorPecas + m.valorMaoObra, 0);
   total.textContent = `Total gasto em manutenção: ${moeda(somaTotal)}`;
 
   lista.innerHTML = ordenadas.map(m => {
@@ -580,11 +798,13 @@ function renderListaManutencoes(d) {
 
 function renderListaAbastecimentos(d) {
   const lista = document.getElementById('lista-abastecimentos');
-  if (d.abastecimentos.length === 0) {
+  const abast = abastecimentosAtivos(d);
+
+  if (abast.length === 0) {
     lista.innerHTML = '<p class="vazio-msg">Nenhum abastecimento registrado.</p>';
     return;
   }
-  const ord = [...d.abastecimentos].sort((a, b) => b.km - a.km);
+  const ord = [...abast].sort((a, b) => b.km - a.km);
   lista.innerHTML = ord.map((a, i) => {
     const anterior = ord[i + 1];
     let consumo = '';
@@ -610,22 +830,21 @@ function renderListaAbastecimentos(d) {
 }
 
 function renderFundo(d) {
-  document.getElementById('f-aporte').value = d.fundo.aporteMensal || '';
-  document.getElementById('f-saldo-inicial').value = d.fundo.saldoInicial || '';
+  const fundo = fundoAtivo(d);
+  document.getElementById('f-aporte').value = fundo.aporteMensal || '';
+  document.getElementById('f-saldo-inicial').value = fundo.saldoInicial || '';
 
-  const saldo = saldoFundo(d);
+  const saldo = saldoFundo(fundo);
   document.getElementById('f-saldo').textContent = moeda(saldo);
 
-  // Quanto o fundo cobre da próxima manutenção prevista essencial
-  const proximos = statusPlano(d).filter(l => l.status === 'atrasado' || l.status === 'proximo');
   const dica = document.getElementById('f-dica');
-  if (d.fundo.aporteMensal > 0) {
-    dica.textContent = `Aporte mensal: ${moeda(d.fundo.aporteMensal)}. Em 12 meses o fundo recebe ${moeda(d.fundo.aporteMensal * 12)}.`;
+  if (fundo.aporteMensal > 0) {
+    dica.textContent = `Aporte mensal: ${moeda(fundo.aporteMensal)}. Em 12 meses o fundo recebe ${moeda(fundo.aporteMensal * 12)}.`;
   } else {
     dica.textContent = 'Defina um aporte mensal para transformar manutenção em despesa planejada, não em dívida.';
   }
 
-  const movs = (d.fundo.movimentos || []).slice().sort((a, b) => new Date(b.data) - new Date(a.data));
+  const movs = (fundo.movimentos || []).slice().sort((a, b) => new Date(b.data) - new Date(a.data));
   const lista = document.getElementById('lista-fundo');
   lista.innerHTML = movs.length === 0
     ? '<p class="vazio-msg">Nenhuma movimentação.</p>'
