@@ -52,7 +52,7 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 | 1 | Backup exportar/importar | ✅ feito |
 | 2 | Camada única de storage | ✅ **feito (2026-08-29)** — catálogo com `CADASTROS`/`REGISTRATO`; leitores críticos (`despesas-fixas`, `despesas-variaveis`, `dividas`, `cartoes`, `reserva-emergencia`, `investimentos`, `balanco-patrimonial`, `registrato`, `cadastros-dados`) migrados para `Store.ler`/`Store.gravar` |
 | 3 | Saldo do mês no dashboard | ✅ feito |
-| 4 | Competência mensal | ✅ base feita — só `despesas_variaveis` e `receitas_lista` têm competência → ampliação em **N8** |
+| 4 | Competência mensal | ✅ **feito (2026-08-29)** — base + ampliação N8: `rendas_extras`, `registros` de envelope e aportes de reserva também ganham competência |
 | 5 | Categorias unificadas | ✅ **feito (2026-08-29)** — vocabulário único em `cadastros-dados.js`; fixas e variáveis consomem; relatório "gasto por categoria somando tudo" (N3) |
 | 6 | Análise de fatura → lançamento automático | ✅ **feito (2026-08-29)** — botão "Lançar em Despesas Variáveis" (N2) |
 | 7 | Fluxo de caixa futuro completo | ✅ **feito (2026-08-29)** — projeção de 12 meses somando faturas, dívidas e receitas via `calcularSaldoDoMes` (N7) |
@@ -214,7 +214,17 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ---
 
-#### N8. Competência para envelopes, rendas extras e aportes de reserva (≈2h)
+#### N8. Competência para envelopes, rendas extras e aportes de reserva (≈2h) — ✅ FEITO 2026-08-29
+
+> `competencia.js`: `rendas_extras` (campoData `dataInicio`) entrou em `COMPETENCIA_FONTES`.
+> Novo `COMPETENCIA_FONTES_ANINHADAS` para fontes com lançamentos dentro de sub-array:
+> `envelopes_financeiros` (cada `registros[]`; sem data própria → herdam o mês corrente na
+> migração, o que bate com o `fecharMes` que zera os envelopes) e `reserva_emergencia.aportes[]`
+> (competência deduzida de `data`). `migrarCompetencias` e `competenciasDisponiveis` passaram a
+> percorrer essas fontes. Carimbo na origem: `envelopes.js` grava `competencia: mesSelecionado()`
+> no registro novo; `reserva-emergencia.js` grava `competencia` no aporte (criação e edição).
+> **Resta:** `reserva-emergencia.html` e `renda-extra.html` não carregam `competencia.js` — a
+> migração desses roda quando o usuário abre Painel/Relatórios/Despesas/Envelopes (idempotente).
 
 **Problema:** `competencia.js` só migra `COMPETENCIA_FONTES` = despesas variáveis + receitas (linhas 9-12). Envelopes (`registros[]`), `rendas_extras` e aportes de reserva não têm competência, então a comparação mês a mês desses só existe no *snapshot* de `fecharMes`.
 

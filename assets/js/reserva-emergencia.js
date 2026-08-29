@@ -294,6 +294,7 @@ function salvarAporte() {
     if (aporte) {
       aporte.valor = valorArredondado;
       aporte.data = data;
+      aporte.competencia = data.slice(0, 7);
       aporte.onde = onde;
       aporte.descricao = descricao;
     }
@@ -301,6 +302,7 @@ function salvarAporte() {
     dados.aportes.push({
       valor: valorArredondado,
       data,
+      competencia: data.slice(0, 7),
       onde,
       descricao,
       id: Date.now()

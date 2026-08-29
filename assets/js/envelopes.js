@@ -332,7 +332,7 @@ function salvarRegistro() {
     envelope.registros = [];
   }
 
-  envelope.registros.push({ tipo, descricao, valor });
+  envelope.registros.push({ tipo, descricao, valor, competencia: mesSelecionado() });
   salvarEnvelopes(envelopes);
   fecharModalDespesa();
   renderizarEnvelopes();

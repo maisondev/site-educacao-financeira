@@ -8,7 +8,28 @@ const CHAVE_HISTORICO_MENSAL = 'historico_mensal';
 // Chaves cujos itens são lançamentos datados e ganham `competencia`.
 const COMPETENCIA_FONTES = [
   { chave: 'despesas_variaveis', campoData: 'data' },
-  { chave: 'receitas_lista', campoData: 'data' }
+  { chave: 'receitas_lista', campoData: 'data' },
+  { chave: 'rendas_extras', campoData: 'dataInicio' }
+];
+
+// Fontes cujos lançamentos datados ficam dentro de um sub-array (ou sob uma
+// raiz que não é um array). `itens(raiz)` devolve a lista a carimbar.
+// campoData null: o registro não tem data própria e herda o mês corrente.
+const COMPETENCIA_FONTES_ANINHADAS = [
+  {
+    // envelopes_financeiros: [ { ..., registros: [ { valor, competencia? } ] } ]
+    chave: 'envelopes_financeiros',
+    campoData: null,
+    itens: raiz => Array.isArray(raiz)
+      ? raiz.reduce((acc, e) => acc.concat(Array.isArray(e.registros) ? e.registros : []), [])
+      : []
+  },
+  {
+    // reserva_emergencia: { aportes: [ { data, competencia? } ] }
+    chave: 'reserva_emergencia',
+    campoData: 'data',
+    itens: raiz => (raiz && Array.isArray(raiz.aportes)) ? raiz.aportes : []
+  }
 ];
 
 function competenciaAtual(hoje = new Date()) {
@@ -84,6 +105,30 @@ function migrarCompetencias() {
     }
   });
 
+  COMPETENCIA_FONTES_ANINHADAS.forEach(({ chave, campoData, itens }) => {
+    const raiz = Store.ler(chave, null);
+    if (!raiz) return;
+    const registros = itens(raiz);
+    if (!registros.length) return;
+
+    let ajustados = 0;
+    registros.forEach(registro => {
+      if (competenciaValida(registro.competencia)) return;
+      const deduzida = campoData
+        ? competenciaDoRegistro(registro, campoData)
+        : competenciaAtual();
+      if (deduzida) {
+        registro.competencia = deduzida;
+        ajustados++;
+      }
+    });
+
+    if (ajustados > 0) {
+      Store.gravar(chave, raiz);
+      totalAjustado += ajustados;
+    }
+  });
+
   if (totalAjustado > 0) {
     console.log(`[competencia] ${totalAjustado} lançamento(s) receberam competência`);
   }
@@ -98,6 +143,17 @@ function competenciasDisponiveis() {
   COMPETENCIA_FONTES.forEach(({ chave, campoData }) => {
     Store.ler(chave, []).forEach(registro => {
       const c = competenciaDoRegistro(registro, campoData);
+      if (c) encontradas.add(c);
+    });
+  });
+
+  COMPETENCIA_FONTES_ANINHADAS.forEach(({ chave, campoData, itens }) => {
+    const raiz = Store.ler(chave, null);
+    if (!raiz) return;
+    itens(raiz).forEach(registro => {
+      const c = competenciaValida(registro.competencia)
+        ? registro.competencia
+        : (campoData ? competenciaDoRegistro(registro, campoData) : null);
       if (c) encontradas.add(c);
     });
   });
