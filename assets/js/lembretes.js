@@ -39,7 +39,13 @@ function gerarLembretesProximos30Dias() {
     const proximoVenc = calcularProximaDataDoMês(parseInt(despesa.vencimentoDia, 10), hoje);
     if (proximoVenc > dataLimite) return;
 
-    const pago = typeof despesa.pagoEm === 'string' && despesa.pagoEm.slice(0, 7) === mesAtual;
+    const compVenc = proximoVenc.toISOString().slice(0, 7);
+    const regMes = despesa.meses && despesa.meses[compVenc];
+    const pago = regMes
+      ? regMes.status === 'pago'
+      : (typeof despesa.pagoEm === 'string' && despesa.pagoEm.slice(0, 7) === mesAtual);
+    const pagoEm = regMes && regMes.status === 'pago' ? (regMes.pagoEm || null)
+      : (pago ? despesa.pagoEm : null);
     lembretes.push({
       data: proximoVenc,
       tipo: 'despesa-fixa',
@@ -47,7 +53,7 @@ function gerarLembretesProximos30Dias() {
       dia: parseInt(despesa.vencimentoDia, 10),
       valor: despesa.valor,
       pago,
-      pagoEm: pago ? despesa.pagoEm : null
+      pagoEm
     });
   });
 

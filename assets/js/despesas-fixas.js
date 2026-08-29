@@ -1,5 +1,6 @@
 let despesaEmEdicaoId = null;
 let ordemDespesas = 'proximas';
+let competenciaAtiva = null;
 
 // Escapa texto do usuário antes de injetar via innerHTML
 function escaparTexto(texto) {
@@ -38,6 +39,12 @@ function popularSelectCategoriasFixas() {
 
 function inicializarDespesasFixas() {
   popularSelectCategoriasFixas();
+
+  competenciaAtiva = (typeof competenciaSelecionada === 'function' && competenciaValida(competenciaSelecionada()))
+    ? competenciaSelecionada()
+    : competenciaAtual();
+  renderizarSeletorMes();
+
   const dados = obterDados();
   const rendaCentralizada = obterRendaMensal();
 
@@ -84,7 +91,71 @@ function obterDados() {
     d.id = d.id != null ? String(d.id) : gerarId();
   });
 
+  // Migração idempotente: estado único (pagoEm / provisionada) -> estado por competência.
+  // meses = { "AAAA-MM": { status: "reservado" | "pago", pagoEm?: "AAAA-MM-DD" } }
+  let migrou = false;
+  dados.despesas.forEach(d => {
+    if (!d.meses || typeof d.meses !== 'object') d.meses = {};
+    if (d.pagoEm) {
+      const c = String(d.pagoEm).slice(0, 7);
+      if (competenciaValida(c) && !d.meses[c]) {
+        d.meses[c] = { status: 'pago', pagoEm: d.pagoEm };
+      }
+      delete d.pagoEm;
+      migrou = true;
+    }
+    if (d.provisionada) {
+      const c = competenciaAtual();
+      if (!d.meses[c]) d.meses[c] = { status: 'reservado' };
+      delete d.provisionada;
+      migrou = true;
+    }
+  });
+  if (migrou) Store.gravar(CHAVE_DESPESAS_FIXAS, dados);
+
   return dados;
+}
+
+// Estado de uma despesa num mês: "nada" | "reservado" | "pago"
+function estadoMes(despesa, competencia) {
+  const reg = despesa.meses && despesa.meses[competencia];
+  return reg && reg.status ? reg.status : 'nada';
+}
+
+// Meses oferecidos no seletor: janela de -3 a +6 em torno do mês atual,
+// mais qualquer competência que já tenha estado registrado em alguma despesa.
+function competenciasParaSeletor() {
+  const base = competenciaAtual();
+  const set = new Set();
+  if (competenciaValida(competenciaAtiva)) set.add(competenciaAtiva);
+  for (let i = -3; i <= 6; i++) set.add(competenciaSomarMeses(base, i));
+  (obterDados().despesas || []).forEach(d => {
+    Object.keys(d.meses || {}).forEach(c => {
+      if (competenciaValida(c)) set.add(c);
+    });
+  });
+  return Array.from(set).sort();
+}
+
+function renderizarSeletorMes() {
+  const container = document.getElementById('seletor-mes');
+  if (!container) return;
+  const opcoes = competenciasParaSeletor()
+    .map(c => `<option value="${c}"${c === competenciaAtiva ? ' selected' : ''}>${escaparTexto(formatarCompetencia(c))}</option>`)
+    .join('');
+  container.innerHTML = `
+    <label class="campo-ordenar" style="margin: 0">
+      Mês de referência
+      <select id="select-mes" onchange="mudarCompetenciaAtiva(this.value)">${opcoes}</select>
+    </label>`;
+}
+
+function mudarCompetenciaAtiva(valor) {
+  if (!competenciaValida(valor)) return;
+  competenciaAtiva = valor;
+  if (typeof definirCompetenciaSelecionada === 'function') definirCompetenciaSelecionada(valor);
+  renderizarSeletorMes();
+  atualizarVisualizacao();
 }
 
 // Dias até o próximo vencimento (considera virada de mês)
@@ -360,49 +431,75 @@ function atualizarVisualizacao() {
   atualizarListaDespesas();
 }
 
-// Quanto do dinheiro das despesas fixas ainda por pagar já está separado
+// Quanto das despesas fixas do mês selecionado já está pago ou reservado
 function atualizarPainelProvisionamento(despesasNoCalculo) {
   const painel = document.getElementById('painel-provisionamento');
   if (!painel) return;
 
-  const aPagar = despesasNoCalculo.filter(d => !d.pagoEm);
-  if (aPagar.length === 0) {
+  if (despesasNoCalculo.length === 0) {
     painel.setAttribute('hidden', '');
     painel.innerHTML = '';
     return;
   }
 
-  const totalAPagar = aPagar.reduce((s, d) => s + d.valor, 0);
-  const provisionadas = aPagar.filter(d => d.provisionada);
-  const totalProvisionado = provisionadas.reduce((s, d) => s + d.valor, 0);
-  const falta = Math.max(totalAPagar - totalProvisionado, 0);
-  const pct = totalAPagar > 0 ? (totalProvisionado / totalAPagar) * 100 : 0;
-  const nFalta = aPagar.length - provisionadas.length;
+  const comp = competenciaAtiva || competenciaAtual();
+  const total = despesasNoCalculo.reduce((s, d) => s + d.valor, 0);
+
+  let pago = 0, reservado = 0, nPendentes = 0;
+  despesasNoCalculo.forEach(d => {
+    const e = estadoMes(d, comp);
+    if (e === 'pago') pago += d.valor;
+    else if (e === 'reservado') reservado += d.valor;
+    else nPendentes++;
+  });
+
+  const separado = pago + reservado;
+  const falta = Math.max(total - separado, 0);
+  const pct = total > 0 ? (separado / total) * 100 : 0;
   const completo = falta === 0;
+  const rotuloMes = formatarCompetencia(comp);
 
   painel.innerHTML = `
     <div class="prov-cabecalho">
-      <h3>Dinheiro separado para pagar</h3>
-      <span class="prov-numeros">${formatarMoedaBrasileira(totalProvisionado)} de ${formatarMoedaBrasileira(totalAPagar)}</span>
+      <h3>Dinheiro separado para ${escaparTexto(rotuloMes)}</h3>
+      <span class="prov-numeros">${formatarMoedaBrasileira(separado)} de ${formatarMoedaBrasileira(total)}</span>
     </div>
     <div class="prov-barra"><div class="prov-barra-fill${completo ? ' completo' : ''}" style="width: ${Math.min(pct, 100)}%"></div></div>
     <p class="prov-status">${completo
-      ? 'Tudo provisionado. O dinheiro das despesas fixas deste mês já está reservado.'
-      : `Falta separar <strong>${formatarMoedaBrasileira(falta)}</strong> (${nFalta} despesa${nFalta > 1 ? 's' : ''}).`}</p>
+      ? `Mês coberto: <strong>${formatarMoedaBrasileira(pago)}</strong> pago e <strong>${formatarMoedaBrasileira(reservado)}</strong> reservado.`
+      : `Pago ${formatarMoedaBrasileira(pago)} &middot; Reservado ${formatarMoedaBrasileira(reservado)} &middot; Falta separar <strong>${formatarMoedaBrasileira(falta)}</strong> (${nPendentes} despesa${nPendentes !== 1 ? 's' : ''}).`}</p>
+    ${nPendentes > 0
+      ? `<button type="button" class="btn-reservar-todas" onclick="reservarTodasPendentes()">Marcar as ${nPendentes} pendentes como reservadas</button>`
+      : ''}
   `;
   painel.removeAttribute('hidden');
 }
 
+// Marca como "reservado" todas as despesas do mês que ainda estão sem estado
+function reservarTodasPendentes() {
+  const comp = competenciaAtiva || competenciaAtual();
+  const dados = obterDados();
+  dados.despesas.forEach(d => {
+    if (d.oculta) return;
+    if (!d.meses) d.meses = {};
+    if (estadoMes(d, comp) === 'nada') d.meses[comp] = { status: 'reservado' };
+  });
+  salvarDados(dados);
+  atualizarVisualizacao();
+}
+
 function marcarPagoDespesa(id) {
+  const comp = competenciaAtiva || competenciaAtual();
   const dados = obterDados();
   const despesa = dados.despesas.find(d => d.id === id);
   if (!despesa) return;
+  if (!despesa.meses) despesa.meses = {};
 
-  if (despesa.pagoEm) {
-    despesa.pagoEm = null;
+  if (estadoMes(despesa, comp) === 'pago') {
+    delete despesa.meses[comp];
   } else {
     const padrao = hojeISO();
-    const entrada = prompt('Data do pagamento (dd/mm/aaaa):', formatarDataBR(padrao));
+    const entrada = prompt(`Data do pagamento (dd/mm/aaaa) — ${formatarCompetencia(comp)}:`, formatarDataBR(padrao));
     if (entrada === null) return;
 
     const texto = entrada.trim();
@@ -415,7 +512,7 @@ function marcarPagoDespesa(id) {
       }
       iso = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
     }
-    despesa.pagoEm = iso;
+    despesa.meses[comp] = { status: 'pago', pagoEm: iso };
   }
 
   salvarDados(dados);
@@ -431,12 +528,19 @@ function toggleOcultarDespesa(id) {
   atualizarVisualizacao();
 }
 
-// Marca se o dinheiro para pagar essa despesa (débito/pix) já está separado
+// Marca se o dinheiro dessa despesa já está separado para o mês selecionado
 function toggleProvisionadaDespesa(id) {
+  const comp = competenciaAtiva || competenciaAtual();
   const dados = obterDados();
   const despesa = dados.despesas.find(d => d.id === id);
   if (!despesa) return;
-  despesa.provisionada = !despesa.provisionada;
+  if (!despesa.meses) despesa.meses = {};
+
+  const e = estadoMes(despesa, comp);
+  if (e === 'pago') return;
+  if (e === 'reservado') delete despesa.meses[comp];
+  else despesa.meses[comp] = { status: 'reservado' };
+
   salvarDados(dados);
   atualizarVisualizacao();
 }
@@ -463,9 +567,9 @@ function atualizarListaDespesas() {
   }
 
   const despesasOrdenadas = [...dados.despesas].sort((a, b) => {
-    // Despesas já pagas saem do fluxo e vão para o fim da lista
-    const pagoA = a.pagoEm ? 1 : 0;
-    const pagoB = b.pagoEm ? 1 : 0;
+    // Despesas já pagas no mês selecionado saem do fluxo e vão para o fim da lista
+    const pagoA = estadoMes(a, competenciaAtiva) === 'pago' ? 1 : 0;
+    const pagoB = estadoMes(b, competenciaAtiva) === 'pago' ? 1 : 0;
     if (pagoA !== pagoB) return pagoA - pagoB;
     if (ordemDespesas === 'proximas') {
       const proxA = a.vencimentoDia ? diasAteVencimento(a.vencimentoDia) : Infinity;
@@ -500,17 +604,20 @@ function atualizarListaDespesas() {
       ? `<p class="despesa-forma">${icone('carteira')} ${nomeForma}</p>`
       : '';
 
-    const pago = !!despesa.pagoEm;
+    const estado = estadoMes(despesa, competenciaAtiva);
+    const regMes = despesa.meses && despesa.meses[competenciaAtiva];
+    const rotuloMesAtivo = formatarCompetencia(competenciaAtiva);
+    const pago = estado === 'pago';
     const pagoHtml = pago
-      ? `<p class="despesa-pago">${icone('check')} Pago em ${formatarDataBR(despesa.pagoEm)}</p>`
+      ? `<p class="despesa-pago">${icone('check')} Pago${regMes && regMes.pagoEm ? ' em ' + formatarDataBR(regMes.pagoEm) : ''} (${escaparTexto(rotuloMesAtivo)})</p>`
       : '';
-    const acaoPagar = pago ? 'Desmarcar pagamento' : 'Marcar como pago';
+    const acaoPagar = pago ? 'Desmarcar pagamento deste mês' : 'Marcar como pago neste mês';
 
-    const provisionada = !pago && !!despesa.provisionada;
+    const provisionada = estado === 'reservado';
     const provisionadaHtml = provisionada
-      ? `<p class="despesa-provisionada">${icone('carteira')} Dinheiro separado</p>`
+      ? `<p class="despesa-provisionada">${icone('carteira')} Reservado para ${escaparTexto(rotuloMesAtivo)}</p>`
       : '';
-    const acaoProvisionar = despesa.provisionada ? 'Dinheiro ainda não separado' : 'Marcar dinheiro como separado';
+    const acaoProvisionar = provisionada ? 'Desmarcar dinheiro reservado' : 'Marcar dinheiro como reservado';
 
     return `
       <div class="despesa-item${oculta ? ' oculta' : ''}${pago ? ' pago' : ''}${provisionada ? ' provisionada' : ''}">
@@ -528,7 +635,7 @@ function atualizarListaDespesas() {
         </div>
         <div class="despesa-acoes">
           <button class="btn-pagar${pago ? ' ativo' : ''}" onclick="marcarPagoDespesa('${despesa.id}')" title="${acaoPagar}" aria-label="${acaoPagar}">${icone('check')}</button>
-          <button class="btn-provisionar${despesa.provisionada ? ' ativo' : ''}" onclick="toggleProvisionadaDespesa('${despesa.id}')" title="${acaoProvisionar}" aria-label="${acaoProvisionar}"${pago ? ' disabled' : ''}>${icone('carteira')}</button>
+          <button class="btn-provisionar${provisionada ? ' ativo' : ''}" onclick="toggleProvisionadaDespesa('${despesa.id}')" title="${acaoProvisionar}" aria-label="${acaoProvisionar}"${pago ? ' disabled' : ''}>${icone('carteira')}</button>
           <button class="btn-ocultar${oculta ? ' ativo' : ''}" onclick="toggleOcultarDespesa('${despesa.id}')" title="${acaoOcultar}" aria-label="${acaoOcultar}">${icone(oculta ? 'olho-fechado' : 'olho')}</button>
           <button class="btn-editar" onclick="abrirModalDespesaEdicao('${despesa.id}')" title="Editar despesa" aria-label="Editar despesa">${icone('lapis')}</button>
           <button class="btn-remover" onclick="removerDespesa('${despesa.id}')" title="Remover despesa" aria-label="Remover despesa">${icone('lixeira')}</button>

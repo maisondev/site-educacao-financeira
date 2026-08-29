@@ -119,7 +119,12 @@ function altAlertasDespesasFixas() {
     if (d.oculta || !d.vencimentoDia) return alertas;
 
     // Já pago no ciclo deste mês: nada a cobrar.
-    if (typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === mesAtual) return alertas;
+    const regMes = d.meses && d.meses[mesAtual];
+    if (regMes) {
+      if (regMes.status === 'pago') return alertas;
+    } else if (typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === mesAtual) {
+      return alertas;
+    }
 
     const dias = altDiasAteDiaDoMes(d.vencimentoDia);
     if (dias === null || dias > ALERTA_DIAS_DESPESA_FIXA) return alertas;

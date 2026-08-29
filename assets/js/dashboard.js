@@ -197,7 +197,12 @@ function criarCardDespesasFixas() {
   const percentual = df.salario ? (totalDespesas / df.salario) * 100 : 0;
 
   const mesAtual = new Date().toISOString().slice(0, 7);
-  const pagas = df.despesas.filter(d => typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === mesAtual);
+  const pagas = df.despesas.filter(d => {
+    const reg = d.meses && d.meses[mesAtual];
+    if (reg) return reg.status === 'pago';
+    // fallback para dados antigos ainda não migrados
+    return typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === mesAtual;
+  });
   const totalPago = pagas.reduce((sum, d) => sum + d.valor, 0);
   const faltaPagar = totalDespesas - totalPago;
   const pctPago = totalDespesas ? (totalPago / totalDespesas) * 100 : 0;

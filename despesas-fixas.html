@@ -358,6 +358,36 @@
       color: var(--cor-texto-leve);
     }
 
+    .seletor-mes {
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .seletor-mes select {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: var(--fonte-sistema);
+      background-color: white;
+    }
+
+    .btn-reservar-todas {
+      margin-top: 8px;
+      background: none;
+      border: 1px solid var(--cor-secundaria, #1264a3);
+      color: var(--cor-secundaria, #1264a3);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-reservar-todas:hover {
+      background-color: var(--cor-secundaria, #1264a3);
+      color: white;
+    }
+
     .despesa-provisionada {
       margin: 4px 0 0;
       font-size: 12px;
@@ -772,6 +802,8 @@
     </section>
 
     <section id="resumo-container" hidden>
+      <div id="seletor-mes" class="seletor-mes"></div>
+
       <div class="resumo-despesas">
         <div class="card-info">
           <p>Total de Despesas Fixas</p>
@@ -918,6 +950,7 @@
   <script src="./assets/js/config.js"></script>
   <script src="./assets/js/menu.js"></script>
   <script src="./assets/js/cadastros-dados.js"></script>
+  <script src="./assets/js/competencia.js"></script>
   <script src="./assets/js/despesas-fixas.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
