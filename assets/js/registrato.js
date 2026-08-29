@@ -395,56 +395,33 @@ function regEnviarParaDividas() {
     return;
   }
 
-  const store = Store.ler(Store.CHAVES.DIVIDAS, { dividas: [] }) || { dividas: [] };
-  if (!Array.isArray(store.dividas)) store.dividas = [];
+  if (typeof upsertDividasExternas !== 'function') {
+    alert('Não foi possível abrir o Acompanhador de Dívidas. Recarregue a página e tente de novo.');
+    return;
+  }
 
   const ref = d.referenciaScr || '';
-  let novas = 0, atualizadas = 0;
+  // O SCR traz o saldo devedor TOTAL da operação (inclui parcelas futuras de
+  // compras no cartão), não uma obrigação do mês. Por isso vai sem vencimento —
+  // assim não é jogada inteira no Saldo do Mês. Ajuste na página de Dívidas.
+  const obs = `Importado do Registrato (SCR ${ref}). Saldo devedor total da `
+    + `operação, incluindo parcelas futuras — não é uma dívida do mês.`;
 
-  pendentes.forEach(x => {
-    const origemId = `${x.instituicao}|${x.operacao}`;
+  const lista = pendentes.map(x => {
     const tipo = regTipoDivida(x.operacao);
-    const valorTotal = Math.round(((Number(x.emDia) || 0) + (Number(x.vencida) || 0)) * 100) / 100;
-    const existente = store.dividas.find(y => y.origem === 'registrato' && y.origemId === origemId);
-
-    // O SCR traz o saldo devedor TOTAL da operação (inclui parcelas futuras
-    // de compras no cartão), não uma obrigação do mês corrente. Por isso a
-    // dívida entra sem data de vencimento — assim não é jogada inteira no
-    // Saldo do Mês. Ajuste o vencimento manualmente na página de Dívidas se
-    // souber a data real de quitação.
-    const obs = `Importado do Registrato (SCR ${ref}). Saldo devedor total da `
-      + `operação, incluindo parcelas futuras — não é uma dívida do mês.`;
-
-    if (existente) {
-      existente.credor = x.instituicao;
-      existente.tipo = tipo;
-      existente.valorTotal = valorTotal;
-      existente.observacoes = obs;
-      if (!existente.vencimentoAjustadoManualmente) existente.vencimento = '';
-      atualizadas++;
-    } else {
-      store.dividas.push({
-        id: Date.now() + novas,
-        origem: 'registrato',
-        origemId,
-        credor: x.instituicao,
-        tipo,
-        natureza: regNaturezaDivida(tipo),
-        taxa: 0,
-        debitoAutomatico: false,
-        observacoes: obs,
-        parcelado: false,
-        valorTotal,
-        vencimento: '',
-        valorPago: 0,
-        dataCriacao: new Date().toISOString(),
-        pagamentos: []
-      });
-      novas++;
-    }
+    return {
+      origem: 'registrato',
+      origemId: `${x.instituicao}|${x.operacao}`,
+      credor: x.instituicao,
+      tipo,
+      natureza: regNaturezaDivida(tipo),
+      valorTotal: (Number(x.emDia) || 0) + (Number(x.vencida) || 0),
+      vencimento: '',
+      observacoes: obs
+    };
   });
 
-  Store.gravar(Store.CHAVES.DIVIDAS, store);
+  const { novas, atualizadas } = upsertDividasExternas(lista);
 
   const msg = `Acompanhador de Dívidas atualizado: ${novas} nova(s), ${atualizadas} atualizada(s).\n\nAbrir o Acompanhador agora?`;
   if (confirm(msg)) location.href = './dividas.html';

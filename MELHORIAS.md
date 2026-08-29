@@ -234,9 +234,14 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ### P2 — Melhoram a rotina / reduzem risco
 
-#### N9. `registrato.js` e `dividas.js` compartilhando um construtor de dívida (≈1h)
+#### N9. `registrato.js` e `dividas.js` compartilhando um construtor de dívida (≈1h) — ✅ FEITO 2026-08-29
 
-`registrato.js:400 regEnviarParaDividas()` monta objetos de dívida à mão (linhas 433-449) e grava **direto** em `localStorage['dividas']` (linha 454), sem passar por `Store` nem por nenhuma função de `dividas.js`. Se o schema de dívida mudar, o Registrato grava registros desatualizados sem erro. **Fazer:** `dividas.js` expõe `upsertDividasExternas(lista)`; o Registrato chama isso e grava via `Store`.
+> `dividas.js` agora expõe `upsertDividasExternas(lista)` — dona do schema de dívida, casa por
+> `origem`+`origemId`, respeita `vencimentoAjustadoManualmente`, devolve `{ novas, atualizadas }`.
+> `regEnviarParaDividas` virou um `map` para descritores + uma chamada a essa função (não monta
+> mais o objeto à mão nem grava direto). `registrato.html` carrega `dividas.js`; `inicializarDividas`
+> ganhou early-return quando não há a UI de dívidas na página. (A gravação via `Store` já tinha
+> sido feita antes; o que faltava era a dívida sair de dentro do `registrato.js`.)
 
 #### N10. PWA (item 10) (≈1h30)
 

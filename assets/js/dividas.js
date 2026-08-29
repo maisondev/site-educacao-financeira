@@ -75,6 +75,60 @@ function semearDividasFixas() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Upsert de dívidas vindas de fora (ex.: Registrato/SCR). Esta função é a
+// dona do schema de dívida — quem importa não monta o objeto à mão.
+// `lista`: [{ origem, origemId, credor, tipo, natureza?, valorTotal,
+//            observacoes?, vencimento?, taxa?, debitoAutomatico? }]
+// Casa por (origem + origemId). Não mexe em `vencimento` se o usuário já o
+// ajustou à mão (`vencimentoAjustadoManualmente`). Devolve { novas, atualizadas }.
+// ---------------------------------------------------------------------------
+function upsertDividasExternas(lista) {
+  if (!Array.isArray(lista) || lista.length === 0) return { novas: 0, atualizadas: 0 };
+
+  const dados = obterDados();
+  let novas = 0;
+  let atualizadas = 0;
+
+  lista.forEach((ext, i) => {
+    if (!ext || !ext.origem || !ext.origemId) return;
+    const valorTotal = Math.round((Number(ext.valorTotal) || 0) * 100) / 100;
+    const existente = dados.dividas.find(d => d.origem === ext.origem && d.origemId === ext.origemId);
+
+    if (existente) {
+      existente.credor = ext.credor || existente.credor;
+      existente.tipo = ext.tipo || existente.tipo;
+      existente.natureza = ext.natureza || existente.natureza;
+      existente.valorTotal = valorTotal;
+      if (ext.observacoes != null) existente.observacoes = ext.observacoes;
+      if (!existente.vencimentoAjustadoManualmente) existente.vencimento = ext.vencimento || '';
+      atualizadas++;
+    } else {
+      dados.dividas.push({
+        id: Date.now() + i,
+        origem: ext.origem,
+        origemId: ext.origemId,
+        credor: ext.credor || 'Credor não informado',
+        tipo: ext.tipo || 'outro',
+        natureza: ext.natureza || (NATUREZA_PADRAO[ext.tipo] || 'onerosa'),
+        taxa: Number(ext.taxa) || 0,
+        debitoAutomatico: !!ext.debitoAutomatico,
+        observacoes: ext.observacoes || '',
+        parcelado: false,
+        valorTotal,
+        vencimento: ext.vencimento || '',
+        valorPago: 0,
+        dataCriacao: new Date().toISOString(),
+        pagamentos: []
+      });
+      novas++;
+    }
+  });
+
+  if (novas || atualizadas) salvarDados(dados);
+  return { novas, atualizadas };
+}
+
 function escaparHtml(texto) {
   const div = document.createElement('div');
   div.textContent = texto == null ? '' : String(texto);
@@ -286,6 +340,8 @@ function limparFormulario() {
 // Visualização
 // ---------------------------------------------------------------------------
 function inicializarDividas() {
+  // dividas.js pode ser carregado só pela API (ex.: Registrato) em páginas sem a UI.
+  if (!document.getElementById('resumo-container')) return;
   semearDividasFixas();
   const dados = obterDados();
   if (dados.dividas.length > 0) {
