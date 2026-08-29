@@ -1,6 +1,7 @@
 function gerarRelatorio() {
   atualizarDataRelatorio();
   gerarResumoGeral();
+  gerarSecaoGastoPorCategoria();
   gerarSecaoDespesasFixas();
   gerarSecaoDividas();
   gerarSecaoReserva();
@@ -266,6 +267,133 @@ function gerarSecaoCartao() {
 
   html += `</div></div>`;
   container.innerHTML = html;
+}
+
+// --- Gasto por categoria no mês (fixas + variáveis + fatura) ------------------
+
+// De/para da análise de fatura -> categoria unificada (espelha AF_PARA_CATEGORIA_DV).
+const REL_FATURA_PARA_CATEGORIA = {
+  mercado: 'alimentacao', restaurante: 'alimentacao', transporte: 'combustivel',
+  assinatura: 'streaming', casa: 'manutencao', saude: 'saude', online: 'outro',
+  vestuario: 'outro', educacao: 'educacao', servicos: 'cuidados', lazer: 'lazer',
+  pets: 'pets', impostos: 'impostos', outro: 'outro'
+};
+
+function relNomeCategoria(chave) {
+  if (typeof Cadastros !== 'undefined') {
+    const mapa = Cadastros.categorias();
+    if (mapa[chave]) return mapa[chave];
+  }
+  return chave ? chave.charAt(0).toUpperCase() + chave.slice(1) : 'Sem categoria';
+}
+
+function relSomarMapas() {
+  const acc = {};
+  for (let i = 0; i < arguments.length; i++) {
+    const m = arguments[i] || {};
+    Object.keys(m).forEach(k => { acc[k] = (acc[k] || 0) + m[k]; });
+  }
+  return acc;
+}
+
+function relGastosFixasPorCategoria() {
+  const dados = obterDadosDespesasFixas();
+  const acc = {};
+  (dados.despesas || []).forEach(d => {
+    const c = d.categoria || 'outro';
+    acc[c] = (acc[c] || 0) + (Number(d.valor) || 0);
+  });
+  return acc;
+}
+
+function relGastosVariaveisPorCategoria(competencia) {
+  const lista = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []);
+  const acc = {};
+  (Array.isArray(lista) ? lista : []).forEach(d => {
+    const c = typeof competenciaDoRegistro === 'function'
+      ? competenciaDoRegistro(d)
+      : (d.competencia || d.data || '').slice(0, 7);
+    if (c !== competencia) return;
+    const cat = d.categoria || 'outro';
+    acc[cat] = (acc[cat] || 0) + (Number(d.valor) || 0);
+  });
+  return acc;
+}
+
+function relGastosFaturaPorCategoria(competencia) {
+  const todas = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
+  const reg = todas[competencia];
+  const acc = {};
+  if (!reg || !Array.isArray(reg.lancamentos)) return acc;
+  const inclusos = new Set(reg.inclusos && reg.inclusos.length
+    ? reg.inclusos
+    : reg.lancamentos.map(l => l.cartao || '__sem__'));
+  reg.lancamentos.forEach(l => {
+    if (l.tipo === 'pagamento') return;
+    if (!inclusos.has(l.cartao || '__sem__')) return;
+    const cat = REL_FATURA_PARA_CATEGORIA[l.categoria] || 'outro';
+    acc[cat] = (acc[cat] || 0) + (Number(l.valor) || 0);
+  });
+  return acc;
+}
+
+function gerarSecaoGastoPorCategoria() {
+  const container = document.getElementById('secao-gasto-categoria');
+  if (!container) return;
+
+  const comp = typeof competenciaSelecionada === 'function' ? competenciaSelecionada() : null;
+  if (!comp) { container.innerHTML = ''; return; }
+  const compAnterior = typeof competenciaSomarMeses === 'function'
+    ? competenciaSomarMeses(comp, -1) : null;
+  const rotuloComp = typeof formatarCompetencia === 'function' ? formatarCompetencia(comp) : comp;
+
+  const fixas = relGastosFixasPorCategoria();
+  const atual = relSomarMapas(fixas,
+    relGastosVariaveisPorCategoria(comp), relGastosFaturaPorCategoria(comp));
+  const anterior = compAnterior
+    ? relSomarMapas(fixas,
+        relGastosVariaveisPorCategoria(compAnterior), relGastosFaturaPorCategoria(compAnterior))
+    : {};
+
+  const chaves = Object.keys(atual).filter(k => atual[k] > 0.005).sort((a, b) => atual[b] - atual[a]);
+  if (!chaves.length) {
+    container.innerHTML = `
+      <div class="secao-relatorio">
+        <h3>Gasto por categoria no mês</h3>
+        <div class="sem-dados">Nenhum gasto registrado em ${rotuloComp}</div>
+      </div>`;
+    return;
+  }
+
+  const totalMes = chaves.reduce((s, k) => s + atual[k], 0);
+  const maior = atual[chaves[0]];
+
+  const linhas = chaves.map(k => {
+    const v = atual[k];
+    const dif = v - (anterior[k] || 0);
+    const pctBarra = maior > 0 ? (v / maior) * 100 : 0;
+    let sinal = '—', classe = '';
+    if (dif > 0.005) { sinal = `▲ ${formatarMoedaBrasileira(dif)}`; classe = 'rel-dif-sobe'; }
+    else if (dif < -0.005) { sinal = `▼ ${formatarMoedaBrasileira(Math.abs(dif))}`; classe = 'rel-dif-desce'; }
+    return `
+      <div class="item-relatorio" style="margin-top: 10px;">
+        <div class="item-relatorio-label">${relNomeCategoria(k)}</div>
+        <div class="item-relatorio-valor">${formatarMoedaBrasileira(v)}
+          <span class="rel-cat-dif ${classe}">${sinal}</span></div>
+      </div>
+      <div class="barra-simples"><div class="barra-simples-fill" style="width: ${pctBarra.toFixed(1)}%"></div></div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="secao-relatorio">
+      <h3>Gasto por categoria no mês</h3>
+      <div class="item-relatorio destaque">
+        <div class="item-relatorio-label">Total (fixas + variáveis + fatura) — ${rotuloComp}</div>
+        <div class="item-relatorio-valor">${formatarMoedaBrasileira(totalMes)}</div>
+      </div>
+      ${compAnterior ? `<p style="font-size: 13px; color: #666; margin: 6px 0 0;">Variação vs. ${formatarCompetencia(compAnterior)}. As despesas fixas entram iguais nos dois meses.</p>` : ''}
+      ${linhas}
+    </div>`;
 }
 
 function imprimirRelatorio() {

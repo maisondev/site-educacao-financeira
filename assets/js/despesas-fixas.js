@@ -8,7 +8,36 @@ function escaparTexto(texto) {
   return div.innerHTML;
 }
 
+// Rótulos antigos desta página; ainda usados como fallback para registros salvos
+// com chaves que não estão no catálogo de Cadastros Gerais.
+const CATEGORIAS_FIXAS_LEGADO = {
+  moradia: 'Moradia', mercado: 'Mercado / Alimentação', utilidades: 'Utilidades',
+  transporte: 'Transporte', saude: 'Saúde', educacao: 'Educação',
+  assinatura: 'Assinaturas', seguros: 'Seguros',
+  financiamento: 'Empréstimos / Financiamentos', cartao: 'Cartão de Crédito',
+  impostos: 'Impostos / Taxas', pets: 'Pets', cuidados: 'Cuidados Pessoais',
+  lazer: 'Lazer', doacoes: 'Doações / Dízimo', outro: 'Outro'
+};
+
+// Monta o <select> de categoria a partir dos Cadastros Gerais (padrão + personalizadas).
+function popularSelectCategoriasFixas() {
+  const select = document.getElementById('select-categoria');
+  if (!select) return;
+  const mapa = Object.assign({}, CATEGORIAS_FIXAS_LEGADO,
+    typeof Cadastros !== 'undefined' ? Cadastros.categorias() : {});
+  // Preserva chaves antigas que já existam em registros salvos (ex.: "utilidades").
+  (obterDados().despesas || []).forEach(d => {
+    if (d.categoria && !mapa[d.categoria]) mapa[d.categoria] = obterNomeCategoria(d.categoria);
+  });
+  const atual = select.value;
+  select.innerHTML = ['<option value="">Selecione</option>']
+    .concat(Object.keys(mapa).map(c => `<option value="${c}">${escaparTexto(mapa[c])}</option>`))
+    .join('');
+  if (atual && mapa[atual]) select.value = atual;
+}
+
 function inicializarDespesasFixas() {
+  popularSelectCategoriasFixas();
   const dados = obterDados();
   const rendaCentralizada = obterRendaMensal();
 
@@ -551,25 +580,11 @@ function removerDespesa(id) {
 }
 
 function obterNomeCategoria(categoria) {
-  const nomes = {
-    'moradia': 'Moradia',
-    'mercado': 'Mercado / Alimentação',
-    'utilidades': 'Utilidades',
-    'transporte': 'Transporte',
-    'saude': 'Saúde',
-    'educacao': 'Educação',
-    'assinatura': 'Assinaturas',
-    'seguros': 'Seguros',
-    'financiamento': 'Empréstimos / Financiamentos',
-    'cartao': 'Cartão de Crédito',
-    'impostos': 'Impostos / Taxas',
-    'pets': 'Pets',
-    'cuidados': 'Cuidados Pessoais',
-    'lazer': 'Lazer',
-    'doacoes': 'Doações / Dízimo',
-    'outro': 'Outro'
-  };
-  return nomes[categoria] || categoria;
+  if (typeof Cadastros !== 'undefined') {
+    const mapa = Cadastros.categorias();
+    if (mapa[categoria]) return mapa[categoria];
+  }
+  return CATEGORIAS_FIXAS_LEGADO[categoria] || categoria;
 }
 
 function obterNomeFormaPagamento(forma) {

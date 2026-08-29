@@ -7,17 +7,34 @@ const CAD_CHAVE = (typeof Store !== 'undefined' && Store.CHAVES)
   ? Store.CHAVES.CADASTROS : 'cadastros_gerais';
 
 // Padrões embutidos — sempre presentes, não podem ser removidos.
+// Vocabulário único consumido por despesas fixas, despesas variáveis e relatórios.
+// As chaves antigas de cada página continuam aqui para não órfãos registros já salvos.
 const CAD_CATEGORIAS_PADRAO = {
+  moradia: 'Moradia (Aluguel / Financiamento)',
   agua: 'Água',
   luz: 'Luz / Energia Elétrica',
   gas: 'Gás',
   internet: 'Internet',
   telefone: 'Telefone / Celular',
   streaming: 'Streaming / Assinaturas',
+  assinatura: 'Assinaturas',
   alimentacao: 'Alimentação',
+  mercado: 'Mercado / Alimentação',
+  transporte: 'Transporte',
   combustivel: 'Combustível',
   manutencao: 'Manutenção / Consertos',
+  saude: 'Saúde',
+  educacao: 'Educação',
+  lazer: 'Lazer',
+  cuidados: 'Cuidados Pessoais',
+  pets: 'Pets',
+  seguros: 'Seguros',
+  financiamento: 'Empréstimos / Financiamentos',
+  dividas: 'Dívidas',
   cartao: 'Cartão de Crédito',
+  impostos: 'Impostos / Taxas',
+  investimentos: 'Investimentos',
+  doacoes: 'Doações / Dízimo',
   outro: 'Outro'
 };
 

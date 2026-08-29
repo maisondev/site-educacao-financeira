@@ -76,6 +76,15 @@
       page-break-inside: avoid;
     }
 
+    .rel-cat-dif {
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+    .rel-cat-dif.rel-dif-sobe { color: var(--cor-erro, #a63030); }
+    .rel-cat-dif.rel-dif-desce { color: var(--cor-sucesso, #2d7e3c); }
+
     .secao-relatorio h3 {
       margin: 0 0 var(--espacamento-md) 0;
       font-size: 18px;
@@ -408,6 +417,8 @@
 
     <div id="resumo-geral-container"></div>
 
+    <div id="secao-gasto-categoria" style="margin-top: var(--espacamento-lg);"></div>
+
     <div id="container-graficos"></div>
 
     <div class="secoes-relatorio">
@@ -447,7 +458,10 @@
     document.addEventListener('DOMContentLoaded', function() {
       renderizarMenu();
       migrarCompetencias();
-      renderizarSeletorCompetencia('container-competencia', renderizarGraficos);
+      renderizarSeletorCompetencia('container-competencia', function() {
+        gerarRelatorio();
+        renderizarGraficos();
+      });
       gerarRelatorio();
       renderizarGraficos();
     });

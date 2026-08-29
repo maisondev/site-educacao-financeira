@@ -53,7 +53,7 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 | 2 | Camada única de storage | ✅ **feito (2026-08-29)** — catálogo com `CADASTROS`/`REGISTRATO`; leitores críticos (`despesas-fixas`, `despesas-variaveis`, `dividas`, `cartoes`, `reserva-emergencia`, `investimentos`, `balanco-patrimonial`, `registrato`, `cadastros-dados`) migrados para `Store.ler`/`Store.gravar` |
 | 3 | Saldo do mês no dashboard | ✅ feito |
 | 4 | Competência mensal | ✅ base feita — só `despesas_variaveis` e `receitas_lista` têm competência → ampliação em **N8** |
-| 5 | Categorias unificadas | ◑ **parcial** — `cadastros.html` cadastra as listas, mas os formulários não as consomem → ver **N3** |
+| 5 | Categorias unificadas | ✅ **feito (2026-08-29)** — vocabulário único em `cadastros-dados.js`; fixas e variáveis consomem; relatório "gasto por categoria somando tudo" (N3) |
 | 6 | Análise de fatura → lançamento automático | ✅ **feito (2026-08-29)** — botão "Lançar em Despesas Variáveis" (N2) |
 | 7 | Fluxo de caixa futuro completo | ✗ pendente → detalhado em **N7** |
 | 8 | Central de alertas | ✅ feito |
@@ -117,7 +117,20 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ---
 
-#### N3. Categorias unificadas de verdade: formulários lendo `cadastros_gerais` (≈1h30)
+#### N3. Categorias unificadas de verdade: formulários lendo `cadastros_gerais` (≈1h30) — ✅ FEITO 2026-08-29
+
+> `CAD_CATEGORIAS_PADRAO` (`cadastros-dados.js`) virou o vocabulário único (união das chaves
+> que estavam espalhadas: moradia, mercado, transporte, saúde, educação, lazer, cuidados,
+> pets, seguros, financiamento, dívidas, investimentos, impostos, doações + água/luz/gás/etc.).
+> `despesas-fixas.js` monta o `#select-categoria` via `Cadastros.categorias()` (novo
+> `popularSelectCategoriasFixas`, preserva chaves legadas de registros salvos) e `obterNomeCategoria`
+> delega ao mesmo mapa; `despesas-fixas.html` passou a carregar `cadastros-dados.js`.
+> `despesas-variaveis.js` já consumia `Cadastros.categorias()`.
+> **Relatório novo** em `relatorios.html` — "Gasto por categoria no mês": soma despesas fixas +
+> variáveis (por competência) + fatura (`analise_faturas`, de/para `REL_FATURA_PARA_CATEGORIA`),
+> barra por categoria e variação vs. mês anterior; reage ao seletor de competência.
+> **Resta:** `analise-fatura.js` mantém a taxonomia própria (`AF_CATEGORIAS` guia as barras
+> coloridas e as regex); a ponte é o de/para de N2/N3.
 
 **Problema:** `cadastros.html` grava categorias de despesa, formas de pagamento e estabelecimentos em `cadastros_gerais`, mas `despesas-fixas.js`, `despesas-variaveis.js` e `analise-fatura.js` (`afOpcoesCategoria:458`) mantêm listas próprias. Resultado: `relatorios.html` não soma "Alimentação" das três fontes e a análise de fatura sugere categorias que não batem com as das despesas.
 
