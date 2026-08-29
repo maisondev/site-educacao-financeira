@@ -4,6 +4,10 @@ Uma curadoria pessoal de estudos sobre educação financeira, organizada por tem
 
 Este não é um curso formal nem um app de controle financeiro — é uma base de conhecimento em construção, atualizada conforme novos estudos são feitos.
 
+## Documentação
+
+Os **casos de uso** de cada tela (ator, objetivo, fluxo e onde os dados são guardados) estão na [Wiki do projeto](https://github.com/maisondev/site-educacao-financeira/wiki). A fonte editável fica em `wiki/`.
+
 ## Como está organizado
 
 - **`temas/`** — conteúdo agrupado por assunto (orçamento, reserva de emergência, juros e investimentos, etc.), cada um com artigos do nível básico ao avançado.
