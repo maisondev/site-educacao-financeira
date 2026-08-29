@@ -32,11 +32,24 @@ function smSomar(lista, campo) {
 // Receitas lançadas no mês. Sem lançamentos, a renda configurada cobre o mês
 // corrente e os futuros; para um mês passado ela seria histórico inventado,
 // então o resultado é zero.
+// Líquido do contracheque daquela competência, quando houver (renda_por_competencia).
+function smRendaDaCompetencia(competencia) {
+  const mapa = Store.ler(Store.CHAVES.RENDA_POR_COMPETENCIA, {});
+  if (!mapa || typeof mapa !== 'object') return null;
+  const valor = Number(mapa[competencia]);
+  return valor > 0 ? valor : null;
+}
+
 function smReceitasDoMes(competencia) {
   const receitas = Store.ler(Store.CHAVES.RECEITAS, [])
     .filter(r => smRegistroNaCompetencia(r, competencia));
 
   if (receitas.length > 0) return smSomar(receitas, 'valor');
+
+  // Contracheque do mês: renda real daquela competência, mesmo em meses passados.
+  const porCompetencia = smRendaDaCompetencia(competencia);
+  if (porCompetencia !== null) return porCompetencia;
+
   if (competencia < smCompetenciaAtual()) return 0;
 
   const renda = parseFloat(Store.lerTexto(Store.CHAVES.RENDA, '0'));

@@ -7,11 +7,13 @@ const Store = {
   CHAVES: {
     RENDA: 'renda_mensal',
     RENDA_COMPETENCIA: 'renda_mensal_competencia',
+    RENDA_POR_COMPETENCIA: 'renda_por_competencia',
     RECEITAS: 'receitas_lista',
     CONTRACHEQUES: 'contracheques_historico',
     RENDAS_EXTRAS: 'rendas_extras',
     DESPESAS_FIXAS: 'despesas_fixas',
     DESPESAS_VARIAVEIS: 'despesas_variaveis',
+    MERCADO: 'mercado_compras',
     DESPESAS_VARIAVEIS_COLAPSADAS: 'despesas_variaveis_colapsadas',
     ENVELOPES: 'envelopes_financeiros',
     METAS: 'metas_financeiras',

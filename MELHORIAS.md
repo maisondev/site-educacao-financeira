@@ -161,7 +161,15 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ### P1 — Alto valor, exige um pouco mais de desenho
 
-#### N5. Contracheque do mês vira a renda daquela competência (≈1h)
+#### N5. Contracheque do mês vira a renda daquela competência (≈1h) — ✅ FEITO 2026-08-29
+
+> Nova chave `renda_por_competencia` (`{ "AAAA-MM": liquido }`, no catálogo do `Store`).
+> `config.js` ganhou `obterRendaPorCompetencia()` / `rendaDaCompetencia()` / `definirRendaDaCompetencia()`.
+> `analise-contracheque.js`: `sincronizarRendaPorCompetencia()` espelha o líquido de cada
+> contracheque do histórico no mapa (roda ao salvar e ao abrir a página; limpar o histórico
+> também zera o mapa). `saldo-mes.js` `smReceitasDoMes` passou a preferir esse valor — inclusive
+> em meses passados, que antes davam zero. Cai no `renda_mensal` só quando não há contracheque
+> nem receitas lançadas para a competência.
 
 **Problema:** `analise-contracheque.js` guarda o histórico em `contracheques_historico`, mas o líquido **não** vira a renda da competência. `saldo-mes.js:42` cai no `renda_mensal` (valor único) como *fallback*, então meses com hora extra, 13º ou falta ficam errados no saldo.
 

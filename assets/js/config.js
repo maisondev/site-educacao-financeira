@@ -27,6 +27,40 @@ function definirRendaMensalCompetencia(competencia) {
   }
 }
 
+// Renda líquida real de cada competência (ex.: contracheque daquele mês).
+// Estrutura: { "AAAA-MM": liquido }. Usada pelo Saldo do Mês para acertar
+// meses de salário variável (hora extra, 13º, falta) sem redigitação.
+function obterRendaPorCompetencia() {
+  try {
+    const bruto = localStorage.getItem('renda_por_competencia');
+    const dados = bruto ? JSON.parse(bruto) : {};
+    return dados && typeof dados === 'object' && !Array.isArray(dados) ? dados : {};
+  } catch (e) {
+    console.error('Erro ao ler renda por competência:', e);
+    return {};
+  }
+}
+
+function rendaDaCompetencia(competencia) {
+  const valor = obterRendaPorCompetencia()[competencia];
+  return Number(valor) > 0 ? Number(valor) : null;
+}
+
+function definirRendaDaCompetencia(competencia, valor) {
+  if (!/^\d{4}-\d{2}$/.test(competencia || '')) return;
+  const mapa = obterRendaPorCompetencia();
+  if (Number(valor) > 0) {
+    mapa[competencia] = Math.round(Number(valor) * 100) / 100;
+  } else {
+    delete mapa[competencia];
+  }
+  try {
+    localStorage.setItem('renda_por_competencia', JSON.stringify(mapa));
+  } catch (e) {
+    console.error('Erro ao gravar renda por competência:', e);
+  }
+}
+
 function atualizarRendaMensal(valor, competencia) {
   definirRendaMensal(valor);
   definirRendaMensalCompetencia(competencia || null);

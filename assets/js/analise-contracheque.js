@@ -701,6 +701,30 @@ function sairModoEdicao() {
   document.getElementById('input-fgts').setAttribute('hidden', '');
 }
 
+// "DD/MM/AAAA" ou o campo data (Date/ISO) -> "AAAA-MM".
+function competenciaISOdoContracheque(c) {
+  if (c && c.data) {
+    const d = new Date(c.data);
+    if (!isNaN(d.getTime())) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+  }
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((c && c.competencia) || '');
+  return m ? `${m[3]}-${m[2].padStart(2, '0')}` : null;
+}
+
+// Espelha o líquido de cada contracheque em renda_por_competencia, para o
+// Saldo do Mês usar a renda real do mês (hora extra, 13º, falta) sem redigitar.
+function sincronizarRendaPorCompetencia(historico) {
+  if (typeof definirRendaDaCompetencia !== 'function') return;
+  (historico || obterHistorico()).forEach(c => {
+    const iso = competenciaISOdoContracheque(c);
+    if (iso && Number(c.salarioLiquido) > 0) {
+      definirRendaDaCompetencia(iso, c.salarioLiquido);
+    }
+  });
+}
+
 function salvarNoHistorico(dados) {
   const historico = obterHistorico();
 
@@ -718,6 +742,8 @@ function salvarNoHistorico(dados) {
   } catch (erro) {
     console.error('Erro ao salvar histórico:', erro);
   }
+
+  sincronizarRendaPorCompetencia(historico);
 
   // O contracheque mais recente do histórico (por data) é quem define a renda
   // mensal centralizada usada em Despesas Fixas, Envelopes, etc.
@@ -740,6 +766,7 @@ function obterHistorico() {
 
 function carregarHistorico() {
   const historico = obterHistorico();
+  sincronizarRendaPorCompetencia(historico);
 
   if (historico.length === 0) {
     document.getElementById('secao-historico').setAttribute('hidden', '');
@@ -968,6 +995,7 @@ function verDetalheHistorico(competencia) {
 function confirmarLimparHistorico() {
   if (confirm('Tem certeza que quer apagar todo o histórico de contracheques?')) {
     localStorage.removeItem(CHAVE_CONTRACHEQUES);
+    localStorage.removeItem('renda_por_competencia');
     document.getElementById('secao-historico').setAttribute('hidden', '');
     document.getElementById('secao-dados').setAttribute('hidden', '');
     document.getElementById('tabela-historico').innerHTML = '';
