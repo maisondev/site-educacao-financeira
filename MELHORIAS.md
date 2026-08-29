@@ -143,7 +143,13 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 ---
 
-#### N4. "Quanto posso gastar" — disponível ÷ dias restantes (≈40min)
+#### N4. "Quanto posso gastar" — disponível ÷ dias restantes (≈40min) — ✅ FEITO 2026-08-29
+
+> `smBlocoPodeGastar(r)` no card "Saldo do mês" (`saldo-mes.js`, aparece no Painel e em
+> `saldo-projetado.html`). Só renderiza no mês em andamento: `(saldo projetado − reservado) ÷
+> dias que faltam no mês` (contando hoje). "Reservado" = parte não usada dos envelopes de
+> poupança (`categoria: 'poupanca'` → aposentadoria + metas/investimentos). Quando a base fica
+> ≤ 0, mostra aviso de "sem folga para gastos livres". CSS `.sm-pode-gastar` nas duas páginas.
 
 **Problema:** o Painel mostra o saldo do mês inteiro, mas não responde a pergunta mais usada no dia a dia: *"posso gastar quanto hoje?"*
 

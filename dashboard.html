@@ -243,6 +243,32 @@
       color: var(--cor-erro);
     }
 
+    .sm-pode-gastar {
+      margin-top: var(--espacamento-lg);
+      padding: var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      border-left: 4px solid var(--cor-secundaria);
+      border-radius: 6px;
+      background: var(--cor-cinza-leve, #f5f5f5);
+      display: flex;
+      align-items: baseline;
+      gap: var(--espacamento-md);
+      flex-wrap: wrap;
+    }
+    .sm-pode-gastar-num {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--cor-secundaria);
+      white-space: nowrap;
+    }
+    .sm-pode-gastar-num span { font-size: 14px; font-weight: 400; }
+    .sm-pode-gastar-txt { font-size: 14px; color: var(--cor-texto); flex: 1 1 200px; }
+    .sm-pode-gastar-alerta {
+      border-left-color: var(--cor-erro);
+      font-size: 14px;
+      display: block;
+    }
+
     .sm-indicadores {
       display: flex;
       flex-wrap: wrap;

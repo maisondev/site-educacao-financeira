@@ -282,6 +282,72 @@ function calcularSaldoDoMes(competencia = smCompetenciaEmFoco()) {
   };
 }
 
+// Dias que ainda faltam no mês (contando hoje). Para meses que não são o
+// corrente, devolve o mês inteiro e marca mesCorrente=false.
+function smDiasRestantesNoMes(competencia, hoje = new Date()) {
+  const [ano, mes] = competencia.split('-').map(Number);
+  const diasNoMes = new Date(ano, mes, 0).getDate();
+  if (competencia !== smCompetenciaAtual(hoje)) {
+    return { diasRestantes: diasNoMes, diasNoMes, mesCorrente: false };
+  }
+  return {
+    diasRestantes: Math.max(1, diasNoMes - hoje.getDate() + 1),
+    diasNoMes,
+    mesCorrente: true
+  };
+}
+
+// Quanto ainda se pretende guardar este mês: a parte não usada dos envelopes
+// de poupança (aposentadoria, metas, investimentos). Só vale no mês corrente.
+function smReservadoDoMes(competencia) {
+  if (competencia !== smCompetenciaAtual()) return 0;
+  const renda = parseFloat(Store.lerTexto(Store.CHAVES.RENDA, '0')) || 0;
+  if (renda <= 0) return 0;
+  const envelopes = Store.ler(Store.CHAVES.ENVELOPES, []);
+  if (!Array.isArray(envelopes)) return 0;
+  return envelopes
+    .filter(e => e.categoria === 'poupanca')
+    .reduce((total, e) => {
+      const alocado = (renda * (Number(e.percentual) || 0)) / 100;
+      const gasto = (e.registros || e.despesas || [])
+        .reduce((s, r) => s + (Number(r.valor) || 0), 0);
+      return total + Math.max(0, alocado - gasto);
+    }, 0);
+}
+
+// Bloco "quanto posso gastar por dia" — só aparece no mês em andamento.
+function smBlocoPodeGastar(r) {
+  const info = smDiasRestantesNoMes(r.competencia);
+  if (!info.mesCorrente) return '';
+  if (r.receitas === 0 && r.saidas === 0) return '';
+
+  const reservado = smReservadoDoMes(r.competencia);
+  const base = r.saldo - reservado;
+  const mes = r.competencia.split('-')[1];
+  const ultimoDia = `${String(info.diasNoMes).padStart(2, '0')}/${mes}`;
+
+  if (base <= 0) {
+    return `
+      <div class="sm-pode-gastar sm-pode-gastar-alerta">
+        <strong>Sem folga para gastos livres.</strong>
+        O saldo projetado${reservado > 0 ? ' menos o que está reservado para poupança' : ''}
+        já está comprometido até ${ultimoDia}.
+      </div>`;
+  }
+
+  const porDia = base / info.diasRestantes;
+  return `
+    <div class="sm-pode-gastar">
+      <div class="sm-pode-gastar-num">${formatarMoedaBrasileira(porDia)}<span>/dia</span></div>
+      <div class="sm-pode-gastar-txt">
+        pode gastar até <strong>${ultimoDia}</strong> — ${formatarMoedaBrasileira(base)}
+        em ${info.diasRestantes} dia${info.diasRestantes === 1 ? '' : 's'}${reservado > 0
+          ? `, já descontando ${formatarMoedaBrasileira(reservado)} reservados para poupança`
+          : ''}.
+      </div>
+    </div>`;
+}
+
 function smLinha(rotulo, valor, sinal) {
   if (!valor) return '';
   return `
@@ -369,6 +435,7 @@ function renderizarSaldoDoMes() {
         <span class="sm-valor">${formatarMoedaBrasileira(r.saldo)}</span>
       </div>
     </div>
+    ${smBlocoPodeGastar(r)}
     ${smIndicadores(r)}
   `;
 }
