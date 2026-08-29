@@ -279,9 +279,15 @@ Cerca de 55 commits ao longo do dia. Agrupados por tema:
 
 `http.log` (0 bytes) está versionado e o `.gitignore` não cobre. Remover + adicionar `*.log`.
 
-#### N14. Foco / Esc / aria nos modais (≈1h)
+#### N14. Foco / Esc / aria nos modais (≈1h) — ✅ FEITO 2026-08-29
 
-Modais (`abrirModalDespesa` em envelopes, snapshot em `fgts.html`, etc.) sem *trap* de foco, sem fechar no Esc, sem `aria-modal`. Um par `abrirModal(el)` / `fecharModal(el)` compartilhado resolve para todos de uma vez.
+> IIFE `modaisAcessiveis()` em `main.js` (já carregado em todas as páginas): varre `.modal` /
+> `.modal-overlay`, põe `role="dialog"` + `aria-modal`, e um `MutationObserver` em `hidden`/`class`/
+> `style` detecta abrir/fechar (cobre tanto o padrão `hidden` quanto o `.ativo` de
+> `cartoes-adicionais`). Ao abrir: foco vai para o 1º campo; `Tab`/`Shift+Tab` ficam presos dentro
+> do modal do topo (suporta modais empilhados). `Esc` e clique no fundo fecham chamando o
+> `.btn-fechar` / `button[onclick^="fechar"]` da própria página (preserva o reset de formulário);
+> ao fechar, o foco volta para quem abriu. Zero mudança nas ~16 páginas com modal.
 
 ---
 
