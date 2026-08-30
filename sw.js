@@ -1,7 +1,7 @@
 // Service worker mínimo — sem framework.
 // Estratégia: cache-first com atualização em segundo plano (stale-while-revalidate)
 // para GET do mesmo domínio. Offline cai no index.html.
-const CACHE = 'financas-v3';
+const CACHE = 'financas-v4';
 const PRECACHE = [
   './',
   './index.html',

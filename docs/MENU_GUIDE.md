@@ -102,8 +102,17 @@ Exemplo de estrutura mínima:
 ✅ Sem dependências externas
 ✅ Funciona com localStorage e páginas estáticas
 
+## Onde a estrutura vive
+
+`MENU_ITEMS` fica em `assets/js/nucleo/navegacao.js` — **fonte única** consumida
+tanto pelo menu do topo (`menu.js`) quanto pelo mapa do site no rodapé
+(`rodape.js`). Toda página carrega `navegacao.js` antes de `menu.js`/`rodape.js`.
+
 ## Dicas
 
-- Mantenha os `href` como caminhos relativos (começando com `./`)
+- Mantenha os `href` como caminhos relativos à raiz (começando com `./`)
+- `resolverHref()` (em `navegacao.js`) converte o `./` para o contexto da página
+  em tempo de execução, então o mesmo item funciona na raiz, em `temas/<tema>/` e
+  em `ferramentas/`
+- O `<nav>` no HTML fica **vazio** (`<nav></nav>`); o menu é montado por JS
 - Teste em páginas em diferentes profundidades (raiz, subpasta, etc)
-- O JavaScript verifica automaticamente se o path é relativo e ajusta conforme necessário

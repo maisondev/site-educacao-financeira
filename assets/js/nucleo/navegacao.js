@@ -84,3 +84,18 @@ const MENU_ITEMS = [
     ]
   }
 ];
+
+// Prefixo relativo até a raiz do site, deduzido do src deste próprio script,
+// para os links de MENU_ITEMS funcionarem na raiz, em temas/<tema>/ e ferramentas/.
+function baseNavegacao() {
+  var s = document.querySelector('script[src*="assets/js/nucleo/navegacao.js"]');
+  if (!s) return './';
+  return s.getAttribute('src').replace(/assets\/js\/nucleo\/navegacao\.js.*$/, '') || './';
+}
+
+// Converte um href relativo à raiz (./x.html) para o contexto da página atual.
+function resolverHref(href) {
+  if (!href) return href;
+  if (/^(https?:|mailto:|tel:|#)/.test(href)) return href;
+  return href.replace(/^\.\//, baseNavegacao());
+}

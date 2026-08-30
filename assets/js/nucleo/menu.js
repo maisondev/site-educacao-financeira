@@ -15,13 +15,13 @@ function renderizarMenu() {
     if (item.submenu) {
       li.className = 'has-submenu';
       li.innerHTML = `
-        <a href="${item.href}">${item.label}</a>
+        <a href="${resolverHref(item.href)}">${item.label}</a>
         <ul class="submenu">
-          ${item.submenu.map(sub => `<li><a href="${sub.href}">${sub.label}</a></li>`).join('')}
+          ${item.submenu.map(sub => `<li><a href="${resolverHref(sub.href)}">${sub.label}</a></li>`).join('')}
         </ul>
       `;
     } else {
-      li.innerHTML = `<a href="${item.href}">${item.label}</a>`;
+      li.innerHTML = `<a href="${resolverHref(item.href)}">${item.label}</a>`;
     }
 
     ul.appendChild(li);
