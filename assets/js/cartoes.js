@@ -604,23 +604,21 @@ function obterUltimaFaturaDisponivel(cartao) {
   const datas = cartao.datasPorMes || [];
   const historico = cartao.historicoUtilizacao || [];
 
-  // Combinar ambos e retornar o mais recente por mês
-  const todasAsEntradas = [
-    ...datas,
-    ...historico.map(h => ({ mes: h.mes, saldo: h.saldo }))
-  ];
-
-  if (todasAsEntradas.length === 0) return null;
-
-  // Ordenar por mês numericamente (maior = mais recente)
-  const ordenadas = todasAsEntradas.sort((a, b) => {
-    const aNum = parseInt(a.mes.replace('-', ''));
-    const bNum = parseInt(b.mes.replace('-', ''));
-    return bNum - aNum;
+  // Combinar por mês: datasPorMes é a fonte principal (traz foiPaga);
+  // historicoUtilizacao só completa o saldo quando faltar.
+  const porMes = {};
+  historico.forEach(h => {
+    porMes[h.mes] = { ...(porMes[h.mes] || {}), mes: h.mes, saldo: h.saldo };
+  });
+  datas.forEach(d => {
+    porMes[d.mes] = { ...(porMes[d.mes] || {}), ...d };
   });
 
-  // Retornar última entrada, garantindo que tem saldo
-  return ordenadas[0] && ordenadas[0].saldo ? ordenadas[0] : (ordenadas[0] || null);
+  const entradas = Object.values(porMes);
+  if (entradas.length === 0) return null;
+
+  entradas.sort((a, b) => parseInt(b.mes.replace('-', '')) - parseInt(a.mes.replace('-', '')));
+  return entradas[0];
 }
 
 function obterSaldoExibicao(cartao) {
@@ -659,9 +657,17 @@ function atualizarVisualizacao() {
     };
   }).filter(c => c !== null);
 
+  // "Pago" vem sempre de datasPorMes (mesma fonte do checkbox). O objeto de
+  // obterUltimaFaturaDisponivel pode ser a cópia vinda de historicoUtilizacao,
+  // que não carrega o flag foiPaga.
+  const faturaPaga = (c) => {
+    const ref = c.mesReferencia;
+    if (!ref) return false;
+    return !!(c.datasPorMes || []).find(d => d.mes === ref)?.foiPaga;
+  };
+
   const totalSaldosAbertos = cartoesComSaldo.reduce((sum, c) => {
-    const pago = c.ultimaFatura && c.ultimaFatura.foiPaga;
-    return sum + (pago || !c.saldoVisivel ? 0 : c.saldoVisivel);
+    return sum + (faturaPaga(c) || !c.saldoVisivel ? 0 : c.saldoVisivel);
   }, 0);
 
   // Total devido agrupado por titular (ignora faturas já pagas).
@@ -669,8 +675,7 @@ function atualizarVisualizacao() {
   // "MAISON MARCEL MADRI ..." caem no mesmo grupo.
   const gruposTitular = {};
   cartoesComSaldo.forEach(c => {
-    const pago = c.ultimaFatura && c.ultimaFatura.foiPaga;
-    if (pago || !c.saldoVisivel) return;
+    if (faturaPaga(c) || !c.saldoVisivel) return;
     const bruto = (c.titular || '').trim();
     const chave = primeiroNomeNormalizado(bruto);
     if (!gruposTitular[chave]) {
