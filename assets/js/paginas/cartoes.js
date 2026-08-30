@@ -794,10 +794,22 @@ function salvarCartao() {
 function removerCartao(id) {
   if (confirm('Tem certeza que deseja remover este cartão?')) {
     const cartoes = obterCartoes();
-    const index = cartoes.findIndex(c => c.id === id);
-    if (index > -1) {
-      cartoes.splice(index, 1);
-      salvarCartoes(cartoes);
+    const alvo = cartoes.find(c => c.id === id);
+    if (!alvo) return;
+
+    // Remove também registros duplicados do mesmo cartão físico (mesmo banco +
+    // 4 últimos dígitos), para não reaparecerem após a consolidação.
+    const ultimos = String(alvo.ultimos || '').replace(/\D/g, '').slice(-4);
+    const bancoAlvo = obterBancoPorNome(alvo.nome) || 'outros';
+    const restantes = cartoes.filter(c => {
+      if (c.id === id) return false;
+      if (ultimos.length !== 4) return true;
+      return !(String(c.ultimos || '').replace(/\D/g, '').slice(-4) === ultimos
+        && (obterBancoPorNome(c.nome) || 'outros') === bancoAlvo);
+    });
+
+    if (restantes.length !== cartoes.length) {
+      salvarCartoes(restantes);
       atualizarVisualizacao();
     }
   }
@@ -842,8 +854,61 @@ function formatarMesPtBr(mesStr) {
   return `${MESES_ABREV[parseInt(mes) - 1]} ${ano.slice(2)}`;
 }
 
+// Junta entradas {mes, ...} de `novas` na lista `lista` (mutada no lugar):
+// mês inédito é adicionado; mês repetido só é sobrescrito quando o novo
+// registro traz dado "mais forte" (marcado como pago, ou saldo maior).
+function mesclarEntradasPorMes(lista, novas) {
+  (novas || []).forEach(nova => {
+    if (!nova || !nova.mes) return;
+    const idx = lista.findIndex(d => d.mes === nova.mes);
+    if (idx === -1) {
+      lista.push({ ...nova });
+      return;
+    }
+    const atual = lista[idx];
+    const preferNova = (nova.foiPaga && !atual.foiPaga)
+      || (!atual.foiPaga && !nova.foiPaga && (Number(nova.saldo) || 0) > (Number(atual.saldo) || 0));
+    lista[idx] = preferNova ? { ...atual, ...nova } : { ...nova, ...atual };
+  });
+}
+
+// Consolida registros que representam o mesmo cartão físico — mesmo banco e
+// mesmos 4 últimos dígitos. Importar a fatura mês a mês às vezes cria um novo
+// registro em vez de atualizar o existente; sem consolidar, o contador e os
+// totais somam o mesmo cartão várias vezes (uma por mês).
+function consolidarCartoesPorUltimos(cartoes) {
+  const porChave = new Map();
+  cartoes.forEach(c => {
+    // Regra do usuário: vincula pelos 4 últimos dígitos + banco. Se repetido,
+    // não é um cartão novo (era um registro criado por importação mês a mês).
+    const ultimos = String(c.ultimos || '').replace(/\D/g, '').slice(-4);
+    const banco = obterBancoPorNome(c.nome) || 'outros';
+    const chave = ultimos.length === 4 ? `${banco}|${ultimos}` : `id|${c.id}`;
+
+    if (!porChave.has(chave)) {
+      porChave.set(chave, {
+        ...c,
+        datasPorMes: [...(c.datasPorMes || [])],
+        historicoUtilizacao: [...(c.historicoUtilizacao || [])]
+      });
+      return;
+    }
+
+    const base = porChave.get(chave);
+    ['titular', 'nome', 'bandeira', 'tipo', 'limite', 'fechamento', 'vencimento', 'saldoAberto', 'cor', 'rateioRecorrente']
+      .forEach(campo => {
+        if ((base[campo] == null || base[campo] === '') && c[campo] != null && c[campo] !== '') {
+          base[campo] = c[campo];
+        }
+      });
+    mesclarEntradasPorMes(base.datasPorMes, c.datasPorMes || []);
+    mesclarEntradasPorMes(base.historicoUtilizacao, c.historicoUtilizacao || []);
+  });
+  return [...porChave.values()];
+}
+
 function atualizarVisualizacao() {
-  const cartoes = obterCartoes();
+  const cartoes = consolidarCartoesPorUltimos(obterCartoes());
   const container = document.getElementById('lista-cartoes');
 
   // Atualizar contador de cartões
