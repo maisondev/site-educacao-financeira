@@ -287,6 +287,28 @@ O store do Mercado é isolado — nenhum outro módulo o lê. Para não digitar 
 
 **Regra**: valor do supermercado entra **uma vez** nas despesas variáveis — ou pelo checkbox do Mercado, ou pelo Lançamento rápido. O registro no store do Mercado sempre serve para a análise por categoria.
 
+## Página de Cartões (localStorage)
+
+**Arquivo**: `cartoes.html` + `assets/js/cartoes.js` — chave `Store.CHAVES.CARTOES`.
+
+Cadastra cartões de crédito com limite, ciclo (fechamento → vencimento), saldo por mês (`datasPorMes`) e histórico de utilização. O botão **"Importar de fatura"** lê um manifesto `cartao-<mes>-<ano>[-<titular>].json` (gerado na análise da fatura, salvo na pasta do mês no Google Drive) e cadastra/atualiza o cartão + registra a fatura do mês, que é lançada em Despesas Variáveis pela sincronização existente.
+
+**Manifesto** (`tipo: "cartao-financas"`, `versao: 1`):
+```json
+{ "tipo":"cartao-financas", "versao":1, "gerado_em":"", "fonte":"",
+  "cartao":{ "titular","nome","banco","ultimos","bandeira","tipo","limite","fechamento","vencimento" },
+  "fatura":{ "competencia":"AAAA-MM", "fechamento":"DD/MM", "vencimento":"DD/MM", "saldo": number } }
+```
+Cartões adicionais (de familiares) têm seu próprio JSON, sem `limite` (compartilham o do titular).
+
+### Convenção: competência = mês de VENCIMENTO (decidido 2026-08-30)
+
+Uma fatura é sempre identificada pelo **mês em que vence** (quando o dinheiro sai), nunca pelo mês de fechamento.
+
+- Fatura que fecha **29/08** e vence **05/09** → "Setembro 2026", `competencia: "2026-09"`, pasta `09 - Setembro`.
+- Vale para: campo `competencia` do JSON, `<title>`/`<h1>` do HTML de análise, nome dos arquivos (`*-setembro-2026.*`) e nome da pasta do mês no Drive.
+- Nubank e Caixa já seguiam isso; Itaú e Bradesco foram migrados (pastas e conteúdo).
+
 ## Linguagem e Público
 
 - **Linguagem**: português (Brasil), simples e acessível para leigos
