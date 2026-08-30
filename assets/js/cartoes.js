@@ -1,4 +1,5 @@
 let cartaoEmEdicaoId = null;
+let resumosPorTitular = [];
 
 const MESES_ABREV = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const MESES_COMPLETOS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
@@ -79,6 +80,33 @@ function rateioEfetivo(cartao, mes, entrada) {
     return [{ titular: rec.titular, valor, recorrente: true }];
   }
   return [];
+}
+
+// Copia o resumo de um titular em texto simples (para colar no WhatsApp).
+function copiarResumoTitular(indice, botao) {
+  const g = resumosPorTitular[indice];
+  if (!g) return;
+
+  const linhas = [`*${g.label}* — Total devido ${formatarMoedaBrasileira(g.total)}`];
+  g.itens.forEach(it => {
+    const via = it.via ? ` (cartão de ${it.via})` : '';
+    const ultimos = it.ultimos ? ` ●●●● ${it.ultimos}` : '';
+    linhas.push(`• ${it.nome}${ultimos}${via}: ${formatarMoedaBrasileira(it.valor)}`);
+  });
+  const texto = linhas.join('\n');
+
+  const feedback = () => {
+    if (!botao) return;
+    const original = botao.textContent;
+    botao.textContent = 'Copiado!';
+    setTimeout(() => { botao.textContent = original; }, 1500);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(feedback).catch(() => prompt('Copie o texto:', texto));
+  } else {
+    prompt('Copie o texto:', texto);
+  }
 }
 
 function inicializarCartoes() {
@@ -822,6 +850,7 @@ function atualizarVisualizacao() {
           </div>
           <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? 'var(--cor-texto-light)' : 'var(--cor-primaria)'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
           <p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">●●●● ${c.ultimos} • ${mesRef}</p>
+          ${rateioHtml}
         </div>
       `;
       }).join('');
@@ -834,16 +863,21 @@ function atualizarVisualizacao() {
 
     const titularDiv = document.getElementById('total-por-titular');
     const grupos = Object.values(gruposTitular).sort((a, b) => b.total - a.total);
+    grupos.forEach(g => g.itens.sort((a, b) => b.valor - a.valor));
+    resumosPorTitular = grupos;
     const mostrarPorTitular = grupos.length > 1 || (grupos.length === 1 && grupos[0].itens.length > 1);
     titularDiv.innerHTML = mostrarPorTitular
-      ? grupos.map(g => `
+      ? grupos.map((g, i) => `
         <div style="font-size: 13px; margin-bottom: 6px;">
-          <div style="display: flex; justify-content: space-between; gap: 8px; color: var(--cor-texto); font-weight: 600;">
-            <span>${escaparTextoCartao(g.label)}</span>
+          <div style="display: flex; justify-content: space-between; gap: 8px; color: var(--cor-texto); font-weight: 600; align-items: baseline;">
+            <span>${escaparTextoCartao(g.label)}
+              <button type="button" onclick="copiarResumoTitular(${i}, this)" title="Copiar para WhatsApp"
+                style="margin-left: 6px; font-size: 11px; padding: 1px 7px; border: 1px solid var(--cor-borda); border-radius: 4px; background: #fff; color: var(--cor-secundaria); cursor: pointer; font-weight: 500;">Copiar</button>
+            </span>
             <span>${formatarMoedaBrasileira(g.total)}</span>
           </div>
           <div style="display: grid; gap: 2px; margin: 2px 0 0 12px; font-size: 12px; color: var(--cor-texto-light);">
-            ${g.itens.sort((a, b) => b.valor - a.valor).map(it => `
+            ${g.itens.map(it => `
               <div style="display: flex; justify-content: space-between; gap: 8px;">
                 <span>${escaparTextoCartao(it.nome)}${it.ultimos ? ` ●●●● ${it.ultimos}` : ''}${it.via ? ` <em style="font-style: normal; opacity: 0.8;">(cartão de ${escaparTextoCartao(it.via)})</em>` : ''}</span>
                 <span>${formatarMoedaBrasileira(it.valor)}</span>
@@ -910,6 +944,7 @@ function montarCardCartao(cartao) {
   const banco = obterBancoPorNome(cartao.nome);
   const databancoAttr = banco ? ` data-banco="${banco}"` : '';
   const corAttr = cartao.cor ? ` style="background: linear-gradient(135deg, ${cartao.cor} 0%, ${cartao.cor} 100%)"` : '';
+  const aviso = avisoFechamento(cartao);
   return `
     <div class="card-cartao"${databancoAttr}${corAttr}>
       <div class="card-cartao-botoes">
@@ -924,6 +959,8 @@ function montarCardCartao(cartao) {
       </div>
 
       <div class="card-cartao-numero">●●●● ${cartao.ultimos}</div>
+
+      ${aviso ? `<div class="card-cartao-avisos">${aviso}</div>` : ''}
 
       ${cartao.bandeira || cartao.tipo ? `
       <div class="card-cartao-tags">
@@ -1078,6 +1115,38 @@ function gerarTextoCiclo(cartao) {
     return `paga ${formatarDiaOuDiaMes(vencimento)}`;
   }
   return '—';
+}
+
+function diasAteFechamento(cartao) {
+  const hoje = new Date();
+  const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+  const dataAtual = (cartao.datasPorMes || []).find(d => d.mes === mesAtual);
+  const fechamento = dataAtual ? dataAtual.fechamento : cartao.fechamento;
+  if (!fechamento) return null;
+
+  const partes = fechamento.toString().split('/');
+  const dia = parseInt(partes[0], 10);
+  const mesEsp = partes[1] ? parseInt(partes[1], 10) : null;
+  if (!dia) return null;
+
+  const inicioHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+  let alvo;
+  if (mesEsp) {
+    alvo = new Date(hoje.getFullYear(), mesEsp - 1, dia);
+    if (alvo < inicioHoje) alvo = new Date(hoje.getFullYear() + 1, mesEsp - 1, dia);
+  } else {
+    alvo = new Date(hoje.getFullYear(), hoje.getMonth(), dia);
+    if (alvo < inicioHoje) alvo = new Date(hoje.getFullYear(), hoje.getMonth() + 1, dia);
+  }
+  return Math.round((alvo - inicioHoje) / 86400000);
+}
+
+function avisoFechamento(cartao) {
+  const dias = diasAteFechamento(cartao);
+  if (dias === null || dias > 3) return '';
+  const texto = dias === 0 ? 'Fecha hoje' : dias === 1 ? 'Fecha amanhã' : `Fecha em ${dias} dias`;
+  const classe = dias === 0 ? ' card-cartao-aviso-hoje' : '';
+  return `<span class="card-cartao-aviso${classe}">${texto}</span>`;
 }
 
 function exportarCartaoParaCalendario(cartaoId) {
