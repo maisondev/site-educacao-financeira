@@ -89,7 +89,7 @@ A estrutura NOT é uma SPA — são páginas HTML reais linkadas entre si, sem f
 ### Nova ferramenta
 
 1. Criar `ferramentas/nova-ferramenta.html`
-2. Criar `assets/js/nova-ferramenta.js` se necessário
+2. Criar `assets/js/ferramentas/nova-ferramenta.js` se necessário
 3. Linkar a partir de artigos relevantes (ex: calculadora linkada em "Juros Compostos na Prática")
 
 ## Estrutura de Conceitos (Didática)
@@ -177,7 +177,7 @@ Um único `assets/css/style.css`. Características:
 
 Preferencialmente vanilla (puro). Nenhuma biblioteca ou framework. Se precisar de funcionalidades mais complexas, considere adicionar em `assets/js/`, mas evite abstrações desnecessárias.
 
-**Exemplo: calculadora de juros compostos** (`assets/js/calculadora-juros-compostos.js`):
+**Exemplo: calculadora de juros compostos** (`assets/js/ferramentas/calculadora-juros-compostos.js`):
 - Escuta `submit` do formulário
 - Valida inputs
 - Calcula mês a mês
@@ -217,7 +217,7 @@ Preferencialmente vanilla (puro). Nenhuma biblioteca ou framework. Se precisar d
 
 ## Página de Envelopes (localStorage)
 
-**Arquivo**: `envelopes.html` + `assets/js/envelopes.js`
+**Arquivo**: `envelopes.html` + `assets/js/paginas/envelopes.js`
 
 Funcionalidades:
 - Sistema de "envelope budgeting" — aloca a renda mensal em categorias predefinidas
@@ -242,7 +242,7 @@ Funcionalidades:
 
 ## Página de Metas (localStorage)
 
-**Arquivo**: `metas.html` + `assets/js/metas.js`
+**Arquivo**: `metas.html` + `assets/js/paginas/metas.js`
 
 Funcionalidades:
 - Adicionar meta com: título, descrição, valor alvo, valor atual, prazo (curto/médio/longo), data limite

@@ -37,9 +37,10 @@ Este arquivo fornece orientação ao Claude Code ao trabalhar com código neste 
 │   ├── css/
 │   │   └── style.css                   # CSS único, compartilhado por todas as páginas
 │   └── js/
-│       ├── main.js                     # Reservado para interações globais
-│       ├── calculadora-juros-compostos.js
-│       └── metas.js                    # Gerenciar metas com localStorage
+│       ├── nucleo/                     # Infra compartilhada (menu, rodape, storage, formatacao, icones, competencia, lembretes...)
+│       ├── paginas/                    # Um controlador por pagina (dashboard.js, metas.js, cartoes.js...)
+│       └── ferramentas/               # Scripts das calculadoras
+├── docs/                               # Documentacao interna (DESIGN_SYSTEM, AGENTS, MELHORIAS, MENU_GUIDE)
 ├── temas/
 │   ├── index.html                      # Índice de todos os temas
 │   ├── orcamento-pessoal/
@@ -89,7 +90,7 @@ A estrutura NOT é uma SPA — são páginas HTML reais linkadas entre si, sem f
 ### Nova ferramenta
 
 1. Criar `ferramentas/nova-ferramenta.html`
-2. Criar `assets/js/nova-ferramenta.js` se necessário
+2. Criar `assets/js/ferramentas/nova-ferramenta.js` se necessário
 3. Linkar a partir de artigos relevantes (ex: calculadora linkada em "Juros Compostos na Prática")
 
 ## Estrutura de Conceitos (Didática)
@@ -177,7 +178,7 @@ Um único `assets/css/style.css`. Características:
 
 Preferencialmente vanilla (puro). Nenhuma biblioteca ou framework. Se precisar de funcionalidades mais complexas, considere adicionar em `assets/js/`, mas evite abstrações desnecessárias.
 
-**Exemplo: calculadora de juros compostos** (`assets/js/calculadora-juros-compostos.js`):
+**Exemplo: calculadora de juros compostos** (`assets/js/ferramentas/calculadora-juros-compostos.js`):
 - Escuta `submit` do formulário
 - Valida inputs
 - Calcula mês a mês
@@ -217,7 +218,7 @@ Preferencialmente vanilla (puro). Nenhuma biblioteca ou framework. Se precisar d
 
 ## Página de Envelopes (localStorage)
 
-**Arquivo**: `envelopes.html` + `assets/js/envelopes.js`
+**Arquivo**: `envelopes.html` + `assets/js/paginas/envelopes.js`
 
 Funcionalidades:
 - Sistema de "envelope budgeting" — aloca a renda mensal em categorias predefinidas
@@ -242,7 +243,7 @@ Funcionalidades:
 
 ## Página de Metas (localStorage)
 
-**Arquivo**: `metas.html` + `assets/js/metas.js`
+**Arquivo**: `metas.html` + `assets/js/paginas/metas.js`
 
 Funcionalidades:
 - Adicionar meta com: título, descrição, valor alvo, valor atual, prazo (curto/médio/longo), data limite
@@ -260,7 +261,7 @@ Funcionalidades:
 
 ## Página de Mercado (localStorage)
 
-**Arquivo**: `mercado.html` + `assets/js/mercado.js` — chave `Store.CHAVES.MERCADO` (`mercado_compras`).
+**Arquivo**: `mercado.html` + `assets/js/paginas/mercado.js` — chave `Store.CHAVES.MERCADO` (`mercado_compras`).
 
 Acompanha a maior despesa variável da casa (supermercado) por categoria, com teto mensal, histórico e comparativo com a média dos meses anteriores.
 
@@ -289,7 +290,7 @@ O store do Mercado é isolado — nenhum outro módulo o lê. Para não digitar 
 
 ## Página de Cartões (localStorage)
 
-**Arquivo**: `cartoes.html` + `assets/js/cartoes.js` — chave `Store.CHAVES.CARTOES`.
+**Arquivo**: `cartoes.html` + `assets/js/paginas/cartoes.js` — chave `Store.CHAVES.CARTOES`.
 
 Cadastra cartões de crédito com limite, ciclo (fechamento → vencimento), saldo por mês (`datasPorMes`) e histórico de utilização. O botão **"Importar de fatura"** lê um manifesto `cartao-<mes>-<ano>[-<titular>].json` (gerado na análise da fatura, salvo na pasta do mês no Google Drive) e cadastra/atualiza o cartão + registra a fatura do mês, que é lançada em Despesas Variáveis pela sincronização existente.
 
@@ -319,6 +320,28 @@ Abaixo do total geral, o resumo mostra a quebra por pessoa:
   - O modal "Gerenciar datas por mês" abre já no **mês da última fatura registrada** (não no mês do calendário), e recarrega os campos ao trocar o mês — para o saldo/rateio caírem no mês certo.
 - **Botão "Copiar" por titular**: cada linha de titular tem um botão que copia (via `navigator.clipboard`, com `prompt` de fallback) um resumo em texto pronto para o WhatsApp — cabeçalho `💳 *Cartões — <titular>*`, um bloco por cartão (`• Nome (final XXXX)[ — cartão de <dono>]` + valor indentado na linha seguinte), divisória e `*Total devido: R$ ...*`. Os grupos ficam em `resumosPorTitular` (var de módulo, repopulada a cada `atualizarVisualizacao`); `copiarResumoTitular(indice, botao)` monta o texto e dá feedback "Copiado!" no botão.
 
+## Página de Revisão de Faturas — esteira (localStorage)
+
+**Arquivo**: `revisao-faturas.html` + `assets/js/paginas/revisao-faturas.js` — chave `Store.CHAVES.REVISAO_FATURAS` (`revisao_faturas`).
+
+Transforma cada fatura fechada numa lista de tarefas de revisão pendente, para não só pagar a fatura mas sair dela com 1 corte definido para o mês seguinte.
+
+**Fonte de dados**: lê `Store.CHAVES.ANALISE_FATURAS` (`analise_faturas`, gerado em `analise-fatura.html`). Como aquela store guarda **só uma análise por competência** (Itaú sobrescreve Nubank no mesmo mês), a revisão guarda um **snapshot** dos números no momento em que é criada e sobrevive à sobrescrita. Fluxo do usuário: analisar 1 banco → salvar → **Sincronizar** na esteira → analisar o próximo banco → Sincronizar de novo.
+
+**Estrutura do store**: `{ [competencia|banco]: { competencia, banco, estado, criadaEm, atualizadaEm, snapshot, tarefas: [] } }`
+- `estado`: `'a-revisar'` → `'em-revisao'` (ao marcar a 1ª tarefa) → `'concluida'` (botão "Concluir revisão"; reabrível).
+- `snapshot`: `{ total, qtdLancamentos, porCategoria, encargos, maior, assinaturas[], parcelamentosNovos[] }` — respeita os cartões `inclusos` da análise e ignora `tipo:'pagamento'`.
+- `tarefas[]`: `{ id, tipo, texto, feito, auto, chave? }`. `tipo`: `checklist` (5 fixas, `RF_CHECKLIST_FIXO`), `insight` (automáticas), `livre` (o usuário digita).
+
+**Insights automáticos** (`rfTarefasAutomaticas`), deduplicados por `chave` ao ressincronizar (nunca removem, só adicionam novos):
+- `cat:<categoria>` — total da categoria ≥ média dos até 3 meses anteriores × 1,20 **e** diferença ≥ R$ 30 (`RF_LIMITE_PCT` / `RF_LIMITE_REAIS`). Baseline = snapshots anteriores do mesmo banco, senão de qualquer banco.
+- `assin:<nome>` — assinatura (categoria `assinatura`) cujo nome normalizado (`rfNormAssinatura`, 2 primeiras palavras) não apareceu em fatura anterior.
+- `parcelas` — lançamentos com `parcelaAtual === 1 && parcelaTotal > 1`.
+- `encargos` — soma de `tipo:'encargo'` > 0 (juros/IOF/multa).
+- `primeira` — quando não há baseline nenhum.
+
+**Sincronização** (`rfSincronizar(silencioso)`): roda no `DOMContentLoaded` em modo silencioso e no botão "Sincronizar". Revisão nova = checklist fixo + insights; revisão existente = atualiza `snapshot` e injeta só insights com `chave` inédita, preservando `feito`.
+
 ## Linguagem e Público
 
 - **Linguagem**: português (Brasil), simples e acessível para leigos
@@ -326,7 +349,7 @@ Abaixo do total geral, o resumo mostra a quebra por pessoa:
 - **Tom**: educacional, amigável, nunca técnico demais
 - **Exemplos**: use valores do dia a dia (salários brasileiros, despesas locais)
 
-## Backup dos dados (`assets/js/backup.js`)
+## Backup dos dados (`assets/js/nucleo/backup.js`)
 
 Renderizado na seção `#container-backup` do `dashboard.html` (via `renderizarSecaoBackup()`, chamada em `dashboard.js`).
 
@@ -373,6 +396,6 @@ Renderizado na seção `#container-backup` do `dashboard.html` (via `renderizarS
 5. Remover qualquer emoji do título/menu
 
 ### Referências de design
-- `DESIGN_SYSTEM.md` — guia completo de cores, tipografia, componentes
+- `docs/DESIGN_SYSTEM.md` — guia completo de cores, tipografia, componentes
 - `design-system-demo.html` — playground visual de todos os estilos
 - `assets/css/style.css` — 30+ variáveis CSS reutilizáveis

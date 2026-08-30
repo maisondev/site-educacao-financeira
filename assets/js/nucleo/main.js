@@ -91,9 +91,9 @@ function toggleSubmenu(parent) {
 // funcionar tanto na raiz quanto em páginas dentro de temas/<tema>/.
 // ---------------------------------------------------------------------------
 (function inicializarPWA() {
-  const script = document.querySelector('script[src$="assets/js/main.js"]');
+  const script = document.querySelector('script[src$="assets/js/nucleo/main.js"]');
   const base = script
-    ? script.getAttribute('src').replace(/assets\/js\/main\.js.*$/, '')
+    ? script.getAttribute('src').replace(/assets\/js\/nucleo\/main\.js.*$/, '')
     : './';
 
   if (!document.querySelector('link[rel="manifest"]')) {

@@ -19,24 +19,38 @@ let veiculoModoNovo = false;
 
 // Plano preventivo de referência. Intervalos típicos para carro de passeio flex.
 // Ajuste sempre pelo manual do fabricante — este é só um ponto de partida.
+// prioridade: 'essencial' (segurança / risco de dano grave ao motor),
+//             'importante' (desempenho, consumo e confiabilidade),
+//             'rotina' (conforto). A lista já vem ordenada da mais essencial para a menos.
 const PLANO_PADRAO = [
-  { id: 'oleo',          nome: 'Óleo do motor + filtro de óleo', km: 10000, meses: 12, essencial: true },
-  { id: 'filtro-ar',     nome: 'Filtro de ar do motor',          km: 15000, meses: 12, essencial: false },
-  { id: 'filtro-cabine', nome: 'Filtro de cabine (ar-condicionado)', km: 15000, meses: 12, essencial: false },
-  { id: 'filtro-comb',   nome: 'Filtro de combustível',          km: 20000, meses: 24, essencial: true },
-  { id: 'velas',         nome: 'Velas de ignição',               km: 40000, meses: 48, essencial: false },
-  { id: 'alinhamento',   nome: 'Alinhamento e balanceamento',    km: 10000, meses: 12, essencial: false },
-  { id: 'rodizio-pneus', nome: 'Rodízio de pneus',               km: 10000, meses: 12, essencial: false },
-  { id: 'pneus',         nome: 'Troca de pneus',                 km: 40000, meses: 60, essencial: true },
-  { id: 'pastilhas',     nome: 'Pastilhas de freio (dianteiras)', km: 30000, meses: 36, essencial: true },
-  { id: 'fluido-freio',  nome: 'Fluido de freio',                km: 20000, meses: 24, essencial: true },
-  { id: 'correia',       nome: 'Correia dentada + tensor',       km: 50000, meses: 60, essencial: true },
-  { id: 'arrefecimento', nome: 'Líquido de arrefecimento (radiador)', km: 40000, meses: 24, essencial: true },
-  { id: 'amortecedores', nome: 'Amortecedores / suspensão',      km: 60000, meses: 60, essencial: true },
-  { id: 'bateria',       nome: 'Bateria',                        km: 0,     meses: 36, essencial: false },
-  { id: 'cambio',        nome: 'Óleo do câmbio automático',      km: 60000, meses: 48, essencial: false },
-  { id: 'revisao',       nome: 'Revisão geral',                  km: 20000, meses: 12, essencial: false }
+  { id: 'correia',       nome: 'Correia dentada + tensor',       km: 50000, meses: 60, prioridade: 'essencial' },
+  { id: 'oleo',          nome: 'Óleo do motor + filtro de óleo', km: 10000, meses: 12, prioridade: 'essencial' },
+  { id: 'pastilhas',     nome: 'Pastilhas de freio (dianteiras)', km: 30000, meses: 36, prioridade: 'essencial' },
+  { id: 'fluido-freio',  nome: 'Fluido de freio',                km: 20000, meses: 24, prioridade: 'essencial' },
+  { id: 'pneus',         nome: 'Troca de pneus',                 km: 40000, meses: 60, prioridade: 'essencial' },
+  { id: 'arrefecimento', nome: 'Líquido de arrefecimento (radiador)', km: 40000, meses: 24, prioridade: 'essencial' },
+  { id: 'amortecedores', nome: 'Amortecedores / suspensão',      km: 60000, meses: 60, prioridade: 'essencial' },
+  { id: 'filtro-comb',   nome: 'Filtro de combustível',          km: 20000, meses: 24, prioridade: 'essencial' },
+  { id: 'velas',         nome: 'Velas de ignição',               km: 40000, meses: 48, prioridade: 'importante' },
+  { id: 'filtro-ar',     nome: 'Filtro de ar do motor',          km: 15000, meses: 12, prioridade: 'importante' },
+  { id: 'rodizio-pneus', nome: 'Rodízio de pneus',               km: 10000, meses: 12, prioridade: 'importante' },
+  { id: 'alinhamento',   nome: 'Alinhamento e balanceamento',    km: 10000, meses: 12, prioridade: 'importante' },
+  { id: 'bateria',       nome: 'Bateria',                        km: 0,     meses: 36, prioridade: 'importante' },
+  { id: 'cambio',        nome: 'Óleo do câmbio automático',      km: 60000, meses: 48, prioridade: 'importante' },
+  { id: 'revisao',       nome: 'Revisão geral',                  km: 20000, meses: 12, prioridade: 'importante' },
+  { id: 'filtro-cabine', nome: 'Filtro de cabine (ar-condicionado)', km: 15000, meses: 12, prioridade: 'rotina' }
 ];
+
+// Metadados de prioridade: ordem (menor = mais essencial) e rótulo do badge.
+const PRIORIDADE_META = {
+  essencial:  { ordem: 1, rotulo: 'essencial' },
+  importante: { ordem: 2, rotulo: 'importante' },
+  rotina:     { ordem: 3, rotulo: 'rotina' }
+};
+
+// Estado dos controles de ordenar/filtrar do plano preventivo.
+let planoOrdenar = 'prioridade';
+let planoFiltrar = 'todos';
 
 function labelCategoria(id) {
   const item = PLANO_PADRAO.find(p => p.id === id);
@@ -632,6 +646,9 @@ const ROTULO_STATUS = {
   'sem-registro': 'Sem registro'
 };
 
+// Ordem de urgência do status (menor = mais urgente), para ordenar o plano.
+const ORDEM_STATUS = { 'atrasado': 1, 'proximo': 2, 'sem-registro': 3, 'em-dia': 4 };
+
 // ---------------------------------------------------------------------------
 // Render
 // ---------------------------------------------------------------------------
@@ -733,18 +750,54 @@ function renderResumo(d) {
   ` : '<p class="vazio-msg">Registre manutenções e abastecimentos com o km para calcular o custo por km.</p>';
 }
 
+function ordenarLinhasPlano(linhas) {
+  const ordem = planoOrdenar;
+  const arr = linhas.map((l, i) => ({ l, i })); // i preserva a ordem original (por prioridade) como desempate
+  arr.sort((a, b) => {
+    if (ordem === 'status') {
+      const d = (ORDEM_STATUS[a.l.status] || 9) - (ORDEM_STATUS[b.l.status] || 9);
+      if (d) return d;
+    } else if (ordem === 'nome') {
+      const d = a.l.item.nome.localeCompare(b.l.item.nome, 'pt-BR');
+      if (d) return d;
+    } else if (ordem === 'intervalo') {
+      const ka = a.l.item.km || Infinity, kb = b.l.item.km || Infinity;
+      if (ka !== kb) return ka - kb;
+    }
+    return a.i - b.i;
+  });
+  return arr.map(x => x.l);
+}
+
+function filtrarLinhasPlano(linhas) {
+  if (planoFiltrar === 'essenciais') return linhas.filter(l => l.item.prioridade === 'essencial');
+  if (planoFiltrar === 'atencao') return linhas.filter(l => l.status === 'atrasado' || l.status === 'proximo');
+  return linhas;
+}
+
 function renderPlano(d) {
   const linhas = statusPlano(manutencoesAtivas(d), veiculoAtivo(d));
   const tbody = document.getElementById('plano-body');
-  tbody.innerHTML = linhas.map(l => `
+  const visiveis = ordenarLinhasPlano(filtrarLinhasPlano(linhas));
+
+  if (visiveis.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="vazio-msg">Nenhum item para este filtro.</td></tr>';
+  } else {
+    tbody.innerHTML = visiveis.map(l => {
+      const meta = PRIORIDADE_META[l.item.prioridade];
+      const badge = meta
+        ? ` <span class="tag-prio tag-prio-${l.item.prioridade}">${meta.rotulo}</span>`
+        : '';
+      return `
     <tr>
-      <td>${escaparHtml(l.item.nome)}${l.item.essencial ? ' <span class="tag-essencial">essencial</span>' : ''}</td>
+      <td>${escaparHtml(l.item.nome)}${badge}</td>
       <td class="col-num">${l.item.km > 0 ? num(l.item.km, 0) + ' km' : '—'}${l.item.meses ? ' / ' + l.item.meses + ' m' : ''}</td>
       <td>${l.ultima || '—'}</td>
       <td>${escaparHtml(l.detalhe)}</td>
       <td><span class="pill pill-${l.status}">${ROTULO_STATUS[l.status]}</span></td>
-    </tr>
-  `).join('');
+    </tr>`;
+    }).join('');
+  }
 
   const atencao = linhas.filter(l => l.status === 'atrasado' || l.status === 'proximo');
   const box = document.getElementById('plano-alerta');
@@ -868,5 +921,17 @@ window.addEventListener('load', function() {
   document.getElementById('m-data').value = new Date().toISOString().split('T')[0];
   document.getElementById('a-data').value = new Date().toISOString().split('T')[0];
   document.getElementById('a-cheio').checked = true;
+
+  const selOrd = document.getElementById('plano-ordenar');
+  const selFil = document.getElementById('plano-filtrar');
+  if (selOrd) selOrd.addEventListener('change', function() {
+    planoOrdenar = this.value;
+    renderPlano(obterDadosCarro());
+  });
+  if (selFil) selFil.addEventListener('change', function() {
+    planoFiltrar = this.value;
+    renderPlano(obterDadosCarro());
+  });
+
   renderTudo();
 });

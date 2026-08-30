@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revisão de Faturas | Educação Financeira</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .rf-acoes-topo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--espacamento-md);
+      align-items: center;
+      margin-bottom: var(--espacamento-lg);
+    }
+
+    .rf-btn-primary {
+      padding: var(--espacamento-sm) var(--espacamento-lg);
+      background-color: var(--cor-primaria);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+    }
+
+    .rf-btn-primary:hover { background-color: var(--cor-primaria-hover); }
+
+    .rf-btn-sec {
+      padding: var(--espacamento-sm) var(--espacamento-lg);
+      background-color: transparent;
+      color: var(--cor-primaria);
+      border: 1px solid var(--cor-primaria);
+      border-radius: 4px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .rf-filtros { display: flex; gap: var(--espacamento-sm); }
+
+    .rf-filtros button {
+      padding: 6px var(--espacamento-md);
+      border: 1px solid var(--cor-borda);
+      background: #fff;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .rf-filtros button.ativo {
+      background: var(--cor-primaria);
+      color: #fff;
+      border-color: var(--cor-primaria);
+    }
+
+    .rf-msg {
+      padding: var(--espacamento-sm) var(--espacamento-md);
+      border-radius: 4px;
+      margin-bottom: var(--espacamento-md);
+      font-size: 14px;
+    }
+    .rf-msg-ok { background: #e6f4ea; color: #1e7e34; }
+    .rf-msg-erro { background: #fdecea; color: #c53030; }
+
+    .rf-resumo {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--espacamento-md);
+      margin-bottom: var(--espacamento-xl);
+    }
+
+    .rf-card-info {
+      background: #fff;
+      border: 1px solid var(--cor-borda);
+      border-radius: 8px;
+      padding: var(--espacamento-md);
+      text-align: center;
+    }
+    .rf-card-info p { margin: 0; }
+    .rf-card-info p:first-child { color: var(--cor-texto-leve); font-size: 13px; margin-bottom: 4px; }
+    .rf-card-info .valor { font-size: 24px; font-weight: bold; color: var(--cor-primaria); }
+    .rf-card-info.erro .valor { color: #c53030; }
+    .rf-card-info.alerta .valor { color: var(--cor-amarelo); }
+    .rf-card-info.sucesso .valor { color: var(--cor-verde); }
+
+    .rf-revisao {
+      background: #fff;
+      border: 1px solid var(--cor-borda);
+      border-radius: 10px;
+      padding: var(--espacamento-lg);
+      margin-bottom: var(--espacamento-lg);
+    }
+    .rf-revisao.rf-estado-concluida { opacity: 0.8; }
+
+    .rf-rev-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--espacamento-md);
+    }
+    .rf-rev-head h3 { margin: 0 0 4px; font-size: 18px; }
+    .rf-rev-num { margin: 0; font-size: 13px; color: var(--cor-texto-leve); }
+
+    .rf-badge {
+      flex-shrink: 0;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .rf-badge-a-revisar { background: #fdecea; color: #c53030; }
+    .rf-badge-em-revisao { background: #fef3cd; color: #8a6d00; }
+    .rf-badge-concluida { background: #e6f4ea; color: #1e7e34; }
+
+    .rf-barra {
+      background: var(--cor-cinza-leve);
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+      margin: var(--espacamento-md) 0 4px;
+    }
+    .rf-barra-fill { background: var(--cor-primaria); height: 100%; transition: width .3s ease; }
+    .rf-barra-fill.alerta { background: var(--cor-amarelo); }
+    .rf-barra-fill.sucesso { background: var(--cor-verde); }
+    .rf-prog-txt { margin: 0 0 var(--espacamento-md); font-size: 12px; color: var(--cor-texto-leve); }
+
+    .rf-grupo { margin-top: var(--espacamento-md); }
+    .rf-grupo h4 {
+      margin: 0 0 var(--espacamento-sm);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+      color: var(--cor-texto-leve);
+    }
+
+    .rf-tarefas { list-style: none; padding: 0; margin: 0; }
+
+    .rf-tarefa {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--espacamento-sm);
+      padding: 6px 0;
+      border-bottom: 1px solid var(--cor-cinza-leve);
+    }
+    .rf-tarefa label {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--espacamento-sm);
+      cursor: pointer;
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .rf-tarefa input { margin-top: 3px; }
+    .rf-tarefa.feita span { text-decoration: line-through; color: var(--cor-texto-leve); }
+
+    .rf-btn-x {
+      background: none;
+      border: none;
+      color: var(--cor-texto-leve);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .rf-btn-x:hover { color: #c53030; }
+
+    .rf-add-livre { display: flex; gap: var(--espacamento-sm); padding-top: var(--espacamento-sm); }
+    .rf-add-livre input {
+      flex: 1;
+      padding: 6px var(--espacamento-sm);
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .rf-add-livre button {
+      padding: 6px var(--espacamento-md);
+      border: 1px solid var(--cor-primaria);
+      background: transparent;
+      color: var(--cor-primaria);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .rf-rev-foot {
+      display: flex;
+      gap: var(--espacamento-md);
+      align-items: center;
+      margin-top: var(--espacamento-lg);
+      flex-wrap: wrap;
+    }
+    .rf-btn-x-txt {
+      background: none;
+      border: none;
+      color: var(--cor-texto-leve);
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: underline;
+      font-family: inherit;
+    }
+
+    .rf-vazio { color: var(--cor-texto-leve); }
+
+    @media (max-width: 600px) {
+      .rf-resumo { grid-template-columns: 1fr 1fr 1fr; gap: var(--espacamento-sm); }
+      .rf-card-info .valor { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-container">
+      <a href="./index.html" class="logo">Educação Financeira</a>
+      <button class="menu-toggle" aria-label="Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav></nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="breadcrumb"><a href="./index.html">Início</a> / Revisão de Faturas</p>
+
+    <h1>Revisão de Faturas</h1>
+
+    <p>
+      Toda fatura fechada é uma chance de ajustar o mês seguinte — mas o normal é só pagar e seguir.
+      Esta é a <strong>esteira de revisão</strong>: cada fatura analisada em
+      <a href="./analise-fatura.html">Análise de Fatura</a> vira uma lista de tarefas
+      (checklist fixo + pontos de atenção tirados dos próprios números + as suas pendências),
+      que fica pendente até você fechar.
+    </p>
+    <p style="font-size: 14px; color: var(--cor-texto-leve);">
+      Analisou a fatura do Nubank, salvou, analisou a do Itaú? Clique em <strong>Sincronizar</strong>
+      depois de cada uma — a análise de fatura guarda só uma por mês, a esteira guarda todas.
+    </p>
+
+    <div id="rf-msg" class="rf-msg" hidden></div>
+
+    <div class="rf-acoes-topo">
+      <button type="button" id="rf-sincronizar" class="rf-btn-primary">Sincronizar com Análise de Fatura</button>
+      <div class="rf-filtros">
+        <button type="button" data-rf-filtro="pendentes" class="ativo">Pendentes</button>
+        <button type="button" data-rf-filtro="concluidas">Concluídas</button>
+        <button type="button" data-rf-filtro="todas">Todas</button>
+      </div>
+    </div>
+
+    <div id="rf-resumo" class="rf-resumo"></div>
+
+    <div id="rf-lista"></div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Conteúdo curado por estudos pessoais em educação financeira.</p>
+  </footer>
+
+  <script src="./assets/js/storage.js"></script>
+  <script src="./assets/js/competencia.js"></script>
+  <script src="./assets/js/icones.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/formatacao.js"></script>
+  <script src="./assets/js/revisao-faturas.js"></script>
+  <script src="./assets/js/menu.js"></script>
+</body>
+</html>

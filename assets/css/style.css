@@ -425,6 +425,56 @@ nav {
   font-size: 14px;
 }
 
+/* Rodapé com mapa do site (gerado por assets/js/nucleo/rodape.js) */
+.site-footer .rodape-conteudo {
+  max-width: var(--max-width-pagina);
+  margin: 0 auto;
+  text-align: left;
+}
+
+.site-footer .rodape-mapa {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--espacamento-lg);
+  margin-bottom: var(--espacamento-lg);
+}
+
+.site-footer .rodape-coluna h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cor-texto);
+  margin: 0 0 var(--espacamento-sm);
+}
+
+.site-footer .rodape-coluna ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-footer .rodape-coluna li {
+  margin-bottom: 4px;
+}
+
+.site-footer .rodape-coluna a {
+  color: var(--cor-texto-leve);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.site-footer .rodape-coluna a:hover {
+  color: var(--cor-secundaria);
+  text-decoration: underline;
+}
+
+.site-footer .rodape-nota {
+  border-top: 1px solid var(--cor-borda);
+  padding-top: var(--espacamento-md);
+  text-align: center;
+  margin: 0;
+}
+
 /* Containers */
 main {
   padding: var(--espacamento-lg) var(--espacamento-md);

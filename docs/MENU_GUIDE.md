@@ -9,13 +9,13 @@ Antes, o menu estava hardcoded em HTML em cada página. Isso significava:
 
 ## A Solução
 
-Agora o menu é gerado automaticamente por JavaScript a partir de um arquivo centralizado: `assets/js/menu.js`
+Agora o menu é gerado automaticamente por JavaScript a partir de um arquivo centralizado: `assets/js/nucleo/menu.js`
 
 ## Como Usar
 
 ### 1. Adicionar um novo item ao menu
 
-Abra `assets/js/menu.js` e procure pelo array `MENU_ITEMS`:
+Abra `assets/js/nucleo/menu.js` e procure pelo array `MENU_ITEMS`:
 
 ```javascript
 const MENU_ITEMS = [
@@ -75,8 +75,8 @@ Se quiser adicionar um submenu (como em "Aprender"):
 O menu é renderizado automaticamente em qualquer página que:
 1. Tenha uma `<nav>` vazia ou com `.site-nav`
 2. Inclua os scripts:
-   - `assets/js/main.js` (lógica de toggle)
-   - `assets/js/menu.js` (estrutura e renderização)
+   - `assets/js/nucleo/main.js` (lógica de toggle)
+   - `assets/js/nucleo/menu.js` (estrutura e renderização)
 
 Exemplo de estrutura mínima:
 ```html
@@ -90,8 +90,8 @@ Exemplo de estrutura mínima:
   </div>
 </header>
 
-<script src="./assets/js/main.js"></script>
-<script src="./assets/js/menu.js"></script>
+<script src="./assets/js/nucleo/main.js"></script>
+<script src="./assets/js/nucleo/menu.js"></script>
 ```
 
 ## Vantagens

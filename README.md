@@ -12,7 +12,12 @@ Os **casos de uso** de cada tela (ator, objetivo, fluxo e onde os dados são gua
 
 - **`temas/`** — conteúdo agrupado por assunto (orçamento, reserva de emergência, juros e investimentos, etc.), cada um com artigos do nível básico ao avançado.
 - **`ferramentas/`** — calculadoras e utilitários simples em JavaScript puro.
-- **`assets/`** — CSS e JS compartilhados por todas as páginas.
+- **`assets/css/`** — folha de estilo única compartilhada por todas as páginas.
+- **`assets/js/nucleo/`** — scripts de infraestrutura carregados em quase toda página (menu, rodapé, storage, formatação, ícones, competência, lembretes).
+- **`assets/js/paginas/`** — um controlador por página (ex.: `dashboard.js`, `cartoes.js`).
+- **`assets/js/ferramentas/`** — scripts das calculadoras.
+- **`docs/`** — documentação interna do projeto (design system, notas de arquitetura, backlog).
+- **`wiki/`** — fonte editável da Wiki (casos de uso).
 
 ## Stack
 
@@ -24,9 +29,9 @@ O conteúdo é baseado em cursos e materiais estudados pelo autor, com a fonte d
 
 ## Como manter o menu atualizado
 
-O menu é centralizado em `assets/js/menu.js`. Sempre que você quer adicionar um novo item ao menu:
+O menu é centralizado em `assets/js/nucleo/menu.js`. Sempre que você quer adicionar um novo item ao menu:
 
-1. Abra `assets/js/menu.js`
+1. Abra `assets/js/nucleo/menu.js`
 2. Adicione um novo objeto ao array `MENU_ITEMS` com:
    - `label`: nome que aparece no menu
    - `href`: URL relativa da página

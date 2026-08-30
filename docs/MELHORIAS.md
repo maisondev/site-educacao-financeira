@@ -38,6 +38,7 @@
 - **Cartões — aviso de fechamento no card** (30/08, commit `04a5c06`): selo "Fecha hoje / amanhã / em N dias" no card quando faltam ≤3 dias para o dia de fechamento (`diasAteFechamento` usa a data de `datasPorMes` do mês corrente, senão `cartao.fechamento`). "Fecha hoje" em vermelho pulsante.
 - **Convenção competência = mês de VENCIMENTO** documentada no `CLAUDE.md` — fatura identificada pelo mês em que o dinheiro sai; Itaú e Bradesco migrados.
 - **Wiki**: casos de uso documentados + link no README.
+- **Revisão de Faturas — esteira** (30/08, `revisao-faturas.html` + `revisao-faturas.js`, chave `revisao_faturas`): cada fatura analisada em `analise-fatura.html` vira uma revisão pendente com checklist fixo (5 itens) + insights automáticos dos próprios números (categoria acima da média de 3 meses, assinatura nova, parcelamento novo, juros/IOF) + tarefas livres. Guarda snapshot da fatura, então sobrevive à sobrescrita de `analise_faturas` (que só guarda 1 análise por mês). Estados a-revisar → em-revisão → concluída. Link no menu Análise e na home.
 
 ---
 
@@ -47,7 +48,7 @@
 
 #### C1. Commitar o rateio recorrente de cartão que está no working tree (≈15min)
 
-`assets/js/cartoes.js` e `cartoes.html` estão modificados e **não commitados**: `rateioEfetivo()`,
+`assets/js/paginas/cartoes.js` e `cartoes.html` estão modificados e **não commitados**: `rateioEfetivo()`,
 `cartao.rateioRecorrente = { titular, valor, desde }`, checkbox "Repetir este rateio nos próximos
 meses", modal de datas abrindo no mês da última fatura e limite proporcional do total rateado ao
 saldo do cartão. Revisar, testar em `cartoes.html` (criar rateio recorrente, conferir que aparece
@@ -64,7 +65,7 @@ Foi o motivo de N6 não ter removido `cartao.html`.
 **O que fazer:**
 - Migração idempotente `cartao_credito` → `cartoes` (dedup por últimos 4 dígitos + banco).
 - `relatorios.js` passa a ler `Store.CHAVES.CARTOES`.
-- Remover `cartao.html` + `assets/js/cartao.js`; apontar os ~5 links restantes para `cartoes.html`.
+- Remover `cartao.html` + `assets/js/paginas/cartao.js`; apontar os ~5 links restantes para `cartoes.html`.
 - Idem para `fluxo-caixa-futuro.html` (duplicata órfã de `parcelas-cartao.html`, sobra de N7).
 
 **Ganho:** o Relatórios volta a refletir a realidade; some a última grande órfã e uma chave morta do catálogo.
@@ -166,8 +167,8 @@ Curtos e independentes se sobrar tempo: **C10** (tags PWA no template), **C12** 
 
 - Nada de build step, framework ou CDN — JS vanilla, conforme `CLAUDE.md` / `AGENTS.md`.
 - Cores sempre via variáveis CSS; sem emoji na navegação.
-- Toda página nova: link no menu (`assets/js/menu.js`) **e** card na home (`index.html`).
+- Toda página nova: link no menu (`assets/js/nucleo/menu.js`) **e** card na home (`index.html`).
 - Mudança de formato de dados exige função de migração **idempotente** + backup antes.
-- Novos acessos a `localStorage` passam por `Store` (`assets/js/storage.js`); registrar a chave em `Store.CHAVES`.
+- Novos acessos a `localStorage` passam por `Store` (`assets/js/nucleo/storage.js`); registrar a chave em `Store.CHAVES`.
 - Competência de fatura = **mês de vencimento** (decidido 2026-08-30).
 - Valor de supermercado e de fatura de cartão entra **uma única vez** nas despesas variáveis.

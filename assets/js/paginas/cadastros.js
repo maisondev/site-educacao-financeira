@@ -1,6 +1,6 @@
 // Cadastros gerais: gerencia as listas básicas (categorias de despesa,
 // formas de pagamento, estabelecimentos) que alimentam os selects do app.
-// Lê e grava via o objeto Cadastros (assets/js/cadastros-dados.js).
+// Lê e grava via o objeto Cadastros (assets/js/nucleo/cadastros-dados.js).
 
 function cadEscapar(texto) {
   const div = document.createElement('div');
