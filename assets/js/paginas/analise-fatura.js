@@ -10,22 +10,23 @@ const AF_SEM_CARTAO = '__sem__';
 const AF_REGRAS_KEY = (typeof Store !== 'undefined' && Store.CHAVES.REGRAS_CATEGORIZACAO)
   || 'regras_categorizacao';
 
-// De/para: categoria da análise de fatura -> categoria de despesas-variaveis.html.
-// O que não tem correspondente direto cai em "outro".
+// De/para: categoria da análise de fatura -> categoria do vocabulário único
+// (CAD_CATEGORIAS_PADRAO, usado por despesas-variaveis.html e relatórios).
+// Só "online" e "vestuário" não têm equivalente direto e caem em "outro".
 const AF_PARA_CATEGORIA_DV = {
   mercado: 'alimentacao',
   restaurante: 'alimentacao',
-  transporte: 'combustivel',
-  assinatura: 'streaming',
+  transporte: 'transporte',
+  assinatura: 'assinatura',
   casa: 'manutencao',
-  saude: 'outro',
+  saude: 'saude',
   online: 'outro',
   vestuario: 'outro',
-  educacao: 'outro',
-  servicos: 'outro',
-  lazer: 'outro',
-  pets: 'outro',
-  impostos: 'outro',
+  educacao: 'educacao',
+  servicos: 'cuidados',
+  lazer: 'lazer',
+  pets: 'pets',
+  impostos: 'impostos',
   outro: 'outro'
 };
 
@@ -1136,4 +1137,11 @@ function inicializarAnaliseFatura() {
   });
 
   afRenderizarHistorico();
+
+  // Deep-link vindo de "Meus Cartões": ?abrir=AAAA-MM abre a análise daquele mês.
+  const abrir = new URLSearchParams(location.search).get('abrir');
+  if (abrir && afLerTodas()[abrir]) {
+    afAbrirAnalise(abrir);
+    history.replaceState(null, '', location.pathname);
+  }
 }

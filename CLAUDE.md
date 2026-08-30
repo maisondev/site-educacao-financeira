@@ -328,6 +328,23 @@ Abaixo do total geral, o resumo mostra a quebra por pessoa:
   - O modal "Gerenciar datas por mês" abre já no **mês da última fatura registrada** (não no mês do calendário), e recarrega os campos ao trocar o mês — para o saldo/rateio caírem no mês certo.
 - **Botão "Copiar" por titular**: cada linha de titular tem um botão que copia (via `navigator.clipboard`, com `prompt` de fallback) um resumo em texto pronto para o WhatsApp — cabeçalho `💳 *Cartões — <titular>*`, um bloco por cartão (`• Nome (final XXXX)[ — cartão de <dono>]` + valor indentado na linha seguinte), divisória e `*Total devido: R$ ...*`. Os grupos ficam em `resumosPorTitular` (var de módulo, repopulada a cada `atualizarVisualizacao`); `copiarResumoTitular(indice, botao)` monta o texto e dá feedback "Copiado!" no botão.
 
+### Vínculos com Análise e Revisão de Fatura (2026-08-30)
+
+Cada card do resumo "saldos abertos" (`atualizarVisualizacao` → `lista-saldos-por-cartao`) e cada card de cartão (`montarCardCartao`) linkam a fatura do mês às páginas de detalhe, quando existe registro da **mesma competência e mesmo banco**:
+- `analiseSalvaDaFatura(cartao, competencia)` — casa `AF_BANCO_LABEL[obterBancoPorNome(nome)]` com `analise_faturas[competencia].banco`.
+- `linksFaturaCartao(cartao, competencia)` — "Ver análise" → `analise-fatura.html?abrir=<comp>`; "Ver revisão" → `revisao-faturas.html?abrir=<comp>|<Banco>`.
+- Destino: `inicializarAnaliseFatura` chama `afAbrirAnalise(abrir)`; `revisao-faturas.js` tem `rfIrParaRevisao(chave)` (rola e destaca; troca o filtro p/ "todas" se a revisão estiver concluída). Ambos limpam a query com `history.replaceState`.
+- Reciprocidade: breadcrumb de `analise-fatura.html`/`revisao-faturas.html` passa por "Meus Cartões"; `cartoes.html` tem botões "Analisar fatura" / "Revisão de faturas".
+
+### Trilha de pagamento da fatura: analisar → separar → pagar (2026-08-30)
+
+No card do resumo, `montarTrilhaPagamento(c, mes, dataAtual)` mostra 3 passos antes de pagar (coerente com educação financeira: só pago depois de saber o que estou pagando e ter o valor separado):
+1. **Fatura analisada** — automático, via `analiseSalvaDaFatura`.
+2. **Dinheiro separado na caixinha** — `marcarDinheiroSeparado(cartaoId, mes)` pede o valor (`prompt`, sugestão = saldo da fatura) e grava `datasPorMes[].{dinheiroSeparado, valorSeparado, dinheiroSeparadoEm}`. O card compara com o total (`bate` / `faltam X` / `sobra X`). "desfazer" limpa os campos.
+3. **Marcar como paga** — checkbox **desabilitado** até 1 e 2. `marcarFaturaPaga` também trava por segurança (alerta o que falta) ao tentar marcar paga sem os pré-requisitos.
+
+`comFaturaDoMes(cartaoId, mes, fn)` — helper que acha/cria a entrada de `datasPorMes` do mês, aplica `fn`, salva e re-renderiza.
+
 ## Página de Revisão de Faturas — esteira (localStorage)
 
 **Arquivo**: `revisao-faturas.html` + `assets/js/paginas/revisao-faturas.js` — chave `Store.CHAVES.REVISAO_FATURAS` (`revisao_faturas`).

@@ -470,7 +470,7 @@ function rfRenderRevisao(rev) {
     : `<button type="button" class="rf-btn-primary" onclick="rfConcluirRevisao('${rev.chave}')">Concluir revisão</button>`;
 
   return `
-    <article class="rf-revisao rf-estado-${rev.estado}">
+    <article class="rf-revisao rf-estado-${rev.estado}" data-chave="${rfEscapar(rev.chave)}">
       <header class="rf-rev-head">
         <div>
           <h3>${formatarCompetencia(rev.competencia)} — ${rfEscapar(rev.banco)}</h3>
@@ -509,4 +509,27 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   rfSincronizar(true);
+
+  // Deep-link vindo de "Meus Cartões": ?abrir=AAAA-MM|Banco rola até a revisão.
+  const abrir = new URLSearchParams(location.search).get('abrir');
+  if (abrir) {
+    rfIrParaRevisao(abrir);
+    history.replaceState(null, '', location.pathname);
+  }
 });
+
+function rfIrParaRevisao(chave) {
+  const seletor = '.rf-revisao[data-chave="' + chave.replace(/"/g, '\\"') + '"]';
+  let el = document.querySelector(seletor);
+  if (!el) {
+    // Pode estar concluída e fora do filtro padrão — mostra todas e tenta de novo.
+    rfFiltroEstado = 'todas';
+    rfRender();
+    el = document.querySelector(seletor);
+  }
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.style.transition = 'box-shadow 0.3s';
+  el.style.boxShadow = '0 0 0 3px var(--cor-secundaria)';
+  setTimeout(() => { el.style.boxShadow = ''; }, 2500);
+}

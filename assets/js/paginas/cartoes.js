@@ -956,18 +956,15 @@ function atualizarVisualizacao() {
         const rateioHtml = rateios.length ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: var(--cor-texto-light);">Imputado: ${rateios.map(r => `${escaparTextoCartao(r.titular)} ${formatarMoedaBrasileira(r.valor)}`).join(', ')}</p>` : '';
 
         return `
-        <div style="background: white; padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid var(--cor-primaria); position: relative; box-shadow: var(--sombra-sm);">
-          <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 6px;">
-            <input type="checkbox" id="pago-${c.id}" ${pago ? 'checked' : ''} onchange="marcarFaturaPaga(${c.id}, '${mesRef_}')" style="cursor: pointer; width: 18px; height: 18px;">
-            <label for="pago-${c.id}" style="font-size: 11px; color: var(--cor-texto-light); cursor: pointer; font-weight: 500;">${pago ? 'Pago' : 'Pagar'}</label>
-          </div>
-          <div style="margin-bottom: 8px; padding-right: 60px;">
+        <div style="background: white; padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid var(--cor-primaria); box-shadow: var(--sombra-sm);">
+          <div style="margin-bottom: 8px;">
             <p style="margin: 0 0 2px 0; font-weight: bold; font-size: 14px; color: var(--cor-texto); ${pago ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escaparTextoCartao(c.nome)}</p>
             ${c.titular ? `<p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">Titular: ${escaparTextoCartao(c.titular)}</p>` : ''}
           </div>
           <p style="margin: 0 0 4px 0; font-size: 18px; font-weight: bold; color: ${pago ? 'var(--cor-texto-light)' : 'var(--cor-primaria)'}; ${pago ? 'text-decoration: line-through;' : ''}">${formatarMoedaBrasileira(c.saldoVisivel)}</p>
           <p style="margin: 0; font-size: 11px; color: var(--cor-texto-light);">●●●● ${c.ultimos} • ${mesRef}</p>
           ${rateioHtml}
+          ${montarTrilhaPagamento(c, mesRef_, dataAtual)}
         </div>
       `;
       }).join('');
@@ -1054,6 +1051,46 @@ function agruparCartoesPorBanco(cartoes) {
   `).join('');
 }
 
+// Rótulo do banco como gravado na Análise de Fatura (valores do select #af-banco).
+const AF_BANCO_LABEL = {
+  nubank: 'Nubank', itau: 'Itaú', bradesco: 'Bradesco',
+  santander: 'Santander', caixa: 'Caixa', bb: 'Banco do Brasil'
+};
+
+// Existe análise salva (em analise-fatura.html) para a fatura deste mês e banco?
+function analiseSalvaDaFatura(cartao, competencia) {
+  if (!competencia) return false;
+  const bancoLabel = AF_BANCO_LABEL[obterBancoPorNome(cartao.nome)] || 'Outro';
+  const analises = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
+  const analise = analises[competencia];
+  return !!(analise && (analise.banco || 'Outro') === bancoLabel);
+}
+
+// Monta os links "Ver análise" / "Ver revisão" da fatura de um mês, quando
+// existir registro correspondente (mesma competência e mesmo banco).
+function linksFaturaCartao(cartao, competencia) {
+  if (!competencia) return '';
+  const bancoLabel = AF_BANCO_LABEL[obterBancoPorNome(cartao.nome)] || 'Outro';
+
+  const temAnalise = analiseSalvaDaFatura(cartao, competencia);
+
+  const revisoes = Store.ler(Store.CHAVES.REVISAO_FATURAS, {}) || {};
+  const chaveRevisao = competencia + '|' + bancoLabel;
+  const temRevisao = !!revisoes[chaveRevisao];
+
+  if (!temAnalise && !temRevisao) return '';
+
+  const estilo = 'color: #fff; text-decoration: underline; font-size: 11px; opacity: 0.95;';
+  const links = [];
+  if (temAnalise) {
+    links.push(`<a href="./analise-fatura.html?abrir=${encodeURIComponent(competencia)}" style="${estilo}">Ver análise</a>`);
+  }
+  if (temRevisao) {
+    links.push(`<a href="./revisao-faturas.html?abrir=${encodeURIComponent(chaveRevisao)}" style="${estilo}">Ver revisão</a>`);
+  }
+  return `<div style="margin-top: 6px; display: flex; gap: 12px;">${links.join('')}</div>`;
+}
+
 function montarCardCartao(cartao) {
   const ultimaFatura = obterUltimaFaturaDisponivel(cartao);
   const saldoVisivel = ultimaFatura?.saldo ?? cartao.saldoAberto;
@@ -1111,6 +1148,7 @@ function montarCardCartao(cartao) {
           <div style="background: rgba(255,255,255,0.95); height: 100%; width: ${Math.min((saldoVisivel / cartao.limite) * 100, 100)}%;"></div>
         </div>
         ` : ''}
+        ${linksFaturaCartao(cartao, mesReferencia)}
       </div>
       ` : ''}
 
@@ -1343,6 +1381,96 @@ END:VCALENDAR`;
   alert(`Arquivo de calendário gerado!\n\nImporte "${cartao.nome}.ics" no seu:\n- Google Calendar\n- Outlook\n- Apple Calendar\n\nA Alexa lerá seus lembretes!`);
 }
 
+// Trilha de pagamento da fatura: analisar -> separar o dinheiro -> pagar.
+// Coerente com educação financeira: só pago o cartão depois de saber o que
+// estou pagando (análise salva) e de ter o valor separado numa caixinha.
+function montarTrilhaPagamento(c, mes, dataAtual) {
+  const analisada = analiseSalvaDaFatura(c, c.mesReferencia);
+  const separado = !!(dataAtual && dataAtual.dinheiroSeparado);
+  const valorSep = (dataAtual && Number(dataAtual.valorSeparado)) || 0;
+  const pago = !!(dataAtual && dataAtual.foiPaga);
+  const total = Number(c.saldoVisivel) || 0;
+  const podePagar = analisada && separado;
+
+  const ok = 'color: var(--cor-verde); font-weight: 700;';
+  const pend = 'color: var(--cor-vermelho); font-weight: 700;';
+  const miniBtn = 'margin-left: 4px; font-size: 10px; padding: 1px 6px; border: 1px solid var(--cor-borda); border-radius: 4px; background: #fff; color: var(--cor-secundaria); cursor: pointer;';
+
+  const passo1 = analisada
+    ? `<span style="${ok}">✓</span> Fatura analisada`
+    : `<span style="${pend}">1</span> <a href="./analise-fatura.html" style="color: var(--cor-secundaria);">Analisar a fatura</a>`;
+
+  let cmp = '';
+  if (separado && total) {
+    const dif = Math.round((valorSep - total) * 100) / 100;
+    if (Math.abs(dif) < 0.01) cmp = ` <span style="color: var(--cor-verde);">(bate com a fatura)</span>`;
+    else if (dif < 0) cmp = ` <span style="color: var(--cor-vermelho);">(faltam ${formatarMoedaBrasileira(-dif)})</span>`;
+    else cmp = ` <span style="color: var(--cor-texto-light);">(sobra ${formatarMoedaBrasileira(dif)})</span>`;
+  }
+  const passo2 = separado
+    ? `<span style="${ok}">✓</span> Separado ${formatarMoedaBrasileira(valorSep)}${cmp}<button type="button" onclick="marcarDinheiroSeparado(${c.id}, '${mes}')" style="${miniBtn}">desfazer</button>`
+    : `<span style="${pend}">2</span> <button type="button" onclick="marcarDinheiroSeparado(${c.id}, '${mes}')" style="${miniBtn}">Separei o dinheiro na caixinha</button>`;
+
+  const passo3 = `<label style="display: flex; align-items: center; gap: 6px; ${podePagar ? 'cursor: pointer;' : 'opacity: 0.5; cursor: not-allowed;'}">
+      <input type="checkbox" ${pago ? 'checked' : ''} ${podePagar ? '' : 'disabled'} onchange="marcarFaturaPaga(${c.id}, '${mes}')" style="width: 16px; height: 16px;">
+      <span style="font-weight: 600;">${pago ? 'Fatura paga' : 'Marcar como paga'}</span>
+    </label>`;
+  const dica = !podePagar
+    ? `<p style="margin: 2px 0 0 22px; font-size: 10px; color: var(--cor-texto-light);">Analise a fatura e separe o dinheiro para liberar o pagamento.</p>`
+    : '';
+
+  return `<div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--cor-borda); display: grid; gap: 5px; font-size: 11px; color: var(--cor-texto);">
+    <div>${passo1}</div>
+    <div>${passo2}</div>
+    <div>${passo3}${dica}</div>
+  </div>`;
+}
+
+function comFaturaDoMes(cartaoId, mes, fn) {
+  const cartoes = obterCartoes();
+  const cartao = cartoes.find(c => c.id === cartaoId);
+  if (!cartao) return;
+  if (!cartao.datasPorMes) cartao.datasPorMes = [];
+  let entrada = cartao.datasPorMes.find(d => d.mes === mes);
+  if (!entrada) {
+    entrada = { mes };
+    cartao.datasPorMes.push(entrada);
+  }
+  fn(entrada, cartao);
+  salvarCartoes(cartoes);
+  atualizarVisualizacao();
+}
+
+function marcarDinheiroSeparado(cartaoId, mes) {
+  const cartoes = obterCartoes();
+  const cartao = cartoes.find(c => c.id === cartaoId);
+  if (!cartao) return;
+  const entrada = (cartao.datasPorMes || []).find(d => d.mes === mes);
+
+  if (entrada && entrada.dinheiroSeparado) {
+    comFaturaDoMes(cartaoId, mes, (e) => {
+      delete e.dinheiroSeparado;
+      delete e.valorSeparado;
+      delete e.dinheiroSeparadoEm;
+    });
+    return;
+  }
+
+  const sugestao = entrada && entrada.saldo ? formatarMoedaBrasileira(entrada.saldo) : '';
+  const resposta = prompt('Quanto você separou na caixinha para esta fatura?', sugestao);
+  if (resposta === null) return;
+  const valor = parseValorBrasileiro(resposta);
+  if (!valor || valor <= 0) {
+    alert('Informe um valor válido.');
+    return;
+  }
+  comFaturaDoMes(cartaoId, mes, (e) => {
+    e.dinheiroSeparado = true;
+    e.valorSeparado = Math.round(valor * 100) / 100;
+    e.dinheiroSeparadoEm = new Date().toISOString();
+  });
+}
+
 function marcarFaturaPaga(cartaoId, mes) {
   const cartoes = obterCartoes();
   const cartao = cartoes.find(c => c.id === cartaoId);
@@ -1354,6 +1482,22 @@ function marcarFaturaPaga(cartaoId, mes) {
   }
 
   const dataIndex = cartao.datasPorMes.findIndex(d => d.mes === mes);
+  const entrada = dataIndex !== -1 ? cartao.datasPorMes[dataIndex] : null;
+
+  // Trava: só deixa marcar como paga depois de analisar a fatura e separar o dinheiro.
+  const vaiMarcarPaga = !(entrada && entrada.foiPaga);
+  if (vaiMarcarPaga) {
+    const analisada = analiseSalvaDaFatura(cartao, mes);
+    const separado = !!(entrada && entrada.dinheiroSeparado);
+    if (!analisada || !separado) {
+      const faltas = [];
+      if (!analisada) faltas.push('analisar a fatura');
+      if (!separado) faltas.push('separar o dinheiro na caixinha');
+      alert('Antes de marcar como paga, é preciso ' + faltas.join(' e ') + '.');
+      atualizarVisualizacao();
+      return;
+    }
+  }
 
   if (dataIndex !== -1) {
     // Toggle estado de pagamento
