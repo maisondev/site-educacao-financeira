@@ -81,6 +81,36 @@ const AF_CIDADES = new Set([
 // Estado em memória da análise aberta
 let afEstado = null; // { banco, competencia, lancamentos:[...], inclusos:Set, salva:bool }
 
+// Ordenação das tabelas de "Gastos por categoria" (col: 'data' | 'valor').
+let afOrdemItens = { col: 'valor', dir: 'desc' };
+
+function afChaveData(d) {
+  const m = /^(\d{2})\/(\d{2})$/.exec(d || '');
+  return m ? parseInt(m[2], 10) * 100 + parseInt(m[1], 10) : 0;
+}
+
+function afCompararItens(a, b) {
+  const dir = afOrdemItens.dir === 'asc' ? 1 : -1;
+  if (afOrdemItens.col === 'data') {
+    return (afChaveData(a.data) - afChaveData(b.data)) * dir || (b.valor - a.valor);
+  }
+  return (a.valor - b.valor) * dir || (afChaveData(b.data) - afChaveData(a.data));
+}
+
+function afSetaOrdem(col) {
+  if (afOrdemItens.col !== col) return '';
+  return afOrdemItens.dir === 'asc' ? ' ▲' : ' ▼';
+}
+
+function afOrdenarItens(col) {
+  if (afOrdemItens.col === col) {
+    afOrdemItens.dir = afOrdemItens.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    afOrdemItens = { col: col, dir: col === 'data' ? 'asc' : 'desc' };
+  }
+  afRenderCategorias();
+}
+
 // --- utilidades ---------------------------------------------------------------
 function afGerarId() {
   if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
@@ -326,9 +356,104 @@ function afEhRecorrente(lanc, categoria) {
   return categoria === 'assinatura';
 }
 
+// --- importação de CSV categorizado ------------------------------------------
+// Lê o CSV gerado na análise assistida (colunas
+// Data;Descricao;Cidade;Cartao;Categoria;Parcela;Recorrente;Valor) e monta os
+// lançamentos já categorizados, sem passar pelo parser de PDF.
+
+// Rótulo da coluna "Categoria" do CSV -> chave de AF_CATEGORIAS.
+function afCategoriaDeRotulo(rotulo) {
+  const bruto = String(rotulo || '').trim();
+  if (!bruto) return 'outro';
+  if (AF_CATEGORIAS[bruto]) return bruto;
+  const norm = bruto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  for (const chave of Object.keys(AF_CATEGORIAS)) {
+    const nomeNorm = AF_CATEGORIAS[chave].nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (norm === nomeNorm) return chave;
+  }
+  const heuristica = [
+    [/mercado|aliment/, 'mercado'],
+    [/restaurante|lanche|delivery|ifood/, 'restaurante'],
+    [/assinatura/, 'assinatura'],
+    [/lazer|entreten/, 'lazer'],
+    [/educ/, 'educacao'],
+    [/online|marketplace/, 'online'],
+    [/casa|eletro/, 'casa'],
+    [/transporte|combustiv|carro/, 'transporte'],
+    [/saude|farmacia/, 'saude'],
+    [/cuidados pessoais|servico/, 'servicos'],
+    [/vestuario/, 'vestuario'],
+    [/\bpet/, 'pets'],
+    [/imposto|taxa|\biof\b|juros|multa/, 'impostos']
+  ];
+  for (const [re, chave] of heuristica) {
+    if (re.test(norm)) return chave;
+  }
+  return 'outro';
+}
+
+function afParsearCSV(textoBruto) {
+  const linhas = String(textoBruto || '')
+    .replace(/^﻿/, '')
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+  if (!linhas.length) return { lancamentos: [] };
+
+  const sep = (linhas[0].match(/;/g) || []).length >= (linhas[0].match(/,/g) || []).length ? ';' : ',';
+  const inicio = (/data/i.test(linhas[0]) && /valor/i.test(linhas[0])) ? 1 : 0;
+
+  const lancamentos = [];
+  for (let i = inicio; i < linhas.length; i++) {
+    const campos = linhas[i].split(sep).map(c => c.trim());
+    if (campos.length < 8) continue;
+    const data = campos[0];
+    const descricao = campos[1];
+    const cidade = campos[2];
+    const cartao = campos[3];
+    const rotuloCat = campos[4];
+    const parcela = campos[5];
+    const recorrente = campos[6];
+    const valorStr = campos[7];
+
+    if (/^total$/i.test(rotuloCat)) continue;
+    if (!/^\d{1,2}\/\d{1,2}/.test(data)) continue;
+    const valor = afParseBR(valorStr);
+    if (!valor) continue;
+
+    let parcelaAtual = null;
+    let parcelaTotal = null;
+    const mParc = /(\d{1,2})\s*\/\s*(\d{1,2})/.exec(parcela || '');
+    if (mParc) {
+      parcelaAtual = parseInt(mParc[1], 10);
+      parcelaTotal = parseInt(mParc[2], 10);
+    }
+
+    const categoria = afCategoriaDeRotulo(rotuloCat);
+    lancamentos.push({
+      id: afGerarId(),
+      data: data.replace(/^(\d)\//, '0$1/').replace(/^(\d{2})\/(\d)$/, '$1/0$2'),
+      descricao: descricao || 'Lançamento',
+      cidade: cidade && cidade !== '-' ? cidade : '',
+      cartao: cartao && cartao !== '-' ? cartao : '',
+      titular: '',
+      parcelaAtual: parcelaAtual,
+      parcelaTotal: parcelaTotal,
+      valor: valor,
+      tipo: categoria === 'impostos' && valor > 0 ? 'encargo' : 'compra',
+      categoria: categoria,
+      recorrente: /^s/i.test(recorrente || '')
+    });
+  }
+  return { lancamentos };
+}
+
 // --- construção do estado ------------------------------------------------------
-function afMontarEstado(banco, parsed) {
+function afMontarEstado(banco, parsed, preCategorizado) {
   const lancamentos = parsed.lancamentos.map(l => {
+    if (preCategorizado && l.categoria && AF_CATEGORIAS[l.categoria]) {
+      return Object.assign({ recorrente: false }, l);
+    }
     const categoria = afCategorizar(l);
     return Object.assign({}, l, {
       categoria: categoria,
@@ -556,7 +681,7 @@ function afRenderCategorias() {
   }, 0);
 
   cont.innerHTML = ordenadas.map(chave => {
-    const itens = grupos[chave].slice().sort((a, b) => b.valor - a.valor);
+    const itens = grupos[chave].slice().sort(afCompararItens);
     const soma = itens.reduce((s, l) => s + l.valor, 0);
     const pct = total > 0 ? (soma / total) * 100 : 0;
     const larguraBarra = maiorSoma > 0 ? (soma / maiorSoma) * 100 : 0;
@@ -603,12 +728,12 @@ function afRenderCategorias() {
           <table class="af-tabela">
             <thead>
               <tr>
-                <th>Data</th>
+                <th class="af-th-ord" onclick="afOrdenarItens('data')" title="Ordenar por data">Data${afSetaOrdem('data')}</th>
                 <th>Descrição</th>
                 <th>Parcela</th>
                 <th>Categoria</th>
                 <th>Recorrente</th>
-                <th class="af-valor">Valor</th>
+                <th class="af-valor af-th-ord" onclick="afOrdenarItens('valor')" title="Ordenar por valor">Valor${afSetaOrdem('valor')}</th>
               </tr>
             </thead>
             <tbody>${linhasItens}</tbody>
@@ -859,6 +984,50 @@ function afProcessarTexto(texto) {
   document.getElementById('af-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// Competência (AAAA-MM) a partir do nome do arquivo, ex.: "Nubank_2026-09-06-categorizado.csv".
+function afCompetenciaDoNome(nome) {
+  const m = /(\d{4})-(\d{2})(?:-\d{2})?/.exec(String(nome || ''));
+  return m ? `${m[1]}-${m[2]}` : null;
+}
+
+async function afProcessarCSV(file) {
+  if (!file) return;
+  if (!/\.csv$/i.test(file.name) && !/csv/i.test(file.type || '')) {
+    afMostrarMsg('Envie um arquivo .csv.', 'erro');
+    return;
+  }
+  afMostrarMsg('Lendo o CSV...', 'ok');
+  try {
+    const texto = await file.text();
+    const parsed = afParsearCSV(texto);
+    if (!parsed.lancamentos.length) {
+      afMostrarMsg('Não achei lançamentos no CSV. Esperado o cabeçalho Data;Descricao;Cidade;Cartao;Categoria;Parcela;Recorrente;Valor.', 'erro');
+      return;
+    }
+
+    // banco: usa o do nome do arquivo, se reconhecido; senão mantém o do seletor
+    const selBanco = document.getElementById('af-banco');
+    const nomeUp = file.name.toLowerCase();
+    if (selBanco) {
+      const achou = Array.from(selBanco.options).find(o => nomeUp.includes(o.value.toLowerCase()));
+      if (achou) selBanco.value = achou.value;
+    }
+    const banco = selBanco ? selBanco.value : 'Outro';
+
+    afEstado = afMontarEstado(banco, parsed, true);
+    const comp = afCompetenciaDoNome(file.name);
+    if (comp) afEstado.competencia = comp;
+
+    const n = parsed.lancamentos.length;
+    afMostrarMsg(`${n} lançamento${n === 1 ? '' : 's'} importado${n === 1 ? '' : 's'} do CSV. Confira as categorias e os cartões abaixo.`, 'ok');
+    afRenderResultado();
+    document.getElementById('af-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    console.error(e);
+    afMostrarMsg('Falha ao ler o CSV: ' + e.message, 'erro');
+  }
+}
+
 async function afProcessarArquivo(file) {
   if (!file) return;
   if (!/pdf$/i.test(file.name) && file.type !== 'application/pdf') {
@@ -906,6 +1075,16 @@ function inicializarAnaliseFatura() {
   inputArquivo.addEventListener('change', (e) => {
     if (e.target.files && e.target.files[0]) afProcessarArquivo(e.target.files[0]);
   });
+
+  const btnCSV = document.getElementById('af-importar-csv');
+  const inputCSV = document.getElementById('af-arquivo-csv');
+  if (btnCSV && inputCSV) {
+    btnCSV.addEventListener('click', () => inputCSV.click());
+    inputCSV.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) afProcessarCSV(e.target.files[0]);
+      e.target.value = '';
+    });
+  }
 
   document.getElementById('af-analisar-texto').addEventListener('click', () => {
     const texto = document.getElementById('af-texto').value.trim();

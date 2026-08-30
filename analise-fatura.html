@@ -274,6 +274,16 @@
       color: var(--cor-texto-light);
     }
 
+    .af-tabela th.af-th-ord {
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .af-tabela th.af-th-ord:hover {
+      color: var(--cor-primaria);
+    }
+
     .af-tabela td.af-valor,
     .af-tabela th.af-valor {
       text-align: right;
@@ -451,6 +461,17 @@
         <summary>ou colar o texto da fatura manualmente</summary>
         <textarea id="af-texto" rows="8" placeholder="Cole aqui a seção 'Lançamentos' da fatura (uma linha por compra, com data, descrição e valor)..."></textarea>
         <button type="button" class="btn btn-primary" id="af-analisar-texto">Analisar texto colado</button>
+      </details>
+
+      <details class="af-paste">
+        <summary>ou importar o CSV categorizado (gerado na análise assistida)</summary>
+        <p class="af-upload-hint" style="margin-top:var(--espacamento-md);">
+          Arquivo <code>*-categorizado.csv</code> com as colunas
+          <code>Data;Descricao;Cidade;Cartao;Categoria;Parcela;Recorrente;Valor</code>.
+          Útil para faturas cujo PDF não é lido corretamente (ex.: Nubank).
+        </p>
+        <button type="button" class="btn btn-primary" id="af-importar-csv">Escolher CSV</button>
+        <input type="file" id="af-arquivo-csv" accept="text/csv,.csv" hidden>
       </details>
 
       <div id="af-msg" class="af-msg" hidden></div>
