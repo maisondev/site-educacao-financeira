@@ -142,13 +142,20 @@ function copiarResumoTitular(indice, botao) {
   const g = resumosPorTitular[indice];
   if (!g) return;
 
-  const linhas = [`*${g.label}* — Total devido ${formatarMoedaBrasileira(g.total)}`];
-  g.itens.forEach(it => {
-    const via = it.via ? ` (cartão de ${it.via})` : '';
-    const ultimos = it.ultimos ? ` ●●●● ${it.ultimos}` : '';
-    linhas.push(`• ${it.nome}${ultimos}${via}: ${formatarMoedaBrasileira(it.valor)}`);
+  const blocos = g.itens.map(it => {
+    const via = it.via ? ` — cartão de ${it.via}` : '';
+    const ultimos = it.ultimos ? ` (final ${it.ultimos})` : '';
+    return `• ${it.nome}${ultimos}${via}\n   ${formatarMoedaBrasileira(it.valor)}`;
   });
-  const texto = linhas.join('\n');
+
+  const texto = [
+    `💳 *Cartões — ${g.label}*`,
+    '',
+    blocos.join('\n\n'),
+    '',
+    '━━━━━━━━━━━━',
+    `*Total devido: ${formatarMoedaBrasileira(g.total)}*`
+  ].join('\n');
 
   const feedback = () => {
     if (!botao) return;
