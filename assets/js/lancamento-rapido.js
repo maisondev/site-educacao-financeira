@@ -42,6 +42,15 @@ const LR_PALAVRAS = [
   ['cartao', ['fatura', 'cartao']]
 ];
 
+// Palavras que indicam compra de supermercado/feira — quando a descrição bate,
+// o Lançamento rápido oferece detalhar a compra por categoria na Área do Mercado.
+const LR_PALAVRAS_MERCADO = ['mercado', 'supermercado', 'atacado', 'atacadao', 'atacarejo', 'feira', 'hortifruti', 'sacolao', 'acougue', 'quitanda', 'mercearia'];
+
+function lrPareceMercado(descricao) {
+  const normalizada = lrNormalizar(descricao || '');
+  return LR_PALAVRAS_MERCADO.some(p => new RegExp(`\\b${p}\\b`).test(normalizada));
+}
+
 let lrEditandoId = null;
 
 // Mês (competência "AAAA-MM") que a lista está mostrando. Começa no mês vigente;
@@ -278,13 +287,24 @@ function lrLancar() {
     ? ` <button type="button" class="lr-desfazer lr-salvar-estab" data-nome="${lrEscapar(despesa.estabelecimento)}">Salvar "${lrEscapar(despesa.estabelecimento)}" nos cadastros</button>`
     : '';
 
+  // Compra de mercado: oferece detalhar por categoria na Área do Mercado.
+  // O valor já entrou nas despesas variáveis aqui, então lá o registro é só
+  // para análise (o checkbox de lançar despesa vem desligado).
+  const linkMercado = lrPareceMercado(despesa.descricao)
+    ? ` <a class="lr-desfazer lr-detalhar-mercado" href="mercado.html?novaCompra=1` +
+      `&valor=${encodeURIComponent(formatarNumeroBrasileiro(despesa.valor))}` +
+      `&data=${encodeURIComponent(despesa.data)}` +
+      `&estab=${encodeURIComponent(despesa.estabelecimento || '')}` +
+      `&desc=${encodeURIComponent(despesa.descricao)}">Detalhar por categoria no Mercado</a>`
+    : '';
+
   lrMostrarMensagem(
     `Lançado ${formatarMoedaBrasileira(despesa.valor)} — ${detalhes} ` +
-    `(${lrEscapar(despesa.descricao)}). <button type="button" class="lr-desfazer" data-id="${despesa.id}">Desfazer</button>${botaoCadastrar}`,
+    `(${lrEscapar(despesa.descricao)}). <button type="button" class="lr-desfazer" data-id="${despesa.id}">Desfazer</button>${botaoCadastrar}${linkMercado}`,
     'sucesso'
   );
 
-  const botao = document.querySelector('#lr-mensagem .lr-desfazer:not(.lr-salvar-estab)');
+  const botao = document.querySelector('#lr-mensagem button.lr-desfazer:not(.lr-salvar-estab)');
   if (botao) {
     botao.addEventListener('click', () => {
       lrRemoverDespesa(despesa.id);

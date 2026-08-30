@@ -46,6 +46,60 @@ function salvarDadosMercado(dados) {
   Store.gravar(Store.CHAVES.MERCADO, dados);
 }
 
+// ===== Vínculo com Despesas Variáveis =====
+// Uma compra pode espelhar-se numa despesa variável (categoria Alimentação) com
+// o total da compra, marcada por `origemMercado: <id da compra>`. Editar ou
+// remover a compra mantém a despesa em sincronia; o checkbox no modal liga/desliga.
+
+function descricaoDespesaDaCompra(compra) {
+  return compra.estabelecimento
+    ? `Mercado — ${compra.estabelecimento}`
+    : 'Mercado';
+}
+
+function despesaVinculadaDaCompra(compraId) {
+  return Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, [])
+    .find(d => d.origemMercado === compraId);
+}
+
+function compraTemDespesaVinculada(compraId) {
+  return !!despesaVinculadaDaCompra(compraId);
+}
+
+// Cria ou atualiza a despesa variável espelho da compra.
+function sincronizarDespesaVariavel(compra) {
+  const despesas = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []);
+  const total = Math.round(totalDaCompra(compra) * 100) / 100;
+  let despesa = despesas.find(d => d.origemMercado === compra.id);
+
+  if (despesa) {
+    despesa.descricao = descricaoDespesaDaCompra(compra);
+    despesa.valor = total;
+    despesa.data = compra.data;
+    despesa.competencia = (compra.data || '').slice(0, 7);
+  } else {
+    despesas.push({
+      id: Date.now() + Math.floor(Math.random() * 1000),
+      categoria: 'alimentacao',
+      descricao: descricaoDespesaDaCompra(compra),
+      valor: total,
+      data: compra.data,
+      competencia: (compra.data || '').slice(0, 7),
+      dataCriacao: new Date().toISOString(),
+      origemMercado: compra.id
+    });
+  }
+  Store.gravar(Store.CHAVES.DESPESAS_VARIAVEIS, despesas);
+}
+
+function removerDespesaVinculada(compraId) {
+  const despesas = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []);
+  const restantes = despesas.filter(d => d.origemMercado !== compraId);
+  if (restantes.length !== despesas.length) {
+    Store.gravar(Store.CHAVES.DESPESAS_VARIAVEIS, restantes);
+  }
+}
+
 function totalDaCompra(compra) {
   return (compra.itens || []).reduce((s, i) => s + (Number(i.valor) || 0), 0);
 }
@@ -214,6 +268,36 @@ function inicializarMercado() {
   }
 
   renderTudoMercado();
+  abrirCompraDeParametros();
+}
+
+// Abre o modal já preenchido quando a página é aberta a partir do Lançamento
+// rápido (mercado.html?novaCompra=1&valor=&data=&estab=&desc=). Como o valor já
+// foi lançado nas despesas variáveis lá, aqui o registro é só para análise por
+// categoria — o checkbox de lançar despesa vem desligado.
+function abrirCompraDeParametros() {
+  const params = new URLSearchParams(location.search);
+  if (!params.get('novaCompra')) return;
+
+  const valor = parseValorBrasileiro(params.get('valor') || '') || 0;
+  const data = params.get('data') || new Date().toISOString().split('T')[0];
+  const estab = params.get('estab') || '';
+  const desc = params.get('desc') || '';
+
+  // Limpa a URL para não reabrir o modal ao atualizar a página.
+  history.replaceState(null, '', location.pathname);
+
+  abrirModalCompra();
+  document.getElementById('input-compra-data').value = data;
+  document.getElementById('input-compra-estabelecimento').value = estab;
+  document.getElementById('input-compra-obs').value = desc;
+  document.getElementById('itens-compra').innerHTML = '';
+  adicionarLinhaItem('Outros', valor ? formatarNumeroBrasileiro(valor) : '');
+
+  const chk = document.getElementById('chk-lancar-despesa');
+  if (chk) chk.checked = false;
+  const aviso = document.getElementById('aviso-ja-lancado');
+  if (aviso) aviso.hidden = false;
 }
 
 function definirTetoMercado() {
@@ -311,6 +395,9 @@ function renderListaComprasMercado() {
 
   lista.innerHTML = compras.map(c => {
     const cats = (c.itens || []).map(i => `${i.categoria}: ${formatarMoedaMercado(i.valor)}`).join(' • ');
+    const vinculo = compraTemDespesaVinculada(c.id)
+      ? '<span class="compra-vinculo">↗ lançada nas despesas variáveis</span>'
+      : '';
     return `
       <div class="compra-item">
         <div class="compra-info">
@@ -318,6 +405,7 @@ function renderListaComprasMercado() {
           <p class="compra-data">${new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
           <p class="compra-cats">${cats}</p>
           ${c.obs ? `<p class="compra-obs">${c.obs}</p>` : ''}
+          ${vinculo}
         </div>
         <div class="compra-acoes">
           <span class="compra-valor">${formatarMoedaMercado(totalDaCompra(c))}</span>
@@ -460,6 +548,8 @@ function abrirModalCompra() {
   document.getElementById('input-compra-obs').value = '';
   document.getElementById('itens-compra').innerHTML = '';
   adicionarLinhaItem();
+  document.getElementById('chk-lancar-despesa').checked = true;
+  document.getElementById('aviso-ja-lancado').hidden = true;
   document.getElementById('modal-compra').removeAttribute('hidden');
 }
 
@@ -475,6 +565,8 @@ function editarCompraMercado(id) {
   document.getElementById('itens-compra').innerHTML = '';
   (compra.itens || []).forEach(i => adicionarLinhaItem(i.categoria, formatarNumeroBrasileiro(i.valor)));
   if ((compra.itens || []).length === 0) adicionarLinhaItem();
+  document.getElementById('chk-lancar-despesa').checked = compraTemDespesaVinculada(id);
+  document.getElementById('aviso-ja-lancado').hidden = true;
   document.getElementById('modal-compra').removeAttribute('hidden');
 }
 
@@ -508,21 +600,33 @@ function salvarCompraMercado() {
   }
 
   const dados = obterDadosMercado();
+  let compraSalva;
   if (compraEditandoId !== null) {
-    const compra = dados.compras.find(c => c.id === compraEditandoId);
-    if (compra) {
-      compra.data = data;
-      compra.estabelecimento = estabelecimento;
-      compra.obs = obs;
-      compra.itens = itens;
-      delete compra.categoria;
-      delete compra.valor;
+    compraSalva = dados.compras.find(c => c.id === compraEditandoId);
+    if (compraSalva) {
+      compraSalva.data = data;
+      compraSalva.estabelecimento = estabelecimento;
+      compraSalva.obs = obs;
+      compraSalva.itens = itens;
+      delete compraSalva.categoria;
+      delete compraSalva.valor;
     }
   } else {
-    dados.compras.push({ id: Date.now(), data, estabelecimento, obs, itens });
+    compraSalva = { id: Date.now(), data, estabelecimento, obs, itens };
+    dados.compras.push(compraSalva);
   }
 
   salvarDadosMercado(dados);
+
+  // Sincroniza (ou remove) a despesa variável espelho conforme o checkbox.
+  if (compraSalva) {
+    if (document.getElementById('chk-lancar-despesa').checked) {
+      sincronizarDespesaVariavel(compraSalva);
+    } else {
+      removerDespesaVinculada(compraSalva.id);
+    }
+  }
+
   fecharModalCompra();
 
   // Se a compra caiu em outro mês, segue esse mês
@@ -533,10 +637,15 @@ function salvarCompraMercado() {
 }
 
 function removerCompraMercado(id) {
-  if (!confirm('Remover esta compra?')) return;
+  const temVinculo = compraTemDespesaVinculada(id);
+  const pergunta = temVinculo
+    ? 'Remover esta compra? A despesa variável vinculada também será removida.'
+    : 'Remover esta compra?';
+  if (!confirm(pergunta)) return;
   const dados = obterDadosMercado();
   dados.compras = dados.compras.filter(c => c.id !== id);
   salvarDadosMercado(dados);
+  removerDespesaVinculada(id);
   renderTudoMercado();
 }
 
