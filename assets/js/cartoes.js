@@ -53,6 +53,19 @@ if (typeof adicionarDespesaDeCartao !== 'function') {
   };
 }
 
+// Primeiro nome, sem acento e minúsculo — usado para agrupar o mesmo titular
+// mesmo quando o nome vem escrito de formas diferentes nas faturas.
+function primeiroNomeNormalizado(nome) {
+  const limpo = (nome || '').trim().toLowerCase()
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '');
+  return limpo.split(/\s+/)[0] || 'sem-titular';
+}
+
+function rotuloTitular(chave) {
+  if (chave === 'sem-titular') return 'Sem titular';
+  return chave.charAt(0).toUpperCase() + chave.slice(1);
+}
+
 function inicializarCartoes() {
   atualizarVisualizacao();
   sincronizarFaturasExistentes();
@@ -651,13 +664,20 @@ function atualizarVisualizacao() {
     return sum + (pago || !c.saldoVisivel ? 0 : c.saldoVisivel);
   }, 0);
 
-  // Total devido agrupado por titular (ignora faturas já pagas)
-  const totalPorTitular = {};
+  // Total devido agrupado por titular (ignora faturas já pagas).
+  // Agrupa pelo primeiro nome normalizado — "Maison", "Maison Souza" e
+  // "MAISON MARCEL MADRI ..." caem no mesmo grupo.
+  const gruposTitular = {};
   cartoesComSaldo.forEach(c => {
     const pago = c.ultimaFatura && c.ultimaFatura.foiPaga;
     if (pago || !c.saldoVisivel) return;
-    const titular = (c.titular || '').trim() || 'Sem titular';
-    totalPorTitular[titular] = (totalPorTitular[titular] || 0) + c.saldoVisivel;
+    const bruto = (c.titular || '').trim();
+    const chave = primeiroNomeNormalizado(bruto);
+    if (!gruposTitular[chave]) {
+      gruposTitular[chave] = { label: rotuloTitular(chave), total: 0, itens: [] };
+    }
+    gruposTitular[chave].total += c.saldoVisivel;
+    gruposTitular[chave].itens.push({ nome: c.nome, ultimos: c.ultimos, valor: c.saldoVisivel });
   });
 
   // Mostrar/esconder resumo
@@ -712,12 +732,22 @@ function atualizarVisualizacao() {
     document.getElementById('total-saldos-abertos').textContent = formatarMoedaBrasileira(totalSaldosAbertos);
 
     const titularDiv = document.getElementById('total-por-titular');
-    const titulares = Object.entries(totalPorTitular).sort((a, b) => b[1] - a[1]);
-    titularDiv.innerHTML = titulares.length > 1
-      ? titulares.map(([nome, valor]) => `
-        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--cor-texto);">
-          <span>${escaparTextoCartao(nome)}</span>
-          <span style="font-weight: 600;">${formatarMoedaBrasileira(valor)}</span>
+    const grupos = Object.values(gruposTitular).sort((a, b) => b.total - a.total);
+    const mostrarPorTitular = grupos.length > 1 || (grupos.length === 1 && grupos[0].itens.length > 1);
+    titularDiv.innerHTML = mostrarPorTitular
+      ? grupos.map(g => `
+        <div style="font-size: 13px; margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; gap: 8px; color: var(--cor-texto); font-weight: 600;">
+            <span>${escaparTextoCartao(g.label)}</span>
+            <span>${formatarMoedaBrasileira(g.total)}</span>
+          </div>
+          <div style="display: grid; gap: 2px; margin: 2px 0 0 12px; font-size: 12px; color: var(--cor-texto-light);">
+            ${g.itens.sort((a, b) => b.valor - a.valor).map(it => `
+              <div style="display: flex; justify-content: space-between; gap: 8px;">
+                <span>${escaparTextoCartao(it.nome)}${it.ultimos ? ` ●●●● ${it.ultimos}` : ''}</span>
+                <span>${formatarMoedaBrasileira(it.valor)}</span>
+              </div>`).join('')}
+          </div>
         </div>`).join('')
       : '';
   } else {
