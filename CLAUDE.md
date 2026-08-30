@@ -317,6 +317,7 @@ Abaixo do total geral, o resumo mostra a quebra por pessoa:
 - **Rateio (cartão emprestado)**: `datasPorMes[].rateio = [{ titular, valor }]` realoca parte do saldo daquela fatura para outra pessoa na quebra por titular — o total geral não muda. Configurado no modal "Gerenciar datas por mês" (campo "Parte da fatura é de outra pessoa"). O item aparece no grupo do beneficiário com a marca "(cartão de \<dono\>)".
   - **Recorrente**: o checkbox "Repetir nos próximos meses" grava um template `cartao.rateioRecorrente = { titular, valor, desde }`. `rateioEfetivo(cartao, mes, entrada)` resolve o rateio de um mês: o do próprio mês vence; senão o recorrente para `mes >= desde` (valor limitado ao saldo). Desmarcar o checkbox e salvar remove o template.
   - O modal "Gerenciar datas por mês" abre já no **mês da última fatura registrada** (não no mês do calendário), e recarrega os campos ao trocar o mês — para o saldo/rateio caírem no mês certo.
+- **Botão "Copiar" por titular**: cada linha de titular tem um botão que copia (via `navigator.clipboard`, com `prompt` de fallback) um resumo em texto pronto para o WhatsApp — cabeçalho `💳 *Cartões — <titular>*`, um bloco por cartão (`• Nome (final XXXX)[ — cartão de <dono>]` + valor indentado na linha seguinte), divisória e `*Total devido: R$ ...*`. Os grupos ficam em `resumosPorTitular` (var de módulo, repopulada a cada `atualizarVisualizacao`); `copiarResumoTitular(indice, botao)` monta o texto e dá feedback "Copiado!" no botão.
 
 ## Linguagem e Público
 
