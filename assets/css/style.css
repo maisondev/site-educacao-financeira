@@ -789,6 +789,26 @@ a .icone {
   transform: scale(1.05);
 }
 
+/* Seção de backup do dashboard */
+.secao-backup {
+  margin: var(--espacamento-xl) 0;
+  padding: var(--espacamento-lg);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-borda);
+  background-color: var(--cor-fundo-alt, #f7f7f8);
+}
+.secao-backup h2 { margin-top: 0; }
+.backup-descricao { font-size: 14px; color: var(--cor-texto-suave, #555); }
+.backup-acoes { display: flex; flex-wrap: wrap; gap: var(--espacamento-sm); margin-top: var(--espacamento-md); }
+.backup-aviso { font-size: 14px; margin: var(--espacamento-sm) 0; }
+.backup-aviso-atencao { color: var(--cor-erro, #c0392b); font-weight: 600; }
+.backup-auto {
+  margin-top: var(--espacamento-lg);
+  padding-top: var(--espacamento-md);
+  border-top: 1px dashed var(--cor-borda);
+}
+.backup-auto code { font-size: 13px; word-break: break-all; }
+
 .btn-small {
   padding: var(--espacamento-xs) var(--espacamento-sm);
   font-size: 14px;

@@ -326,6 +326,14 @@ Abaixo do total geral, o resumo mostra a quebra por pessoa:
 - **Tom**: educacional, amigável, nunca técnico demais
 - **Exemplos**: use valores do dia a dia (salários brasileiros, despesas locais)
 
+## Backup dos dados (`assets/js/backup.js`)
+
+Renderizado na seção `#container-backup` do `dashboard.html` (via `renderizarSecaoBackup()`, chamada em `dashboard.js`).
+
+**Backup manual** — `exportarTudo()` gera um `.json` (`financas-backup-AAAA-MM-DD.json`) com **todas** as chaves do `localStorage` (as de `Store.CHAVES` + qualquer outra presente, menos as de `BACKUP_CHAVES_IGNORADAS`); valores gravados como texto puro, para restauração fiel. `importarTudo()` valida (`versao` = `BACKUP_VERSAO`), pede confirmação e **substitui tudo** (chaves ausentes no arquivo são removidas). Aviso na tela se passou de `BACKUP_DIAS_ALERTA` (30) dias desde o último export (`backup_ultima_data`).
+
+**Backup automático diário** — só aparece em navegadores com File System Access API (`window.showDirectoryPicker`, Chrome/Edge). O usuário escolhe uma pasta uma vez (ideal: dentro do Google Drive); o `FileSystemDirectoryHandle` é persistido no **IndexedDB** (`financas-backup` / store `handles` / chave `pasta`). A cada abertura do dashboard, `inicializarBackupAutomatico()` consulta a permissão (sem prompt) e, se `backup_auto_ultima_data` ≠ hoje, grava `financas-backup-AAAA-MM-DD.json` na pasta silenciosamente (um arquivo por dia, sobrescreve o do mesmo dia). Se o navegador pedir para reconfirmar o acesso, mostra botão "Reautorizar pasta". "Desativar" limpa o handle do IndexedDB.
+
 ## Segurança e Privacidade
 
 - **localStorage**: tudo fica no navegador do usuário. Nenhum dado é enviado para servidor.
