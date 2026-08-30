@@ -148,10 +148,12 @@ paralelo ao `CAD_CATEGORIAS_PADRAO`. O de/para `AF_PARA_CATEGORIA_DV` é grossei
 coisa em "outro". Fazer `afCategorizar` sugerir direto as categorias de `Cadastros.categorias()`
 e alimentar `regras_categorizacao` (que N2 já criou) como memória única.
 
-#### C8. Fechar mês também oferece backup + competência onde falta (≈1h) — PARCIAL 2026-08-30
+#### C8. Fechar mês também oferece backup + competência onde falta (≈1h) ✅ FEITO 2026-08-30
 
-- A ação "Fechar mês" (`competencia.js`) arquiva o retrato mas não lembra do backup. Ao fechar,
-  oferecer "exportar backup agora" (reusa `backup.js`). ⬜ pendente.
+- ✅ `fecharMes()` (`competencia.js`) chama `oferecerBackupAoFecharMes()`: um `confirm` que roda
+  `exportarTudo()` (de `backup.js`) logo após arquivar o retrato. Guardado por
+  `typeof exportarTudo === 'function'`, então só age onde `backup.js` está carregado (dashboard);
+  em envelopes.html o passo é pulado sem erro.
 - ✅ `reserva-emergencia.html` e `renda-extra.html` agora carregam `competencia.js` e chamam
   `migrarCompetencias()` no `DOMContentLoaded`.
 
@@ -190,9 +192,7 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 3. ~~**C3** — travar a fatura para não contar em dobro nas despesas variáveis~~ ✅ 2026-08-30.
 4. ~~**C4** — Mercado visível no Painel e nos Relatórios~~ ✅ 2026-08-30.
 
-**P0 fechado.** Próximo: P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura, C8) ou os curtos C10/C11/C12.
-
-Curtos e independentes se sobrar tempo: **C10** (tags PWA no template), **C12** (cards na home), **C8** (competência em reserva/renda-extra).
+**P0 fechado + C8, C10, C12.** Próximo: P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura) ou P2 (C9 testes, C11 varredura da convenção de competência).
 
 ---
 

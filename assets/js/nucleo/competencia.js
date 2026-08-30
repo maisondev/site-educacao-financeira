@@ -204,7 +204,22 @@ function fecharMes(competencia) {
     Store.gravar(Store.CHAVES.ENVELOPES, envelopes.map(e => ({ ...e, registros: [] })));
   }
 
+  oferecerBackupAoFecharMes(formatarCompetencia(competencia));
+
   return historico[competencia];
+}
+
+// Fechar o mês é o momento natural para levar um backup — o retrato acabou de
+// ser congelado. Só faz sentido onde backup.js está carregado (dashboard);
+// nas demais páginas a função não existe e o passo é silenciosamente pulado.
+function oferecerBackupAoFecharMes(nomeMes) {
+  if (typeof exportarTudo !== 'function') return;
+  const querBackup = confirm(
+    `${nomeMes} foi fechado.\n\n` +
+    'Quer exportar um backup agora, com o retrato deste mês já incluído? ' +
+    'É um arquivo .json que você guarda na pasta do Drive.'
+  );
+  if (querBackup) exportarTudo();
 }
 
 function reabrirMes(competencia) {
