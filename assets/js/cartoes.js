@@ -360,12 +360,18 @@ function abrirModalDatasMes() {
     document.getElementById('input-vencimento-mes-select').value = vencimento[1] || '';
 
     document.getElementById('input-saldo-mes').value = dataAtual.saldo ? formatarMoedaBrasileira(dataAtual.saldo) : '';
+
+    const rateio = (dataAtual.rateio || [])[0];
+    document.getElementById('input-rateio-titular').value = rateio ? rateio.titular : '';
+    document.getElementById('input-rateio-valor').value = rateio && rateio.valor ? formatarMoedaBrasileira(rateio.valor) : '';
   } else {
     document.getElementById('input-fechamento-dia').value = '';
     document.getElementById('input-fechamento-mes-select').value = '';
     document.getElementById('input-vencimento-dia').value = '';
     document.getElementById('input-vencimento-mes-select').value = '';
     document.getElementById('input-saldo-mes').value = '';
+    document.getElementById('input-rateio-titular').value = '';
+    document.getElementById('input-rateio-valor').value = '';
   }
 
   renderizarHistoricoDatas();
@@ -395,7 +401,7 @@ function renderizarHistoricoDatas() {
     const { ano, mes } = obterAnoMesDeMesStr(d.mes);
     const nomeMes = formatarMesCompletoDeAnoMes(ano, mes);
     return `<div style="padding: 6px; background: var(--cor-cinza-leve); border-radius: 4px; margin-bottom: 4px; font-size: 12px; color: var(--cor-texto);">
-      <strong>${nomeMes}:</strong> ${formatarDiaOuDiaMes(d.fechamento)} → ${formatarDiaOuDiaMes(d.vencimento)}${d.saldo ? ` / saldo ${formatarMoedaBrasileira(d.saldo)}` : ''}
+      <strong>${nomeMes}:</strong> ${formatarDiaOuDiaMes(d.fechamento)} → ${formatarDiaOuDiaMes(d.vencimento)}${d.saldo ? ` / saldo ${formatarMoedaBrasileira(d.saldo)}` : ''}${(d.rateio || []).map(r => ` / ${escaparTextoCartao(r.titular)}: ${formatarMoedaBrasileira(r.valor)}`).join('')}
     </div>`;
   }).join('');
 }
@@ -426,6 +432,19 @@ function salvarDatasMes() {
 
   saldo = saldo ? Math.round(saldo * 100) / 100 : null;
 
+  const rateioTitular = document.getElementById('input-rateio-titular').value.trim();
+  let rateioValor = parseValorBrasileiro(document.getElementById('input-rateio-valor').value);
+  rateioValor = rateioValor ? Math.round(rateioValor * 100) / 100 : null;
+
+  if ((rateioTitular && !rateioValor) || (!rateioTitular && rateioValor)) {
+    alert('Para imputar parte da fatura a outra pessoa, preencha o nome e o valor.');
+    return;
+  }
+  if (rateioValor && saldo && rateioValor > saldo) {
+    alert('O valor imputado a outra pessoa não pode ser maior que o saldo da fatura.');
+    return;
+  }
+
   const cartoes = obterCartoes();
   const cartao = cartoes.find(c => c.id === parseInt(cartaoEmEdicaoId));
   if (!cartao) return;
@@ -443,6 +462,12 @@ function salvarDatasMes() {
     dataObj.saldo = saldo;
   } else {
     delete dataObj.saldo;
+  }
+
+  if (rateioTitular && rateioValor) {
+    dataObj.rateio = [{ titular: rateioTitular, valor: rateioValor }];
+  } else {
+    delete dataObj.rateio;
   }
 
   // Registrar histórico de utilização mensal
@@ -672,17 +697,38 @@ function atualizarVisualizacao() {
 
   // Total devido agrupado por titular (ignora faturas já pagas).
   // Agrupa pelo primeiro nome normalizado — "Maison", "Maison Souza" e
-  // "MAISON MARCEL MADRI ..." caem no mesmo grupo.
+  // "MAISON MARCEL MADRI ..." caem no mesmo grupo. O `rateio` da fatura do mês
+  // realoca parte do saldo para outra pessoa (cartão emprestado) sem mexer no
+  // total geral.
+  const rateioDaFatura = (c) => {
+    const ref = c.mesReferencia;
+    if (!ref) return [];
+    return ((c.datasPorMes || []).find(d => d.mes === ref) || {}).rateio || [];
+  };
+
   const gruposTitular = {};
-  cartoesComSaldo.forEach(c => {
-    if (faturaPaga(c) || !c.saldoVisivel) return;
-    const bruto = (c.titular || '').trim();
-    const chave = primeiroNomeNormalizado(bruto);
+  const addAoGrupo = (chave, valor, item) => {
+    if (valor <= 0) return;
     if (!gruposTitular[chave]) {
       gruposTitular[chave] = { label: rotuloTitular(chave), total: 0, itens: [] };
     }
-    gruposTitular[chave].total += c.saldoVisivel;
-    gruposTitular[chave].itens.push({ nome: c.nome, ultimos: c.ultimos, valor: c.saldoVisivel });
+    gruposTitular[chave].total += valor;
+    gruposTitular[chave].itens.push(item);
+  };
+
+  cartoesComSaldo.forEach(c => {
+    if (faturaPaga(c) || !c.saldoVisivel) return;
+    const donoChave = primeiroNomeNormalizado((c.titular || '').trim());
+    const rateios = rateioDaFatura(c);
+    const totalRateado = rateios.reduce((s, r) => s + (Number(r.valor) || 0), 0);
+    const restanteDono = Math.round((c.saldoVisivel - totalRateado) * 100) / 100;
+
+    addAoGrupo(donoChave, restanteDono, { nome: c.nome, ultimos: c.ultimos, valor: restanteDono });
+    rateios.forEach(r => {
+      addAoGrupo(primeiroNomeNormalizado((r.titular || '').trim()), Number(r.valor) || 0, {
+        nome: c.nome, ultimos: c.ultimos, valor: Number(r.valor) || 0, via: rotuloTitular(donoChave)
+      });
+    });
   });
 
   // Mostrar/esconder resumo
@@ -749,7 +795,7 @@ function atualizarVisualizacao() {
           <div style="display: grid; gap: 2px; margin: 2px 0 0 12px; font-size: 12px; color: var(--cor-texto-light);">
             ${g.itens.sort((a, b) => b.valor - a.valor).map(it => `
               <div style="display: flex; justify-content: space-between; gap: 8px;">
-                <span>${escaparTextoCartao(it.nome)}${it.ultimos ? ` ●●●● ${it.ultimos}` : ''}</span>
+                <span>${escaparTextoCartao(it.nome)}${it.ultimos ? ` ●●●● ${it.ultimos}` : ''}${it.via ? ` <em style="font-style: normal; opacity: 0.8;">(cartão de ${escaparTextoCartao(it.via)})</em>` : ''}</span>
                 <span>${formatarMoedaBrasileira(it.valor)}</span>
               </div>`).join('')}
           </div>

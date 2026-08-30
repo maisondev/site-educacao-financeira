@@ -309,6 +309,13 @@ Uma fatura é sempre identificada pelo **mês em que vence** (quando o dinheiro 
 - Vale para: campo `competencia` do JSON, `<title>`/`<h1>` do HTML de análise, nome dos arquivos (`*-setembro-2026.*`) e nome da pasta do mês no Drive.
 - Nubank e Caixa já seguiam isso; Itaú e Bradesco foram migrados (pastas e conteúdo).
 
+### Resumo "Total devido por titular"
+
+Abaixo do total geral, o resumo mostra a quebra por pessoa:
+- Agrupa pelo **primeiro nome normalizado** (`primeiroNomeNormalizado` — sem acento/maiúsculas), então "Maison", "Maison Souza" e "MAISON MARCEL MADRI…" caem no mesmo grupo. Cada grupo lista os cartões que o compõem.
+- **"Pago"** é lido sempre de `datasPorMes[].foiPaga` (mesma fonte do checkbox), nunca do objeto de `obterUltimaFaturaDisponivel` (que pode vir de `historicoUtilizacao` sem o flag). Fatura paga sai do total e da quebra.
+- **Rateio (cartão emprestado)**: `datasPorMes[].rateio = [{ titular, valor }]` realoca parte do saldo daquela fatura para outra pessoa na quebra por titular — o total geral não muda. Configurado no modal "Gerenciar datas por mês" (campo "Parte da fatura é de outra pessoa"). O item aparece no grupo do beneficiário com a marca "(cartão de \<dono\>)".
+
 ## Linguagem e Público
 
 - **Linguagem**: português (Brasil), simples e acessível para leigos

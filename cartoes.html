@@ -625,6 +625,14 @@
           <label for="input-saldo-mes">Saldo da Fatura Fechada (R$) - Opcional</label>
           <input type="text" id="input-saldo-mes" placeholder="1.500,00" data-moeda inputmode="decimal">
         </div>
+        <div class="form-group">
+          <label for="input-rateio-titular">Parte da fatura é de outra pessoa - Opcional</label>
+          <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--cor-texto-light);">Ex.: você emprestou este cartão e a compra foi de outra pessoa. O valor abaixo é imputado a ela na quebra "Total devido por titular" (o total geral não muda).</p>
+          <div style="display: grid; grid-template-columns: 1fr 120px; gap: var(--espacamento-sm);">
+            <input type="text" id="input-rateio-titular" placeholder="Nome (ex: Marden)">
+            <input type="text" id="input-rateio-valor" placeholder="0,00" data-moeda inputmode="decimal">
+          </div>
+        </div>
         <div id="historico-datas-mes" style="margin-top: var(--espacamento-lg); max-height: 200px; overflow-y: auto;"></div>
       </div>
       <div class="modal-footer">
