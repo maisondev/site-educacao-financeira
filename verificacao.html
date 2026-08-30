@@ -75,6 +75,11 @@
   <script src="./assets/js/nucleo/cadastros-dados.js"></script>
   <script src="./assets/js/nucleo/competencia.js"></script>
   <script src="./assets/js/nucleo/saldo-mes.js"></script>
+  <!-- Scripts de página: só as funções puras são exercitadas aqui; a init de cada
+       um sai cedo quando a marcação da página não está presente. -->
+  <script src="./assets/js/paginas/cartoes.js"></script>
+  <script src="./assets/js/paginas/despesas-fixas.js"></script>
+  <script src="./assets/js/paginas/mercado.js"></script>
   <script>
     const testes = [];
     function teste(nome, fn) { testes.push({ nome, fn }); }
@@ -219,6 +224,86 @@
         }]);
         assertEq(smFaturasDoMes('2026-08'), 0, 'nada no mês do fechamento');
         assertEq(smFaturasDoMes('2026-09'), 1000, 'valor inteiro no mês do vencimento');
+      } finally {
+        restaurar(snap);
+      }
+    });
+
+    teste('rateioEfetivo: rateio do mês tem prioridade sobre o recorrente', () => {
+      if (typeof rateioEfetivo !== 'function') throw new Error('rateioEfetivo indisponível');
+      const cartao = { rateioRecorrente: { titular: 'Ana', valor: 200, desde: '2026-01' } };
+      const entrada = { saldo: 500, rateio: [{ titular: 'Bia', valor: 120 }] };
+      assertEq(rateioEfetivo(cartao, '2026-08', entrada), [{ titular: 'Bia', valor: 120 }], 'usa o rateio do próprio mês');
+    });
+
+    teste('rateioEfetivo: recorrente aplica a partir de "desde" e limita ao saldo', () => {
+      if (typeof rateioEfetivo !== 'function') throw new Error('rateioEfetivo indisponível');
+      const cartao = { rateioRecorrente: { titular: 'Ana', valor: 200, desde: '2026-03' } };
+      assertEq(rateioEfetivo(cartao, '2026-02', { saldo: 500 }), [], 'antes de "desde" não rateia');
+      assertEq(rateioEfetivo(cartao, '2026-05', { saldo: 500 }),
+        [{ titular: 'Ana', valor: 200, recorrente: true }], 'dentro do período rateia o valor cheio');
+      assertEq(rateioEfetivo(cartao, '2026-05', { saldo: 150 }),
+        [{ titular: 'Ana', valor: 150, recorrente: true }], 'valor limitado ao saldo da fatura');
+    });
+
+    teste('primeiroNomeNormalizado agrupa "Maison" / "MAISON MARCEL" / com acento', () => {
+      if (typeof primeiroNomeNormalizado !== 'function') throw new Error('primeiroNomeNormalizado indisponível');
+      assertEq(primeiroNomeNormalizado('Maison'), 'maison', 'simples');
+      assertEq(primeiroNomeNormalizado('MAISON MARCEL MADRI'), 'maison', 'nome composto em maiúsculas');
+      assertEq(primeiroNomeNormalizado('Maisón Souza'), 'maison', 'com acento');
+      assertEq(primeiroNomeNormalizado('  '), 'sem-titular', 'vazio');
+    });
+
+    teste('despesa fixa: migração pagoEm/provisionada -> meses[AAAA-MM] é idempotente', () => {
+      if (typeof obterDados !== 'function' || typeof competenciaAtual !== 'function') {
+        throw new Error('obterDados / competenciaAtual indisponíveis');
+      }
+      const snap = snapshot([Store.CHAVES.DESPESAS_FIXAS]);
+      try {
+        Store.gravar(Store.CHAVES.DESPESAS_FIXAS, {
+          salario: 0,
+          despesas: [
+            { id: '1', nome: 'Aluguel', valor: 1200, pagoEm: '2026-07-10' },
+            { id: '2', nome: 'Internet', valor: 100, provisionada: true }
+          ]
+        });
+
+        const d1 = obterDados();
+        const compAtual = competenciaAtual();
+        assertEq(d1.despesas[0].pagoEm, undefined, 'pagoEm removido');
+        assertEq(d1.despesas[0].meses['2026-07'], { status: 'pago', pagoEm: '2026-07-10' }, 'virou meses["2026-07"]');
+        assertEq(d1.despesas[1].provisionada, undefined, 'provisionada removida');
+        assertEq(d1.despesas[1].meses[compAtual], { status: 'reservado' }, 'virou meses[mês atual] reservado');
+
+        const depois1 = localStorage.getItem(Store.CHAVES.DESPESAS_FIXAS);
+        obterDados();
+        assertEq(localStorage.getItem(Store.CHAVES.DESPESAS_FIXAS), depois1, '2ª passada não muda nada');
+      } finally {
+        restaurar(snap);
+      }
+    });
+
+    teste('Mercado: sincronizarDespesaVariavel não duplica ao editar a mesma compra', () => {
+      if (typeof sincronizarDespesaVariavel !== 'function') throw new Error('sincronizarDespesaVariavel indisponível');
+      const snap = snapshot([Store.CHAVES.DESPESAS_VARIAVEIS]);
+      try {
+        Store.gravar(Store.CHAVES.DESPESAS_VARIAVEIS, []);
+        const compra = {
+          id: 'c1', data: '2026-08-15', estabelecimento: 'Atacadão',
+          itens: [{ categoria: 'Alimentos', valor: 100 }, { categoria: 'Limpeza', valor: 50 }]
+        };
+
+        sincronizarDespesaVariavel(compra);
+        sincronizarDespesaVariavel(compra);
+        let vinc = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []).filter(d => d.origemMercado === 'c1');
+        assertEq(vinc.length, 1, 'chamar duas vezes cria só uma despesa');
+        assertEq(vinc[0].valor, 150, 'valor = total da compra');
+
+        compra.itens.push({ categoria: 'Bebidas', valor: 50 });
+        sincronizarDespesaVariavel(compra);
+        vinc = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []).filter(d => d.origemMercado === 'c1');
+        assertEq(vinc.length, 1, 'editar a compra não cria outra despesa');
+        assertEq(vinc[0].valor, 200, 'valor atualizado para o novo total');
       } finally {
         restaurar(snap);
       }

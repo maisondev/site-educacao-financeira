@@ -240,6 +240,10 @@ function renderListaMercado() {
 // ===== Inicialização =====
 
 function inicializarMercado() {
+  // Sem a marcação da página (ex.: carregado só pelo verificacao.html), não há o
+  // que inicializar — as funções puras deste arquivo seguem disponíveis.
+  if (!document.getElementById('lista-compras')) return;
+
   renderSeletorMercado();
 
   const selCat = document.getElementById('select-item-cat');

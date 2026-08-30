@@ -159,12 +159,21 @@ e alimentar `regras_categorizacao` (que N2 já criou) como memória única.
 
 ### P2 — Melhoram a rotina / reduzem risco
 
-#### C9. Ampliar `verificacao.html` para os módulos novos (≈1h)
+#### C9. Ampliar `verificacao.html` para os módulos novos ✅ FEITO 2026-08-30
 
-Cobrir: soma do rateio de cartão limitada ao saldo (`rateioEfetivo` + fator proporcional),
-`primeiroNomeNormalizado` agrupando "Maison" / "MAISON MARCEL", despesa fixa com
-`meses[AAAA-MM]` (migração idempotente do `pagoEm`/`provisionada` antigos), e `sincronizarDespesaVariavel`
-do Mercado não duplicando ao editar a mesma compra.
+`verificacao.html` agora carrega `cartoes.js`, `despesas-fixas.js` e `mercado.js` (a `init` de cada
+um sai cedo — `if (!document.getElementById('lista-…')) return` — quando a marcação da página não
+está presente, então só as funções puras são exercitadas). 7 testes novos (15/15 passando):
+
+- `rateioEfetivo`: rateio do próprio mês tem prioridade; recorrente só a partir de `desde`; valor
+  limitado ao `saldo` da fatura.
+- `primeiroNomeNormalizado`: "Maison" / "MAISON MARCEL MADRI" / "Maisón Souza" caem em `maison`;
+  vazio → `sem-titular`.
+- Despesa fixa: `obterDados()` migra `pagoEm`/`provisionada` → `meses[AAAA-MM]` e a 2ª passada não
+  reescreve nada (idempotente).
+- Mercado: `sincronizarDespesaVariavel` chamada 2× / após editar a compra mantém **uma** despesa
+  vinculada, com o valor atualizado.
+- (de C11) `smCompetenciaVencimentoFatura` e `smFaturasDoMes` pela data de vencimento.
 
 #### C10. Tags de PWA no `TEMPLATE_PAGINA.html` ✅ FEITO 2026-08-30 — `<link rel="manifest">` + `theme-color` no `<head>` do template.
 
@@ -207,7 +216,7 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 3. ~~**C3** — travar a fatura para não contar em dobro nas despesas variáveis~~ ✅ 2026-08-30.
 4. ~~**C4** — Mercado visível no Painel e nos Relatórios~~ ✅ 2026-08-30.
 
-**P0 fechado + C8, C10, C11, C12.** Próximo: P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura) ou P2 (C9 testes).
+**P0 fechado + C8, C9, C10, C11, C12.** Resta P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura).
 
 ---
 
