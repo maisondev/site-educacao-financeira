@@ -141,12 +141,18 @@ Com 50 páginas, achar "onde eu registro o IPVA" exige decorar o menu. Um `Ctrl+
 que abre uma lista de páginas + âncoras do glossário (dados estáticos, sem índice remoto). Reaproveita
 a estrutura de `menu.js` como fonte da lista.
 
-#### C7. `analise-fatura.js` para de manter taxonomia própria (≈1h30)
+#### C7. `analise-fatura.js` para de manter taxonomia própria (≈1h30) — PARCIAL 2026-08-30
 
-Sobra de N2/N3: `AF_CATEGORIAS` (barras coloridas + regex de categorização) é um vocabulário
-paralelo ao `CAD_CATEGORIAS_PADRAO`. O de/para `AF_PARA_CATEGORIA_DV` é grosseiro e joga muita
-coisa em "outro". Fazer `afCategorizar` sugerir direto as categorias de `Cadastros.categorias()`
-e alimentar `regras_categorizacao` (que N2 já criou) como memória única.
+- ✅ `AF_PARA_CATEGORIA_DV` deixou de jogar 6 categorias em "outro": `saude`, `educacao`, `lazer`,
+  `pets`, `impostos` mapeiam pra si mesmas e `servicos → cuidados`. Agora bate exatamente com
+  `REL_FATURA_PARA_CATEGORIA` (relatorios.js) — comentário cruzado nos dois pedindo pra manter
+  iguais. "online" e "vestuário" continuam em "outro" (sem equivalente no vocabulário padrão).
+- ⬜ **Pendente (decisão do dono):** trocar `AF_CATEGORIAS` (14 chaves + cor + regex) por
+  `Cadastros.categorias()` de vez. Exige decidir se `restaurante`, `online`, `vestuario`, `casa`
+  entram no `CAD_CATEGORIAS_PADRAO` ou colapsam em chaves existentes, e refazer as ~15 referências
+  a `AF_CATEGORIAS` (barras coloridas, `<select>`, agrupamento, CSV). `regras_categorizacao` hoje
+  só é lida pela própria `analise-fatura.js` — a "memória única" só ganha sentido depois disso.
+  Adiado também porque o arquivo está sob edição em paralelo.
 
 #### C8. Fechar mês também oferece backup + competência onde falta (≈1h) ✅ FEITO 2026-08-30
 
@@ -216,7 +222,7 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 3. ~~**C3** — travar a fatura para não contar em dobro nas despesas variáveis~~ ✅ 2026-08-30.
 4. ~~**C4** — Mercado visível no Painel e nos Relatórios~~ ✅ 2026-08-30.
 
-**P0 fechado + C8, C9, C10, C11, C12.** Resta P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura).
+**P0 fechado + C8, C9, C10, C11, C12; C7 parcial.** Resta P1 (C5 onboarding, C6 busca global) e o resto do C7.
 
 ---
 

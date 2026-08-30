@@ -12,12 +12,13 @@ const AF_REGRAS_KEY = (typeof Store !== 'undefined' && Store.CHAVES.REGRAS_CATEG
 
 // De/para: categoria da análise de fatura -> categoria do vocabulário único
 // (CAD_CATEGORIAS_PADRAO, usado por despesas-variaveis.html e relatórios).
+// Espelha REL_FATURA_PARA_CATEGORIA em relatorios.js — manter os dois iguais.
 // Só "online" e "vestuário" não têm equivalente direto e caem em "outro".
 const AF_PARA_CATEGORIA_DV = {
   mercado: 'alimentacao',
   restaurante: 'alimentacao',
-  transporte: 'transporte',
-  assinatura: 'assinatura',
+  transporte: 'combustivel',
+  assinatura: 'streaming',
   casa: 'manutencao',
   saude: 'saude',
   online: 'outro',

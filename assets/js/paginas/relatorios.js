@@ -281,7 +281,8 @@ function gerarSecaoCartao() {
 
 // --- Gasto por categoria no mês (fixas + variáveis + fatura) ------------------
 
-// De/para da análise de fatura -> categoria unificada (espelha AF_PARA_CATEGORIA_DV).
+// De/para da análise de fatura -> categoria unificada.
+// Espelha AF_PARA_CATEGORIA_DV em analise-fatura.js — manter os dois iguais.
 const REL_FATURA_PARA_CATEGORIA = {
   mercado: 'alimentacao', restaurante: 'alimentacao', transporte: 'combustivel',
   assinatura: 'streaming', casa: 'manutencao', saude: 'saude', online: 'outro',
