@@ -428,6 +428,26 @@ function obterDadosReserva() {
   return Store.ler(Store.CHAVES.RESERVA, { salario: 0, meses: 0, aportes: [] });
 }
 
+// Lê a store única de cartões (Store.CHAVES.CARTOES, gerenciada por cartoes.html)
+// e normaliza para o formato { cartoes: [{ nome, saldo }] } que as seções deste
+// relatório esperam. O saldo é o da última fatura registrada (datasPorMes /
+// historicoUtilizacao), com fallback para saldoAberto.
 function obterDadosCartao() {
-  return Store.ler(Store.CHAVES.CARTAO_CREDITO, { cartoes: [] });
+  const lista = Store.ler(Store.CHAVES.CARTOES, []);
+  if (!Array.isArray(lista)) return { cartoes: [] };
+
+  const cartoes = lista.map(c => {
+    const porMes = {};
+    (Array.isArray(c.historicoUtilizacao) ? c.historicoUtilizacao : []).forEach(h => {
+      porMes[h.mes] = { mes: h.mes, saldo: h.saldo };
+    });
+    (Array.isArray(c.datasPorMes) ? c.datasPorMes : []).forEach(d => {
+      porMes[d.mes] = { ...(porMes[d.mes] || {}), ...d };
+    });
+    const ultima = Object.values(porMes)
+      .sort((a, b) => String(b.mes).replace('-', '') - String(a.mes).replace('-', ''))[0];
+    return { nome: c.nome || 'Cartão', saldo: ultima?.saldo ?? c.saldoAberto ?? 0 };
+  });
+
+  return { cartoes };
 }

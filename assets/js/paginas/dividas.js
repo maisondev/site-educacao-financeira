@@ -550,7 +550,7 @@ function deletarDivida(index) {
 // ---------------------------------------------------------------------------
 function renderFaturasCartao() {
   const container = document.getElementById('faturas-cartao-container');
-  let cartoes = Store.ler(Store.CHAVES.CARTOES_FINANCEIROS, []);
+  let cartoes = Store.ler(Store.CHAVES.CARTOES, []);
   if (!Array.isArray(cartoes)) cartoes = [];
 
   const abertas = [];

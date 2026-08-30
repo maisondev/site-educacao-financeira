@@ -171,7 +171,58 @@ function copiarResumoTitular(indice, botao) {
   }
 }
 
+// Migração idempotente das stores antigas de cartão para a store única `cartoes`.
+// Historicamente existiam três chaves: `cartoes` (esta página), `cartoes_financeiros`
+// (a página órfã cartao.html, já removida) e `cartao_credito` (lida só pelo Relatório,
+// nunca escrita). Unificamos tudo aqui e apagamos as chaves mortas.
+function migrarCartoesLegado() {
+  const CHAVE_FINANCEIROS = 'cartoes_financeiros';
+  const CHAVE_CARTAO_CREDITO = 'cartao_credito';
+  const atuais = obterCartoes();
+  const norm = s => String(s || '').trim().toLowerCase();
+  const jaExiste = nome => atuais.some(c => norm(c.nome) === norm(nome));
+  let mudou = false;
+
+  const antigoFinanceiros = Store.ler(CHAVE_FINANCEIROS, null);
+  if (Array.isArray(antigoFinanceiros)) {
+    antigoFinanceiros.forEach(c => {
+      if (!c || jaExiste(c.nome)) return;
+      const gasto = (c.gastos || []).reduce((s, g) => s + (Number(g.valor) || 0), 0);
+      atuais.push({
+        id: c.id || Date.now().toString(),
+        nome: c.nome || 'Cartão',
+        bandeira: c.bandeira || '',
+        limite: Number(c.limite) || 0,
+        vencimento: c.vencimento || '',
+        saldoAberto: gasto,
+        datasPorMes: []
+      });
+      mudou = true;
+    });
+    Store.remover(CHAVE_FINANCEIROS);
+  }
+
+  const antigoCredito = Store.ler(CHAVE_CARTAO_CREDITO, null);
+  if (antigoCredito && Array.isArray(antigoCredito.cartoes)) {
+    antigoCredito.cartoes.forEach(c => {
+      if (!c || jaExiste(c.nome)) return;
+      atuais.push({
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        nome: c.nome || 'Cartão',
+        limite: Number(c.limite) || 0,
+        saldoAberto: Number(c.saldo) || 0,
+        datasPorMes: []
+      });
+      mudou = true;
+    });
+    Store.remover(CHAVE_CARTAO_CREDITO);
+  }
+
+  if (mudou) salvarCartoes(atuais);
+}
+
 function inicializarCartoes() {
+  migrarCartoesLegado();
   atualizarVisualizacao();
   sincronizarFaturasExistentes();
 

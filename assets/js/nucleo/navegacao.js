@@ -29,7 +29,6 @@ const MENU_ITEMS = [
     submenu: [
       { label: 'Carro', href: './carro.html' },
       { label: 'Cartões', href: './cartoes.html' },
-      { label: 'Cartão de Crédito (resumo)', href: './cartao.html' },
       { label: 'Despesas Fixas', href: './despesas-fixas.html' },
       { label: 'Despesas Variáveis', href: './despesas-variaveis.html' },
       { label: 'Desapego', href: './desapego.html' },

@@ -25,8 +25,6 @@ const Store = {
     RESERVA: 'reserva_emergencia',
     CARTOES: 'cartoes',
     GRUPOS_TITULARES: 'grupos_titulares',
-    CARTOES_FINANCEIROS: 'cartoes_financeiros',
-    CARTAO_CREDITO: 'cartao_credito',
     CARTOES_ADICIONAIS: 'cartoes_adicionais_dados',
     COMPRAS_PARCELADAS: 'compras_parceladas',
     HACKS_NUBANK: 'hacks_nubank_dados',

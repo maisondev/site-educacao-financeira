@@ -54,7 +54,17 @@ meses", modal de datas abrindo no mês da última fatura e limite proporcional d
 saldo do cartão. Revisar, testar em `cartoes.html` (criar rateio recorrente, conferir que aparece
 com "(recorrente)" no histórico e na quebra por titular) e commitar antes de qualquer outra coisa.
 
-#### C2. Unificar as três chaves de cartão — `cartao_credito` → `cartoes` (≈1h30)
+#### C2. Unificar as três chaves de cartão — `cartao_credito` → `cartoes` ✅ FEITO 2026-08-30
+
+Migração idempotente `migrarCartoesLegado()` em `cartoes.js` funde `cartoes_financeiros` e
+`cartao_credito` na store única `cartoes` (dedup por nome) e apaga as chaves mortas.
+`relatorios.js` (`obterDadosCartao`) e `dividas.js` (`renderFaturasCartao`) agora leem
+`Store.CHAVES.CARTOES`. Removidos `cartao.html`, `assets/js/paginas/cartao.js` e a duplicata
+órfã `fluxo-caixa-futuro.html` (o `.js` fica, é usado por `parcelas-cartao.html`). Chaves
+`CARTAO_CREDITO` / `CARTOES_FINANCEIROS` saíram do catálogo em `storage.js`.
+
+<details><summary>Contexto original</summary>
+
 
 **Problema:** existem **três** stores de cartão no catálogo (`storage.js:26-29`): `CARTOES`
 (`'cartoes'`, usado por `cartoes.js` e `saldo-mes.js`), `CARTAO_CREDITO` (`'cartao_credito'`, a
@@ -69,6 +79,7 @@ Foi o motivo de N6 não ter removido `cartao.html`.
 - Idem para `fluxo-caixa-futuro.html` (duplicata órfã de `parcelas-cartao.html`, sobra de N7).
 
 **Ganho:** o Relatórios volta a refletir a realidade; some a última grande órfã e uma chave morta do catálogo.
+</details>
 
 #### C3. Fatura de cartão entra uma única vez nas despesas variáveis (≈1h)
 
@@ -154,8 +165,8 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 
 ## Ordem sugerida para amanhã
 
-1. **C1** — commitar o rateio recorrente que está solto no working tree.
-2. **C2** — unificar as chaves de cartão e remover `cartao.html` / `fluxo-caixa-futuro.html`.
+1. ~~**C1** — commitar o rateio recorrente~~ — já commitado antes (04a5c06); working tree tinha a lista de oficina do Carro, commitada em 8b7a0b4.
+2. ~~**C2** — unificar as chaves de cartão e remover `cartao.html` / `fluxo-caixa-futuro.html`~~ ✅ 2026-08-30.
 3. **C3** — travar a fatura para não contar em dobro nas despesas variáveis.
 4. **C4** — Mercado visível no Painel e nos Relatórios.
 

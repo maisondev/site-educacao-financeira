@@ -1,6 +1,6 @@
 # Casos de Uso — Cartões
 
-Páginas: `cartoes.html`, `cartao.html`, `cartoes-adicionais.html`,
+Páginas: `cartoes.html`, `cartoes-adicionais.html`,
 `parcelas-cartao.html`, `analise-fatura.html`, `hacks-nubank.html`.
 JS correspondentes + `lembretes.js` (eventos de fechamento/vencimento).
 
@@ -25,9 +25,10 @@ JS correspondentes + `lembretes.js` (eventos de fechamento/vencimento).
 - **Ator:** usuário
 - **Objetivo:** ver rapidamente quanto está aberto em cada cartão.
 - **Fluxo principal:**
-  1. Abre `cartao.html`.
-  2. Cria cartões e lança gastos por cartão; a tela mostra o total aberto do mês.
-- **Dados:** `cartoes_financeiros`, `cartao_credito`.
+  1. Abre `cartoes.html`.
+  2. Vê o total devido, a quebra por titular e o saldo da última fatura de cada cartão.
+  3. O Relatório mensal (`relatorios.html`) lê a mesma store `cartoes` na seção "Cartão de Crédito".
+- **Dados:** `cartoes`.
 
 ---
 
