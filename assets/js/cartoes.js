@@ -651,6 +651,15 @@ function atualizarVisualizacao() {
     return sum + (pago || !c.saldoVisivel ? 0 : c.saldoVisivel);
   }, 0);
 
+  // Total devido agrupado por titular (ignora faturas já pagas)
+  const totalPorTitular = {};
+  cartoesComSaldo.forEach(c => {
+    const pago = c.ultimaFatura && c.ultimaFatura.foiPaga;
+    if (pago || !c.saldoVisivel) return;
+    const titular = (c.titular || '').trim() || 'Sem titular';
+    totalPorTitular[titular] = (totalPorTitular[titular] || 0) + c.saldoVisivel;
+  });
+
   // Mostrar/esconder resumo
   const resumoDiv = document.getElementById('resumo-saldos');
   if (cartoesComSaldo.length > 0) {
@@ -701,6 +710,16 @@ function atualizarVisualizacao() {
     }).join('');
 
     document.getElementById('total-saldos-abertos').textContent = formatarMoedaBrasileira(totalSaldosAbertos);
+
+    const titularDiv = document.getElementById('total-por-titular');
+    const titulares = Object.entries(totalPorTitular).sort((a, b) => b[1] - a[1]);
+    titularDiv.innerHTML = titulares.length > 1
+      ? titulares.map(([nome, valor]) => `
+        <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--cor-texto);">
+          <span>${escaparTextoCartao(nome)}</span>
+          <span style="font-weight: 600;">${formatarMoedaBrasileira(valor)}</span>
+        </div>`).join('')
+      : '';
   } else {
     resumoDiv.style.display = 'none';
   }
