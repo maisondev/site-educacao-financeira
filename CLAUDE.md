@@ -315,6 +315,8 @@ Abaixo do total geral, o resumo mostra a quebra por pessoa:
 - Agrupa pelo **primeiro nome normalizado** (`primeiroNomeNormalizado` — sem acento/maiúsculas), então "Maison", "Maison Souza" e "MAISON MARCEL MADRI…" caem no mesmo grupo. Cada grupo lista os cartões que o compõem.
 - **"Pago"** é lido sempre de `datasPorMes[].foiPaga` (mesma fonte do checkbox), nunca do objeto de `obterUltimaFaturaDisponivel` (que pode vir de `historicoUtilizacao` sem o flag). Fatura paga sai do total e da quebra.
 - **Rateio (cartão emprestado)**: `datasPorMes[].rateio = [{ titular, valor }]` realoca parte do saldo daquela fatura para outra pessoa na quebra por titular — o total geral não muda. Configurado no modal "Gerenciar datas por mês" (campo "Parte da fatura é de outra pessoa"). O item aparece no grupo do beneficiário com a marca "(cartão de \<dono\>)".
+  - **Recorrente**: o checkbox "Repetir nos próximos meses" grava um template `cartao.rateioRecorrente = { titular, valor, desde }`. `rateioEfetivo(cartao, mes, entrada)` resolve o rateio de um mês: o do próprio mês vence; senão o recorrente para `mes >= desde` (valor limitado ao saldo). Desmarcar o checkbox e salvar remove o template.
+  - O modal "Gerenciar datas por mês" abre já no **mês da última fatura registrada** (não no mês do calendário), e recarrega os campos ao trocar o mês — para o saldo/rateio caírem no mês certo.
 
 ## Linguagem e Público
 

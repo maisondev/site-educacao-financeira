@@ -66,6 +66,21 @@ function rotuloTitular(chave) {
   return chave.charAt(0).toUpperCase() + chave.slice(1);
 }
 
+// Rateio que vale para um mês: o do próprio mês tem prioridade; senão o
+// rateio recorrente do cartão (a partir do mês `desde`). Valor limitado ao saldo.
+function rateioEfetivo(cartao, mes, entrada) {
+  if (entrada && Array.isArray(entrada.rateio) && entrada.rateio.length) {
+    return entrada.rateio;
+  }
+  const rec = cartao && cartao.rateioRecorrente;
+  if (rec && rec.titular && rec.valor && mes && rec.desde && mes >= rec.desde) {
+    const saldo = entrada && entrada.saldo;
+    const valor = saldo ? Math.min(rec.valor, saldo) : rec.valor;
+    return [{ titular: rec.titular, valor, recorrente: true }];
+  }
+  return [];
+}
+
 function inicializarCartoes() {
   atualizarVisualizacao();
   sincronizarFaturasExistentes();
@@ -344,10 +359,19 @@ function abrirModalDatasMes() {
 
   const hoje = new Date();
   const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-  document.getElementById('select-mes-data').value = mesAtual;
+  // Abre já no mês da última fatura registrada (não no mês do calendário),
+  // para o rateio/saldo cair no mês certo.
+  const mesInicial = obterUltimaFaturaDisponivel(cartao)?.mes || mesAtual;
+  document.getElementById('select-mes-data').value = mesInicial;
 
-  const datas = cartao.datasPorMes || [];
-  const dataAtual = datas.find(d => d.mes === mesAtual);
+  preencherCamposDatasMes(cartao, mesInicial);
+
+  renderizarHistoricoDatas();
+  document.getElementById('modal-datas-mes').removeAttribute('hidden');
+}
+
+function preencherCamposDatasMes(cartao, mes) {
+  const dataAtual = (cartao.datasPorMes || []).find(d => d.mes === mes);
 
   if (dataAtual) {
     // Suportar formato legado (apenas dia) e novo formato (dia/mês)
@@ -361,9 +385,10 @@ function abrirModalDatasMes() {
 
     document.getElementById('input-saldo-mes').value = dataAtual.saldo ? formatarMoedaBrasileira(dataAtual.saldo) : '';
 
-    const rateio = (dataAtual.rateio || [])[0];
+    const rateio = (dataAtual.rateio || [])[0] || (cartao.rateioRecorrente && mes >= cartao.rateioRecorrente.desde ? cartao.rateioRecorrente : null);
     document.getElementById('input-rateio-titular').value = rateio ? rateio.titular : '';
     document.getElementById('input-rateio-valor').value = rateio && rateio.valor ? formatarMoedaBrasileira(rateio.valor) : '';
+    document.getElementById('chk-rateio-repetir').checked = !!cartao.rateioRecorrente;
   } else {
     document.getElementById('input-fechamento-dia').value = '';
     document.getElementById('input-fechamento-mes-select').value = '';
@@ -372,15 +397,21 @@ function abrirModalDatasMes() {
     document.getElementById('input-saldo-mes').value = '';
     document.getElementById('input-rateio-titular').value = '';
     document.getElementById('input-rateio-valor').value = '';
+    document.getElementById('chk-rateio-repetir').checked = !!cartao.rateioRecorrente;
   }
-
-  renderizarHistoricoDatas();
-  document.getElementById('modal-datas-mes').removeAttribute('hidden');
 }
 
 function fecharModalDatasMes() {
   document.getElementById('modal-datas-mes').setAttribute('hidden', '');
 }
+
+// Ao trocar o mês dentro do modal, recarrega os campos daquele mês.
+document.addEventListener('change', function (e) {
+  if (e.target && e.target.id === 'select-mes-data' && cartaoEmEdicaoId) {
+    const cartao = obterCartoes().find(c => c.id === parseInt(cartaoEmEdicaoId));
+    if (cartao) preencherCamposDatasMes(cartao, e.target.value);
+  }
+});
 
 function renderizarHistoricoDatas() {
   if (!cartaoEmEdicaoId) return;
@@ -400,8 +431,10 @@ function renderizarHistoricoDatas() {
   container.innerHTML = `<h4 style="font-size: 13px; margin: 0 0 8px 0;">Histórico:</h4>` + datas.map(d => {
     const { ano, mes } = obterAnoMesDeMesStr(d.mes);
     const nomeMes = formatarMesCompletoDeAnoMes(ano, mes);
+    const rateios = rateioEfetivo(cartao, d.mes, d);
+    const rateioTxt = rateios.map(r => ` / ${escaparTextoCartao(r.titular)}: ${formatarMoedaBrasileira(r.valor)}${r.recorrente ? ' (recorrente)' : ''}`).join('');
     return `<div style="padding: 6px; background: var(--cor-cinza-leve); border-radius: 4px; margin-bottom: 4px; font-size: 12px; color: var(--cor-texto);">
-      <strong>${nomeMes}:</strong> ${formatarDiaOuDiaMes(d.fechamento)} → ${formatarDiaOuDiaMes(d.vencimento)}${d.saldo ? ` / saldo ${formatarMoedaBrasileira(d.saldo)}` : ''}${(d.rateio || []).map(r => ` / ${escaparTextoCartao(r.titular)}: ${formatarMoedaBrasileira(r.valor)}`).join('')}
+      <strong>${nomeMes}:</strong> ${formatarDiaOuDiaMes(d.fechamento)} → ${formatarDiaOuDiaMes(d.vencimento)}${d.saldo ? ` / saldo ${formatarMoedaBrasileira(d.saldo)}` : ''}${rateioTxt}
     </div>`;
   }).join('');
 }
@@ -435,6 +468,7 @@ function salvarDatasMes() {
   const rateioTitular = document.getElementById('input-rateio-titular').value.trim();
   let rateioValor = parseValorBrasileiro(document.getElementById('input-rateio-valor').value);
   rateioValor = rateioValor ? Math.round(rateioValor * 100) / 100 : null;
+  const rateioRepetir = document.getElementById('chk-rateio-repetir').checked;
 
   if ((rateioTitular && !rateioValor) || (!rateioTitular && rateioValor)) {
     alert('Para imputar parte da fatura a outra pessoa, preencha o nome e o valor.');
@@ -468,6 +502,13 @@ function salvarDatasMes() {
     dataObj.rateio = [{ titular: rateioTitular, valor: rateioValor }];
   } else {
     delete dataObj.rateio;
+  }
+
+  // Rateio recorrente: template no cartão, aplicado aos meses >= este.
+  if (rateioRepetir && rateioTitular && rateioValor) {
+    cartao.rateioRecorrente = { titular: rateioTitular, valor: rateioValor, desde: mes };
+  } else if (!rateioRepetir) {
+    delete cartao.rateioRecorrente;
   }
 
   // Registrar histórico de utilização mensal
@@ -703,7 +744,8 @@ function atualizarVisualizacao() {
   const rateioDaFatura = (c) => {
     const ref = c.mesReferencia;
     if (!ref) return [];
-    return ((c.datasPorMes || []).find(d => d.mes === ref) || {}).rateio || [];
+    const entrada = (c.datasPorMes || []).find(d => d.mes === ref);
+    return rateioEfetivo(c, ref, entrada);
   };
 
   const gruposTitular = {};
@@ -720,13 +762,18 @@ function atualizarVisualizacao() {
     if (faturaPaga(c) || !c.saldoVisivel) return;
     const donoChave = primeiroNomeNormalizado((c.titular || '').trim());
     const rateios = rateioDaFatura(c);
-    const totalRateado = rateios.reduce((s, r) => s + (Number(r.valor) || 0), 0);
+
+    // Limita o total rateado ao saldo do cartão (proporcional se estourar).
+    let totalRateado = rateios.reduce((s, r) => s + (Number(r.valor) || 0), 0);
+    const fator = totalRateado > c.saldoVisivel && totalRateado > 0 ? c.saldoVisivel / totalRateado : 1;
+    totalRateado = Math.min(totalRateado, c.saldoVisivel);
     const restanteDono = Math.round((c.saldoVisivel - totalRateado) * 100) / 100;
 
     addAoGrupo(donoChave, restanteDono, { nome: c.nome, ultimos: c.ultimos, valor: restanteDono });
     rateios.forEach(r => {
-      addAoGrupo(primeiroNomeNormalizado((r.titular || '').trim()), Number(r.valor) || 0, {
-        nome: c.nome, ultimos: c.ultimos, valor: Number(r.valor) || 0, via: rotuloTitular(donoChave)
+      const valor = Math.round((Number(r.valor) || 0) * fator * 100) / 100;
+      addAoGrupo(primeiroNomeNormalizado((r.titular || '').trim()), valor, {
+        nome: c.nome, ultimos: c.ultimos, valor, via: rotuloTitular(donoChave)
       });
     });
   });
