@@ -807,6 +807,9 @@ function atualizarVisualizacao() {
         const dataAtual = datas.find(d => d.mes === mesRef_);
         const pago = dataAtual && dataAtual.foiPaga;
 
+        const rateios = rateioEfetivo(c, mesRef_, dataAtual);
+        const rateioHtml = rateios.length ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: var(--cor-texto-light);">Imputado: ${rateios.map(r => `${escaparTextoCartao(r.titular)} ${formatarMoedaBrasileira(r.valor)}`).join(', ')}</p>` : '';
+
         return `
         <div style="background: white; padding: var(--espacamento-md); border-radius: 6px; border-left: 4px solid var(--cor-primaria); position: relative; box-shadow: var(--sombra-sm);">
           <div style="position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 6px;">
