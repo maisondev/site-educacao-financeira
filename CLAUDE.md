@@ -302,6 +302,14 @@ Cadastra cartões de crédito com limite, ciclo (fechamento → vencimento), sal
 ```
 Cartões adicionais (de familiares) têm seu próprio JSON, sem `limite` (compartilham o do titular).
 
+### Fatura entra uma única vez nas despesas variáveis (decidido 2026-08-30)
+
+Há dois caminhos que lançam uma fatura em `despesas_variaveis`:
+- **Página Cartões** (`sincronizarFaturasExistentes` / registro de saldo do mês) → `adicionarDespesaDeCartao(...)` cria **uma linha única** com o total da fatura, marcada `origem: 'fatura-cartao'` + `origemFatura: "<ultimos|nome>|<competencia>"`.
+- **Análise de fatura** (`analise-fatura.html`, botão "Lançar em Despesas Variáveis") → `afLancarEmDespesas()` cria **uma linha por lançamento**, categorizada, com `origem: 'fatura'` + `origemHash`.
+
+`afLancarEmDespesas()` detecta uma linha `fatura-cartao` da mesma competência (e cartão, quando os finais batem) e oferece **substituir a linha única pelo detalhamento por categoria** (confirm; Cancelar = não lança nada). Assim o valor da fatura entra uma vez só — igual ao aviso "já lançado" do Mercado. A análise por categoria é sempre só detalhamento.
+
 ### Convenção: competência = mês de VENCIMENTO (decidido 2026-08-30)
 
 Uma fatura é sempre identificada pelo **mês em que vence** (quando o dinheiro sai), nunca pelo mês de fechamento.

@@ -899,8 +899,34 @@ function afLancarEmDespesas() {
 
   const despesas = Store.ler(Store.CHAVES.DESPESAS_VARIAVEIS, []);
   const compras = Store.ler(Store.CHAVES.COMPRAS_PARCELADAS, []);
-  const listaDespesas = Array.isArray(despesas) ? despesas : [];
+  let listaDespesas = Array.isArray(despesas) ? despesas : [];
   const listaCompras = Array.isArray(compras) ? compras : [];
+
+  // A fatura pode já ter entrado nas despesas variáveis pela página Cartões
+  // (linha única com o total, origem 'fatura-cartao'). Se lançarmos o
+  // detalhamento por categoria por cima, o valor conta em dobro no saldo
+  // projetado. Regra: o valor da fatura entra uma única vez.
+  const finaisIncluidos = new Set(incluidos.map(l => l.cartao).filter(Boolean));
+  const faturaJaLancadaPeloCartao = listaDespesas.filter(d =>
+    d.origem === 'fatura-cartao'
+    && (d.competencia === comp || String(d.origemFatura || '').endsWith('|' + comp))
+    && (finaisIncluidos.size === 0 || !d.ultimosDígitos || finaisIncluidos.has(d.ultimosDígitos))
+  );
+  if (faturaJaLancadaPeloCartao.length) {
+    const ok = confirm(
+      'Esta fatura já está nas despesas variáveis como uma linha única, lançada pela página Cartões.\n\n'
+      + 'Aqui o lançamento é só o detalhamento por categoria — se continuar sem remover a linha única, '
+      + 'o valor da fatura conta em dobro no saldo projetado.\n\n'
+      + 'OK = substituir a linha única pelo detalhamento por categoria.\n'
+      + 'Cancelar = não lançar nada agora.'
+    );
+    if (!ok) {
+      afMostrarMsg('Nada lançado. A fatura continua como linha única vinda da página Cartões.', 'ok');
+      return;
+    }
+    const remover = new Set(faturaJaLancadaPeloCartao.map(d => d.id));
+    listaDespesas = listaDespesas.filter(d => !remover.has(d.id));
+  }
 
   const jaLancadas = new Set(
     listaDespesas.filter(d => d.origem === 'fatura' && d.origemHash).map(d => d.origemHash)
@@ -953,11 +979,16 @@ function afLancarEmDespesas() {
     }
   });
 
-  if (nDespesas && !Store.gravar(Store.CHAVES.DESPESAS_VARIAVEIS, listaDespesas)) return;
+  // Grava também quando só removemos a linha única da fatura (substituição),
+  // mesmo que nenhum lançamento novo por categoria tenha sido criado.
+  if ((nDespesas || faturaJaLancadaPeloCartao.length) && !Store.gravar(Store.CHAVES.DESPESAS_VARIAVEIS, listaDespesas)) return;
   if (nParcelas && !Store.gravar(Store.CHAVES.COMPRAS_PARCELADAS, listaCompras)) return;
 
   if (!nDespesas && !nParcelas) {
-    afMostrarMsg('Tudo desta fatura já tinha sido lançado antes — nada novo a fazer.', 'ok');
+    const extra = faturaJaLancadaPeloCartao.length
+      ? ' A linha única da fatura vinda da página Cartões foi removida.'
+      : '';
+    afMostrarMsg('Tudo desta fatura já tinha sido lançado antes — nada novo a fazer.' + extra, 'ok');
     return;
   }
 
@@ -966,6 +997,7 @@ function afLancarEmDespesas() {
   if (nParcelas) partes.push(`${nParcelas} compra${nParcelas === 1 ? '' : 's'} parcelada${nParcelas === 1 ? '' : 's'}`);
   let msg = `Lançado: ${partes.join(' e ')} na competência ${afFormatarCompetencia(comp)}.`;
   if (nDuplicadas) msg += ` ${nDuplicadas} já existia${nDuplicadas === 1 ? '' : 'm'} e foi${nDuplicadas === 1 ? '' : 'ram'} ignorada${nDuplicadas === 1 ? '' : 's'}.`;
+  if (faturaJaLancadaPeloCartao.length) msg += ' A linha única da fatura (vinda da página Cartões) foi substituída por este detalhamento.';
   afMostrarMsg(msg, 'ok');
 }
 

@@ -149,7 +149,7 @@ function migrarFaturasDeCartao() {
   }
 }
 
-function adicionarDespesaDeCartao(descricao, valor, data, ultimosDígitos) {
+function adicionarDespesaDeCartao(descricao, valor, data, ultimosDígitos, competenciaFatura) {
   const obj = {
     id: Date.now() + Math.random(),
     categoria: 'cartao',
@@ -157,6 +157,11 @@ function adicionarDespesaDeCartao(descricao, valor, data, ultimosDígitos) {
     valor,
     data,
     competencia: (data || '').slice(0, 7),
+    // Marca a origem para que a análise de fatura (analise-fatura.html) saiba que
+    // esta fatura já entrou nas despesas variáveis pela página Cartões e não a
+    // lance de novo por categoria — o valor da fatura entra uma única vez.
+    origem: 'fatura-cartao',
+    origemFatura: `${ultimosDígitos || descricao.split(' - ')[0].trim()}|${competenciaFatura || (data || '').slice(0, 7)}`,
     dataCriacao: new Date().toISOString()
   };
   if (ultimosDígitos) {

@@ -81,7 +81,16 @@ Foi o motivo de N6 não ter removido `cartao.html`.
 **Ganho:** o Relatórios volta a refletir a realidade; some a última grande órfã e uma chave morta do catálogo.
 </details>
 
-#### C3. Fatura de cartão entra uma única vez nas despesas variáveis (≈1h)
+#### C3. Fatura de cartão entra uma única vez nas despesas variáveis ✅ FEITO 2026-08-30
+
+`adicionarDespesaDeCartao()` (nas duas implementações: fallback em `cartoes.js` e a de
+`despesas-variaveis.js`) agora marca a linha da fatura com `origem: 'fatura-cartao'` +
+`origemFatura: "<ultimos|nome>|<competencia>"`. `afLancarEmDespesas()` em `analise-fatura.js`
+detecta essa linha na mesma competência/cartão e oferece **substituí-la pelo detalhamento por
+categoria** (confirm; Cancelar = não lança nada). Regra documentada no `CLAUDE.md`.
+
+<details><summary>Contexto original</summary>
+
 
 **Problema:** hoje há **dois caminhos** que lançam a fatura em `despesas_variaveis`:
 (a) "Importar de fatura" em `cartoes.html` → a sincronização de fatura do cartão;
@@ -93,6 +102,7 @@ saldo projetado, exatamente como o Mercado resolveu com o aviso "já lançado".
 - Ao sincronizar a fatura pelo cartão, marcar a despesa com `origem: 'fatura-cartao'` + `origemFatura: <cartão+competência>`.
 - `afLancarEmDespesas()` detecta despesa `fatura-cartao` da mesma competência/cartão e mostra o aviso "esta fatura já está nas despesas variáveis pelo cartão — aqui é só detalhamento por categoria" (checkbox desligado), espelhando `abrirCompraDeParametros()` do Mercado.
 - Regra escrita no `CLAUDE.md`: valor da fatura entra **uma vez**; a análise por categoria é sempre só detalhamento.
+</details>
 
 #### C4. Mercado alimenta os Relatórios e o card de saldo (≈1h)
 
@@ -167,7 +177,7 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 
 1. ~~**C1** — commitar o rateio recorrente~~ — já commitado antes (04a5c06); working tree tinha a lista de oficina do Carro, commitada em 8b7a0b4.
 2. ~~**C2** — unificar as chaves de cartão e remover `cartao.html` / `fluxo-caixa-futuro.html`~~ ✅ 2026-08-30.
-3. **C3** — travar a fatura para não contar em dobro nas despesas variáveis.
+3. ~~**C3** — travar a fatura para não contar em dobro nas despesas variáveis~~ ✅ 2026-08-30.
 4. **C4** — Mercado visível no Painel e nos Relatórios.
 
 Curtos e independentes se sobrar tempo: **C10** (tags PWA no template), **C12** (cards na home), **C8** (competência em reserva/renda-extra).

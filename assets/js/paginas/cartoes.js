@@ -18,7 +18,7 @@ function escaparTextoCartao(texto) {
 // Quando despesas-variaveis.js tambem esta na pagina, a implementacao de la
 // (declaracao de funcao) sobrescreve esta e prevalece.
 if (typeof adicionarDespesaDeCartao !== 'function') {
-  window.adicionarDespesaDeCartao = function (descricao, valor, data, ultimosDigitos) {
+  window.adicionarDespesaDeCartao = function (descricao, valor, data, ultimosDigitos, competenciaFatura) {
     const CHAVE = Store.CHAVES.DESPESAS_VARIAVEIS;
     let despesas = Store.ler(CHAVE, []);
     if (!Array.isArray(despesas)) despesas = [];
@@ -39,6 +39,10 @@ if (typeof adicionarDespesaDeCartao !== 'function') {
       valor: valor,
       data: data,
       competencia: (data || '').slice(0, 7),
+      // Ver comentário na versão de despesas-variaveis.js: marca a fatura como
+      // já lançada aqui, para a análise de fatura não contar o valor em dobro.
+      origem: 'fatura-cartao',
+      origemFatura: `${ultimosDigitos || (descricao || '').split(' - ')[0].trim()}|${competenciaFatura || (data || '').slice(0, 7)}`,
       dataCriacao: new Date().toISOString()
     };
     if (ultimosDigitos) {
@@ -399,7 +403,7 @@ function sincronizarFaturasExistentes() {
           const vencimentoAno = vencimentoMêsNum < mes ? ano + 1 : ano;
           const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
 
-          adicionarDespesaDeCartao(descricao, fatura.saldo, dataVencimento);
+          adicionarDespesaDeCartao(descricao, fatura.saldo, dataVencimento, cartao.ultimos, fatura.mes);
           fatura.foiRegistradoComoDespesa = true;
           houveMudancas = true;
         }
@@ -680,7 +684,7 @@ function salvarDatasMes() {
     const vencimentoAno = vencimentoMêsNum < mesInt ? ano + 1 : ano;
     const dataVencimento = `${vencimentoAno}-${String(vencimentoMêsNum).padStart(2, '0')}-${String(vencimentoDia).padStart(2, '0')}`;
 
-    adicionarDespesaDeCartao(descricao, saldo, dataVencimento, cartao.ultimos);
+    adicionarDespesaDeCartao(descricao, saldo, dataVencimento, cartao.ultimos, mes);
     dataObj.foiRegistradoComoDespesa = true;
     despesaLancada = true;
   }
