@@ -258,6 +258,35 @@ Funcionalidades:
 
 **CSS personalizado** (inline em `metas.html`): formulário, cards, botões de ação, responsividade mobile.
 
+## Página de Mercado (localStorage)
+
+**Arquivo**: `mercado.html` + `assets/js/mercado.js` — chave `Store.CHAVES.MERCADO` (`mercado_compras`).
+
+Acompanha a maior despesa variável da casa (supermercado) por categoria, com teto mensal, histórico e comparativo com a média dos meses anteriores.
+
+**Estrutura do store**: `{ tetoMensal: number, compras: [], lista: [] }`
+- `compras`: `{ id, data, estabelecimento, obs, itens: [{ categoria, valor }] }` — cada compra tem N itens por categoria (`CATEGORIAS_MERCADO`)
+- `lista`: `{ id, nome, categoria, noCarrinho }` — lista de compras pré-mercado (não some ao trocar de mês)
+
+**Mês (competência)**: usa `competenciaSelecionada()` de `competencia.js`, com seletor próprio (`renderSeletorMercado`).
+
+### Integração com Lançamento rápido (2026-08-29)
+
+O store do Mercado é isolado — nenhum outro módulo o lê. Para não digitar a mesma ida ao supermercado duas vezes, há vínculo bidirecional com as despesas variáveis (`Store.CHAVES.DESPESAS_VARIAVEIS`):
+
+**Mercado → Despesa Variável (checkbox no modal)**
+- Modal "Registrar compra" tem o checkbox `#chk-lancar-despesa` ("Lançar também nas despesas variáveis"), marcado por padrão em compras novas.
+- Ao salvar com o checkbox marcado, `sincronizarDespesaVariavel(compra)` cria/atualiza uma despesa `categoria: 'alimentacao'`, `descricao: "Mercado — <estabelecimento>"`, `valor` = total da compra, marcada com `origemMercado: <id da compra>`.
+- Editar a compra atualiza a despesa; desmarcar o checkbox ou remover a compra remove a despesa vinculada (`removerDespesaVinculada`).
+- A lista "Compras do mês" mostra o selo `↗ lançada nas despesas variáveis` (`compraTemDespesaVinculada`).
+
+**Lançamento rápido → Mercado (link na mensagem)**
+- `lrPareceMercado(descricao)` (em `lancamento-rapido.js`) detecta palavras de supermercado/feira/atacado (`LR_PALAVRAS_MERCADO`).
+- Quando bate, a mensagem de sucesso ganha o link "Detalhar por categoria no Mercado" → `mercado.html?novaCompra=1&valor=&data=&estab=&desc=`.
+- `abrirCompraDeParametros()` (em `mercado.js`, chamada no `inicializarMercado`) abre o modal já preenchido, com o checkbox **desligado** e um aviso (`#aviso-ja-lancado`), porque o valor já entrou nas despesas variáveis pelo Lançamento rápido — ali o registro é só detalhamento por categoria, para não contar em dobro. `history.replaceState` limpa a query.
+
+**Regra**: valor do supermercado entra **uma vez** nas despesas variáveis — ou pelo checkbox do Mercado, ou pelo Lançamento rápido. O registro no store do Mercado sempre serve para a análise por categoria.
+
 ## Linguagem e Público
 
 - **Linguagem**: português (Brasil), simples e acessível para leigos
