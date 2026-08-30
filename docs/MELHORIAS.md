@@ -104,7 +104,16 @@ saldo projetado, exatamente como o Mercado resolveu com o aviso "já lançado".
 - Regra escrita no `CLAUDE.md`: valor da fatura entra **uma vez**; a análise por categoria é sempre só detalhamento.
 </details>
 
-#### C4. Mercado alimenta os Relatórios e o card de saldo (≈1h)
+#### C4. Mercado alimenta os Relatórios e o card de saldo ✅ FEITO 2026-08-30
+
+`altAlertasMercado()` (`alertas.js`) entra na Central de alertas quando o gasto de Mercado do
+mês corrente passa de 90% do teto (crítico ≥ 100%). `smLinhaMercado()` (`saldo-mes.js`) mostra
+a linha "Mercado (X% do teto) — R$ gasto de R$ teto" com link para `mercado.html` no card de
+saldo (dashboard e saldo-projetado). Sem duplicar valor: a compra já entra nas despesas
+variáveis pelo vínculo do checkbox; os Relatórios continuam somando só `alimentacao` das
+despesas, sem ler o store do Mercado.
+
+<details><summary>Contexto original</summary>
 
 **Problema:** `CLAUDE.md` diz "o store do Mercado é isolado — nenhum outro módulo o lê". O teto
 mensal do supermercado e o gasto acumulado do mês são dados de gestão que só existem dentro de
@@ -115,6 +124,7 @@ mensal do supermercado e o gasto acumulado do mês são dados de gestão que só
 - Linha "Mercado: R$ X de R$ Y (teto)" no card de saldo do mês, com link para `mercado.html`.
 - O relatório "gasto por categoria no mês" (N3) já soma `alimentacao` das despesas — garantir que a
   compra vinda do Mercado com `origemMercado` **não** seja contada duas vezes ali.
+</details>
 
 ### P1 — Alto valor, exige um pouco mais de desenho
 
@@ -178,7 +188,9 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 1. ~~**C1** — commitar o rateio recorrente~~ — já commitado antes (04a5c06); working tree tinha a lista de oficina do Carro, commitada em 8b7a0b4.
 2. ~~**C2** — unificar as chaves de cartão e remover `cartao.html` / `fluxo-caixa-futuro.html`~~ ✅ 2026-08-30.
 3. ~~**C3** — travar a fatura para não contar em dobro nas despesas variáveis~~ ✅ 2026-08-30.
-4. **C4** — Mercado visível no Painel e nos Relatórios.
+4. ~~**C4** — Mercado visível no Painel e nos Relatórios~~ ✅ 2026-08-30.
+
+**P0 fechado.** Próximo: P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura, C8) ou os curtos C10/C11/C12.
 
 Curtos e independentes se sobrar tempo: **C10** (tags PWA no template), **C12** (cards na home), **C8** (competência em reserva/renda-extra).
 

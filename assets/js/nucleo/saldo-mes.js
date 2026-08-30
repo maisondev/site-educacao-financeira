@@ -229,6 +229,28 @@ function smLinhaDividas(r) {
       </details>`;
 }
 
+// Linha informativa: gasto de supermercado do mês vs. teto definido em
+// mercado.html. Não entra na conta do saldo (o valor já está nas despesas
+// variáveis) — é só um lembrete de quanto do teto já foi usado.
+function smLinhaMercado(competencia) {
+  const dados = Store.ler(Store.CHAVES.MERCADO, null);
+  if (!dados || !Array.isArray(dados.compras)) return '';
+  const teto = Number(dados.tetoMensal) || 0;
+  if (teto <= 0) return '';
+
+  const gasto = dados.compras
+    .filter(c => (c.data || '').slice(0, 7) === competencia)
+    .reduce((s, c) => s + (c.itens || []).reduce((si, i) => si + (Number(i.valor) || 0), 0), 0);
+  const uso = (gasto / teto) * 100;
+  const classe = uso >= 100 ? ' sm-negativo' : (uso >= 90 ? ' sm-alerta' : '');
+
+  return `
+      <div class="sm-linha sm-mercado${classe}">
+        <span class="sm-rotulo">Mercado (${uso.toFixed(0)}% do teto) — <a href="./mercado.html">detalhar</a></span>
+        <span class="sm-valor">${formatarMoedaBrasileira(gasto)} de ${formatarMoedaBrasileira(teto)}</span>
+      </div>`;
+}
+
 function smReservaAtual() {
   const reserva = Store.ler(Store.CHAVES.RESERVA, null);
   if (!reserva) return 0;
@@ -447,6 +469,7 @@ function renderizarSaldoDoMes() {
         <span class="sm-rotulo">Saldo do mês</span>
         <span class="sm-valor">${formatarMoedaBrasileira(r.saldo)}</span>
       </div>
+      ${smLinhaMercado(r.competencia)}
     </div>
     ${smBlocoPodeGastar(r)}
     ${smIndicadores(r)}

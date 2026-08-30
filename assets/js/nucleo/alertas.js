@@ -209,6 +209,35 @@ function altAlertasReserva() {
   )];
 }
 
+// Gasto de supermercado do mês corrente vs. teto definido em mercado.html.
+function altGastoMercado(competencia) {
+  const dados = Store.ler(Store.CHAVES.MERCADO, null);
+  if (!dados || !Array.isArray(dados.compras)) return null;
+  const teto = Number(dados.tetoMensal) || 0;
+  const gasto = dados.compras
+    .filter(c => (c.data || '').slice(0, 7) === competencia)
+    .reduce((s, c) => s + (c.itens || []).reduce((si, i) => si + (Number(i.valor) || 0), 0), 0);
+  return { teto, gasto };
+}
+
+function altAlertasMercado() {
+  const info = altGastoMercado(smCompetenciaAtual());
+  if (!info || info.teto <= 0) return [];
+
+  const uso = (info.gasto / info.teto) * 100;
+  if (uso < 90) return [];
+
+  return [altAlerta(
+    uso >= 100 ? 'critico' : 'atencao',
+    uso >= 100
+      ? `Mercado estourou o teto do mês (${uso.toFixed(0)}%)`
+      : `Mercado em ${uso.toFixed(0)}% do teto do mês`,
+    `${formatarMoedaBrasileira(info.gasto)} de ${formatarMoedaBrasileira(info.teto)}.`,
+    './mercado.html',
+    'Ver mercado'
+  )];
+}
+
 function altAlertasBackup() {
   const dias = typeof obterDiasDesdeUltimoBackup === 'function'
     ? obterDiasDesdeUltimoBackup()
@@ -260,6 +289,7 @@ function gerarAlertas() {
     altAlertasDespesasFixas(),
     altAlertasDividas(),
     altAlertasEnvelopes(),
+    altAlertasMercado(),
     altAlertasMetas(),
     altAlertasReserva(),
     altAlertasBackup()

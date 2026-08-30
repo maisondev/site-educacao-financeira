@@ -273,7 +273,7 @@ Acompanha a maior despesa variável da casa (supermercado) por categoria, com te
 
 ### Integração com Lançamento rápido (2026-08-29)
 
-O store do Mercado é isolado — nenhum outro módulo o lê. Para não digitar a mesma ida ao supermercado duas vezes, há vínculo bidirecional com as despesas variáveis (`Store.CHAVES.DESPESAS_VARIAVEIS`):
+O store do Mercado só é **escrito** por `mercado.js`. Em leitura, o Painel usa o teto + gasto do mês em dois lugares (sem duplicar valor, porque a compra já entra nas despesas variáveis pelo vínculo abaixo): `altAlertasMercado()` (`alertas.js`) dispara um alerta quando o gasto passa de 90% do teto, e `smLinhaMercado()` (`saldo-mes.js`) mostra a linha informativa "Mercado (X% do teto) — R$ gasto de R$ teto" no card de saldo. Para não digitar a mesma ida ao supermercado duas vezes, há vínculo bidirecional com as despesas variáveis (`Store.CHAVES.DESPESAS_VARIAVEIS`):
 
 **Mercado → Despesa Variável (checkbox no modal)**
 - Modal "Registrar compra" tem o checkbox `#chk-lancar-despesa` ("Lançar também nas despesas variáveis"), marcado por padrão em compras novas.
