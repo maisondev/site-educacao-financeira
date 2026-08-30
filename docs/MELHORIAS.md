@@ -135,11 +135,17 @@ enquanto `renda_mensal` e `despesas_fixas` estiverem vazios): 3 passos — (1) i
 (2) cadastre suas despesas fixas, (3) faça o primeiro lançamento rápido. Cada passo é um link
 direto e some quando cumprido. Guarda `onboarding_dispensado` no `localStorage`.
 
-#### C6. Busca global entre páginas (≈2h)
+#### C6. Busca global entre páginas ✅ FEITO 2026-08-30
 
-Com 50 páginas, achar "onde eu registro o IPVA" exige decorar o menu. Um `Ctrl+K` / campo no header
-que abre uma lista de páginas + âncoras do glossário (dados estáticos, sem índice remoto). Reaproveita
-a estrutura de `menu.js` como fonte da lista.
+Paleta de busca em `assets/js/nucleo/main.js` (IIFE `buscaGlobal`, roda em toda página que já
+carrega `main.js`). Índice montado de `MENU_ITEMS` (navegacao.js) + uma lista `ATALHOS` com
+sinônimos ("IPVA", "gasolina", "fatura", "contracheque"...). Abre com **Ctrl/⌘+K**, com **`/`**
+(quando o foco não está num campo) ou pelo botão 🔎 no topo (ao lado do sino). Filtro sem acento,
+por tokens; ↑↓ navega, Enter abre (`resolverHref` resolve o caminho relativo — testado da raiz e
+de `temas/<tema>/`), Esc / clique no fundo fecha. Sem índice remoto.
+
+Fora do escopo entregue: termos do glossário (ficam em `glossario.js`, não carregado nas outras
+páginas) — a paleta tem o atalho "Glossário" e a página tem busca própria.
 
 #### C7. `analise-fatura.js` para de manter taxonomia própria (≈1h30) — PARCIAL 2026-08-30
 
@@ -222,7 +228,7 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 3. ~~**C3** — travar a fatura para não contar em dobro nas despesas variáveis~~ ✅ 2026-08-30.
 4. ~~**C4** — Mercado visível no Painel e nos Relatórios~~ ✅ 2026-08-30.
 
-**P0 fechado + C8, C9, C10, C11, C12; C7 parcial.** Resta P1 (C5 onboarding, C6 busca global) e o resto do C7.
+**P0 fechado + C6, C8, C9, C10, C11, C12; C7 parcial.** Resta o C5 (onboarding) e o resto do C7.
 
 ---
 

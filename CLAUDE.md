@@ -382,6 +382,15 @@ Renderizado na seção `#container-backup` do `dashboard.html` (via `renderizarS
 
 **Backup automático diário** — só aparece em navegadores com File System Access API (`window.showDirectoryPicker`, Chrome/Edge). O usuário escolhe uma pasta uma vez (ideal: dentro do Google Drive); o `FileSystemDirectoryHandle` é persistido no **IndexedDB** (`financas-backup` / store `handles` / chave `pasta`). A cada abertura do dashboard, `inicializarBackupAutomatico()` consulta a permissão (sem prompt) e, se `backup_auto_ultima_data` ≠ hoje, grava `financas-backup-AAAA-MM-DD.json` na pasta silenciosamente (um arquivo por dia, sobrescreve o do mesmo dia). Se o navegador pedir para reconfirmar o acesso, mostra botão "Reautorizar pasta". "Desativar" limpa o handle do IndexedDB.
 
+## Busca global (Ctrl+K)
+
+`assets/js/nucleo/main.js` → IIFE `buscaGlobal`: paleta de navegação rápida presente em toda
+página que carrega `main.js`. Índice = `MENU_ITEMS` (navegacao.js) + lista `ATALHOS` (sinônimos
+como "IPVA", "gasolina", "fatura", "contracheque"). Abre com **Ctrl/⌘+K**, com **`/`** fora de
+campos, ou pelo botão 🔎 no `<nav>` (inserido antes de `.notificacoes-container`). Filtro sem
+acento por tokens; ↑↓ + Enter navega (`resolverHref` resolve o caminho relativo); Esc/fundo fecha.
+Para um atalho novo, adicionar `{ label, href, tags }` em `ATALHOS`.
+
 ## Segurança e Privacidade
 
 - **localStorage**: tudo fica no navegador do usuário. Nenhum dado é enviado para servidor.
