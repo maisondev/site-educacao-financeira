@@ -22,23 +22,25 @@ let veiculoModoNovo = false;
 // prioridade: 'essencial' (segurança / risco de dano grave ao motor),
 //             'importante' (desempenho, consumo e confiabilidade),
 //             'rotina' (conforto). A lista já vem ordenada da mais essencial para a menos.
+// custoMin / custoMax: faixa de referência em R$ (peça de linha + mão de obra,
+//   oficina independente, carro popular flex — 2025/2026). Só um chute pra orçar.
 const PLANO_PADRAO = [
-  { id: 'correia',       nome: 'Correia dentada + tensor',       km: 50000, meses: 60, prioridade: 'essencial' },
-  { id: 'oleo',          nome: 'Óleo do motor + filtro de óleo', km: 10000, meses: 12, prioridade: 'essencial' },
-  { id: 'pastilhas',     nome: 'Pastilhas de freio (dianteiras)', km: 30000, meses: 36, prioridade: 'essencial' },
-  { id: 'fluido-freio',  nome: 'Fluido de freio',                km: 20000, meses: 24, prioridade: 'essencial' },
-  { id: 'pneus',         nome: 'Troca de pneus',                 km: 40000, meses: 60, prioridade: 'essencial' },
-  { id: 'arrefecimento', nome: 'Líquido de arrefecimento (radiador)', km: 40000, meses: 24, prioridade: 'essencial' },
-  { id: 'amortecedores', nome: 'Amortecedores / suspensão',      km: 60000, meses: 60, prioridade: 'essencial' },
-  { id: 'filtro-comb',   nome: 'Filtro de combustível',          km: 20000, meses: 24, prioridade: 'essencial' },
-  { id: 'velas',         nome: 'Velas de ignição',               km: 40000, meses: 48, prioridade: 'importante' },
-  { id: 'filtro-ar',     nome: 'Filtro de ar do motor',          km: 15000, meses: 12, prioridade: 'importante' },
-  { id: 'rodizio-pneus', nome: 'Rodízio de pneus',               km: 10000, meses: 12, prioridade: 'importante' },
-  { id: 'alinhamento',   nome: 'Alinhamento e balanceamento',    km: 10000, meses: 12, prioridade: 'importante' },
-  { id: 'bateria',       nome: 'Bateria',                        km: 0,     meses: 36, prioridade: 'importante' },
-  { id: 'cambio',        nome: 'Óleo do câmbio automático',      km: 60000, meses: 48, prioridade: 'importante' },
-  { id: 'revisao',       nome: 'Revisão geral',                  km: 20000, meses: 12, prioridade: 'importante' },
-  { id: 'filtro-cabine', nome: 'Filtro de cabine (ar-condicionado)', km: 15000, meses: 12, prioridade: 'rotina' }
+  { id: 'correia',       nome: 'Correia dentada + tensor',       km: 50000, meses: 60, prioridade: 'essencial',  custoMin: 600,  custoMax: 1500 },
+  { id: 'oleo',          nome: 'Óleo do motor + filtro de óleo', km: 10000, meses: 12, prioridade: 'essencial',  custoMin: 250,  custoMax: 450 },
+  { id: 'pastilhas',     nome: 'Pastilhas de freio (dianteiras)', km: 30000, meses: 36, prioridade: 'essencial',  custoMin: 180,  custoMax: 400 },
+  { id: 'fluido-freio',  nome: 'Fluido de freio',                km: 20000, meses: 24, prioridade: 'essencial',  custoMin: 120,  custoMax: 250 },
+  { id: 'pneus',         nome: 'Troca de pneus',                 km: 40000, meses: 60, prioridade: 'essencial',  custoMin: 1200, custoMax: 2400 },
+  { id: 'arrefecimento', nome: 'Líquido de arrefecimento (radiador)', km: 40000, meses: 24, prioridade: 'essencial',  custoMin: 150,  custoMax: 350 },
+  { id: 'amortecedores', nome: 'Amortecedores / suspensão',      km: 60000, meses: 60, prioridade: 'essencial',  custoMin: 800,  custoMax: 2000 },
+  { id: 'filtro-comb',   nome: 'Filtro de combustível',          km: 20000, meses: 24, prioridade: 'essencial',  custoMin: 80,   custoMax: 220 },
+  { id: 'velas',         nome: 'Velas de ignição',               km: 40000, meses: 48, prioridade: 'importante', custoMin: 150,  custoMax: 400 },
+  { id: 'filtro-ar',     nome: 'Filtro de ar do motor',          km: 15000, meses: 12, prioridade: 'importante', custoMin: 50,   custoMax: 120 },
+  { id: 'rodizio-pneus', nome: 'Rodízio de pneus',               km: 10000, meses: 12, prioridade: 'importante', custoMin: 40,   custoMax: 100 },
+  { id: 'alinhamento',   nome: 'Alinhamento e balanceamento',    km: 10000, meses: 12, prioridade: 'importante', custoMin: 100,  custoMax: 200 },
+  { id: 'bateria',       nome: 'Bateria',                        km: 0,     meses: 36, prioridade: 'importante', custoMin: 400,  custoMax: 800 },
+  { id: 'cambio',        nome: 'Óleo do câmbio automático',      km: 60000, meses: 48, prioridade: 'importante', custoMin: 400,  custoMax: 900 },
+  { id: 'revisao',       nome: 'Revisão geral',                  km: 20000, meses: 12, prioridade: 'importante', custoMin: 300,  custoMax: 800 },
+  { id: 'filtro-cabine', nome: 'Filtro de cabine (ar-condicionado)', km: 15000, meses: 12, prioridade: 'rotina',    custoMin: 60,   custoMax: 150 }
 ];
 
 // Metadados de prioridade: ordem (menor = mais essencial) e rótulo do badge.
@@ -118,11 +120,14 @@ function obterDadosCarro() {
   d.manutencoes = Array.isArray(d.manutencoes) ? d.manutencoes : [];
   d.abastecimentos = Array.isArray(d.abastecimentos) ? d.abastecimentos : [];
   d.fundos = (d.fundos && typeof d.fundos === 'object') ? d.fundos : {};
+  // listaOficina: { <veiculoId>: [ idDoItemDoPlano, ... ] } — serviços marcados para a próxima visita
+  d.listaOficina = (d.listaOficina && typeof d.listaOficina === 'object') ? d.listaOficina : {};
   if (!d.veiculoAtivoId || !d.veiculos.some(v => v.id === d.veiculoAtivoId)) {
     d.veiculoAtivoId = d.veiculos.length ? d.veiculos[0].id : null;
   }
   d.veiculos.forEach(v => {
     if (!d.fundos[v.id]) d.fundos[v.id] = { aporteMensal: 0, saldoInicial: 0, movimentos: [] };
+    if (!Array.isArray(d.listaOficina[v.id])) d.listaOficina[v.id] = [];
   });
 
   return d;
@@ -144,6 +149,9 @@ function abastecimentosAtivos(d) {
 }
 function fundoAtivo(d) {
   return d.fundos[d.veiculoAtivoId] || { aporteMensal: 0, saldoInicial: 0, movimentos: [] };
+}
+function listaOficinaAtiva(d) {
+  return Array.isArray(d.listaOficina[d.veiculoAtivoId]) ? d.listaOficina[d.veiculoAtivoId] : [];
 }
 
 // ---------------------------------------------------------------------------
@@ -750,6 +758,14 @@ function renderResumo(d) {
   ` : '<p class="vazio-msg">Registre manutenções e abastecimentos com o km para calcular o custo por km.</p>';
 }
 
+// Intervalo do item em km equivalentes, para ordenar. Itens sem km (ex.: bateria,
+// medida só em meses) usam uma estimativa de 12.000 km/ano.
+function intervaloEmKm(item) {
+  if (item.km > 0) return item.km;
+  if (item.meses > 0) return item.meses / 12 * 12000;
+  return Infinity;
+}
+
 function ordenarLinhasPlano(linhas) {
   const ordem = planoOrdenar;
   const arr = linhas.map((l, i) => ({ l, i })); // i preserva a ordem original (por prioridade) como desempate
@@ -761,8 +777,8 @@ function ordenarLinhasPlano(linhas) {
       const d = a.l.item.nome.localeCompare(b.l.item.nome, 'pt-BR');
       if (d) return d;
     } else if (ordem === 'intervalo') {
-      const ka = a.l.item.km || Infinity, kb = b.l.item.km || Infinity;
-      if (ka !== kb) return ka - kb;
+      const d = intervaloEmKm(a.l.item) - intervaloEmKm(b.l.item);
+      if (d) return d;
     }
     return a.i - b.i;
   });
@@ -775,21 +791,30 @@ function filtrarLinhasPlano(linhas) {
   return linhas;
 }
 
+function faixaPreco(item) {
+  if (!item.custoMin && !item.custoMax) return '—';
+  if (item.custoMin === item.custoMax) return moeda(item.custoMin);
+  return moeda(item.custoMin) + ' – ' + moeda(item.custoMax);
+}
+
 function renderPlano(d) {
   const linhas = statusPlano(manutencoesAtivas(d), veiculoAtivo(d));
   const tbody = document.getElementById('plano-body');
   const visiveis = ordenarLinhasPlano(filtrarLinhasPlano(linhas));
+  const selecionados = listaOficinaAtiva(d);
 
   if (visiveis.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="vazio-msg">Nenhum item para este filtro.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="vazio-msg">Nenhum item para este filtro.</td></tr>';
   } else {
     tbody.innerHTML = visiveis.map(l => {
       const meta = PRIORIDADE_META[l.item.prioridade];
       const badge = meta
         ? ` <span class="tag-prio tag-prio-${l.item.prioridade}">${meta.rotulo}</span>`
         : '';
+      const marcado = selecionados.indexOf(l.item.id) !== -1 ? ' checked' : '';
       return `
     <tr>
+      <td class="col-check"><input type="checkbox" aria-label="Levar à oficina" onchange="alternarServicoOficina('${l.item.id}')"${marcado}></td>
       <td>${escaparHtml(l.item.nome)}${badge}</td>
       <td class="col-num">${l.item.km > 0 ? num(l.item.km, 0) + ' km' : '—'}${l.item.meses ? ' / ' + l.item.meses + ' m' : ''}</td>
       <td>${l.ultima || '—'}</td>
@@ -808,6 +833,103 @@ function renderPlano(d) {
   } else {
     box.hidden = true;
   }
+
+  renderListaOficina(d);
+}
+
+// ---------------------------------------------------------------------------
+// Lista para a oficina — serviços marcados para a próxima visita
+// ---------------------------------------------------------------------------
+function alternarServicoOficina(itemId) {
+  const d = obterDadosCarro();
+  if (!d.veiculoAtivoId) return;
+  const lista = d.listaOficina[d.veiculoAtivoId] || (d.listaOficina[d.veiculoAtivoId] = []);
+  const i = lista.indexOf(itemId);
+  if (i === -1) lista.push(itemId); else lista.splice(i, 1);
+  salvarDadosCarro(d);
+  renderPlano(d);
+}
+
+function limparListaOficina() {
+  const d = obterDadosCarro();
+  if (!d.veiculoAtivoId) return;
+  d.listaOficina[d.veiculoAtivoId] = [];
+  salvarDadosCarro(d);
+  renderPlano(d);
+}
+
+// Itens marcados, na ordem do PLANO_PADRAO (mais essencial primeiro)
+function servicosOficinaSelecionados(d) {
+  const ids = listaOficinaAtiva(d);
+  return PLANO_PADRAO.filter(p => ids.indexOf(p.id) !== -1);
+}
+
+function textoListaOficina(d) {
+  const itens = servicosOficinaSelecionados(d);
+  const v = veiculoAtivo(d);
+  const linhas = [];
+  linhas.push('🔧 *Serviços — plano preventivo*');
+  if (v && (v.nome || v.placa)) {
+    linhas.push([v.nome, v.placa].filter(Boolean).join(' · '));
+  }
+  if (v && v.kmAtual) linhas.push('Km atual: ' + num(v.kmAtual, 0));
+  linhas.push('');
+  let somaMin = 0, somaMax = 0;
+  itens.forEach(p => {
+    somaMin += p.custoMin || 0;
+    somaMax += p.custoMax || 0;
+    linhas.push('• ' + p.nome);
+    linhas.push('   ref.: ' + faixaPreco(p));
+  });
+  linhas.push('');
+  linhas.push('*Total estimado: ' + moeda(somaMin) + ' – ' + moeda(somaMax) + '*');
+  linhas.push('_Faixa de referência (peça de linha + mão de obra). Confirmar no orçamento._');
+  return linhas.join('\n');
+}
+
+function copiarListaOficina(botao) {
+  const d = obterDadosCarro();
+  if (servicosOficinaSelecionados(d).length === 0) return;
+  const texto = textoListaOficina(d);
+  const ok = () => {
+    if (!botao) return;
+    const orig = botao.textContent;
+    botao.textContent = 'Copiado!';
+    setTimeout(() => { botao.textContent = orig; }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(ok).catch(() => window.prompt('Copie a lista:', texto));
+  } else {
+    window.prompt('Copie a lista:', texto);
+  }
+}
+
+function renderListaOficina(d) {
+  const box = document.getElementById('lista-oficina');
+  if (!box) return;
+  const itens = servicosOficinaSelecionados(d);
+
+  if (itens.length === 0) {
+    box.innerHTML = '<p class="lista-oficina-vazia">Marque os serviços na tabela acima para montar a lista que você vai levar à oficina.</p>';
+    return;
+  }
+
+  let somaMin = 0, somaMax = 0;
+  const linhas = itens.map(p => {
+    somaMin += p.custoMin || 0;
+    somaMax += p.custoMax || 0;
+    return `<li><span>${escaparHtml(p.nome)}</span><span class="lo-preco">${faixaPreco(p)}</span></li>`;
+  }).join('');
+
+  box.innerHTML = `
+    <h3>Vou fazer na oficina (${itens.length})</h3>
+    <ul class="lista-oficina-itens">${linhas}</ul>
+    <p class="lista-oficina-total"><span>Total estimado</span><strong>${moeda(somaMin)} – ${moeda(somaMax)}</strong></p>
+    <p class="lista-oficina-nota">Faixa de referência (peça de linha + mão de obra, oficina independente). Peça 2–3 orçamentos.</p>
+    <div class="acoes-form">
+      <button class="btn btn-primary" onclick="copiarListaOficina(this)">Copiar lista</button>
+      <button class="btn-link-remover" onclick="limparListaOficina()">Limpar</button>
+    </div>`;
 }
 
 function renderListaManutencoes(d) {
