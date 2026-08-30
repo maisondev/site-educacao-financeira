@@ -24,6 +24,7 @@ const Store = {
     BALANCO: 'balanco_patrimonial',
     RESERVA: 'reserva_emergencia',
     CARTOES: 'cartoes',
+    GRUPOS_TITULARES: 'grupos_titulares',
     CARTOES_FINANCEIROS: 'cartoes_financeiros',
     CARTAO_CREDITO: 'cartao_credito',
     CARTOES_ADICIONAIS: 'cartoes_adicionais_dados',

@@ -67,6 +67,61 @@ function rotuloTitular(chave) {
   return chave.charAt(0).toUpperCase() + chave.slice(1);
 }
 
+// --- Grupos de titulares (ex.: casal Marden + Raissa recebe um total só) ---
+// Config: [{ nome: 'Marden e Raissa', membros: ['marden', 'raissa'] }]
+// `membros` são primeiros nomes normalizados (primeiroNomeNormalizado).
+function obterGruposTitulares() {
+  const arr = Store.ler(Store.CHAVES.GRUPOS_TITULARES, []);
+  return Array.isArray(arr) ? arr : [];
+}
+
+function salvarGruposTitulares(arr) {
+  Store.gravar(Store.CHAVES.GRUPOS_TITULARES, Array.isArray(arr) ? arr : []);
+}
+
+// Junta os grupos por titular (chaveados por primeiro nome) conforme a config
+// de casais/grupos. Recebe e devolve uma lista de { chave, label, total, itens }.
+function mesclarGruposTitulares(lista) {
+  const config = obterGruposTitulares().filter(g => g && g.nome && Array.isArray(g.membros) && g.membros.length);
+  if (!config.length) return lista;
+
+  const porChave = {};
+  lista.forEach(g => { porChave[g.chave] = g; });
+  const consumidos = new Set();
+  const resultado = [];
+
+  config.forEach(cfg => {
+    const membros = cfg.membros.filter(m => porChave[m] && !consumidos.has(m));
+    if (!membros.length) return;
+    const combinado = { chave: 'grupo:' + cfg.nome, label: cfg.nome, total: 0, itens: [], grupo: true };
+    membros.forEach(m => {
+      consumidos.add(m);
+      combinado.total += porChave[m].total;
+      porChave[m].itens.forEach(it => combinado.itens.push(it));
+    });
+    resultado.push(combinado);
+  });
+
+  lista.forEach(g => { if (!consumidos.has(g.chave)) resultado.push(g); });
+  return resultado;
+}
+
+// Primeiros nomes que aparecem hoje nos cartões (titular, rateio do mês,
+// rateio recorrente) — alimenta o seletor do modal de grupos.
+function titularesDetectados() {
+  const set = new Map();
+  const add = (nome) => {
+    const chave = primeiroNomeNormalizado((nome || '').trim());
+    if (chave && chave !== 'sem-titular' && !set.has(chave)) set.set(chave, rotuloTitular(chave));
+  };
+  obterCartoes().forEach(c => {
+    add(c.titular);
+    if (c.rateioRecorrente) add(c.rateioRecorrente.titular);
+    (c.datasPorMes || []).forEach(d => (d.rateio || []).forEach(r => add(r.titular)));
+  });
+  return [...set.entries()].map(([chave, label]) => ({ chave, label })).sort((a, b) => a.label.localeCompare(b.label));
+}
+
 // Rateio que vale para um mês: o do próprio mês tem prioridade; senão o
 // rateio recorrente do cartão (a partir do mês `desde`). Valor limitado ao saldo.
 function rateioEfetivo(cartao, mes, entrada) {
@@ -780,7 +835,7 @@ function atualizarVisualizacao() {
   const addAoGrupo = (chave, valor, item) => {
     if (valor <= 0) return;
     if (!gruposTitular[chave]) {
-      gruposTitular[chave] = { label: rotuloTitular(chave), total: 0, itens: [] };
+      gruposTitular[chave] = { chave, label: rotuloTitular(chave), total: 0, itens: [] };
     }
     gruposTitular[chave].total += valor;
     gruposTitular[chave].itens.push(item);
@@ -862,7 +917,7 @@ function atualizarVisualizacao() {
     document.getElementById('total-saldos-abertos').textContent = formatarMoedaBrasileira(totalSaldosAbertos);
 
     const titularDiv = document.getElementById('total-por-titular');
-    const grupos = Object.values(gruposTitular).sort((a, b) => b.total - a.total);
+    const grupos = mesclarGruposTitulares(Object.values(gruposTitular)).sort((a, b) => b.total - a.total);
     grupos.forEach(g => g.itens.sort((a, b) => b.valor - a.valor));
     resumosPorTitular = grupos;
     const mostrarPorTitular = grupos.length > 1 || (grupos.length === 1 && grupos[0].itens.length > 1);
@@ -1250,6 +1305,64 @@ function marcarFaturaPaga(cartaoId, mes) {
   atualizarVisualizacao();
 }
 
+// --- Modal: agrupar titulares (casais / grupos que recebem um total só) ---
+function abrirModalGruposTitulares() {
+  renderModalGruposTitulares();
+  document.getElementById('modal-grupos-titulares').removeAttribute('hidden');
+}
+
+function fecharModalGruposTitulares() {
+  document.getElementById('modal-grupos-titulares').setAttribute('hidden', '');
+}
+
+function renderModalGruposTitulares() {
+  const grupos = obterGruposTitulares();
+  const detectados = titularesDetectados();
+  const emGrupo = new Set(grupos.flatMap(g => g.membros || []));
+
+  const listaEl = document.getElementById('lista-grupos-titulares');
+  listaEl.innerHTML = grupos.length
+    ? grupos.map((g, i) => `
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--cor-borda);">
+        <span><strong>${escaparTextoCartao(g.nome)}</strong> <span style="color: var(--cor-texto-light); font-size: 12px;">= ${(g.membros || []).map(m => escaparTextoCartao(rotuloTitular(m))).join(' + ')}</span></span>
+        <button type="button" class="btn btn-fechar" style="padding: 2px 8px; font-size: 12px;" onclick="removerGrupoTitular(${i})">Remover</button>
+      </div>`).join('')
+    : '<p style="color: var(--cor-texto-light); font-size: 13px; margin: 0;">Nenhum grupo criado ainda.</p>';
+
+  const opcoesEl = document.getElementById('novos-membros-grupo');
+  const disponiveis = detectados.filter(d => !emGrupo.has(d.chave));
+  opcoesEl.innerHTML = disponiveis.length
+    ? disponiveis.map(d => `
+      <label style="display: flex; align-items: center; gap: 6px; font-weight: normal; font-size: 13px;">
+        <input type="checkbox" value="${d.chave}" style="width: 15px; height: 15px;"> ${escaparTextoCartao(d.label)}
+      </label>`).join('')
+    : '<p style="color: var(--cor-texto-light); font-size: 13px; margin: 0;">Todos os titulares já estão em algum grupo.</p>';
+}
+
+function adicionarGrupoTitular() {
+  const nomeEl = document.getElementById('input-nome-grupo');
+  const nome = nomeEl.value.trim();
+  const membros = [...document.querySelectorAll('#novos-membros-grupo input:checked')].map(i => i.value);
+
+  if (!nome) { alert('Dê um nome ao grupo (ex.: "Marden e Raissa").'); return; }
+  if (membros.length < 2) { alert('Selecione ao menos dois titulares para agrupar.'); return; }
+
+  const grupos = obterGruposTitulares();
+  grupos.push({ nome, membros });
+  salvarGruposTitulares(grupos);
+  nomeEl.value = '';
+  renderModalGruposTitulares();
+  atualizarVisualizacao();
+}
+
+function removerGrupoTitular(indice) {
+  const grupos = obterGruposTitulares();
+  grupos.splice(indice, 1);
+  salvarGruposTitulares(grupos);
+  renderModalGruposTitulares();
+  atualizarVisualizacao();
+}
+
 // Fechar modais ao clicar fora
 document.addEventListener('click', function(event) {
   if (event.target === document.getElementById('modal-cartao')) {
@@ -1258,12 +1371,17 @@ document.addEventListener('click', function(event) {
   if (event.target === document.getElementById('modal-datas-mes')) {
     fecharModalDatasMes();
   }
+  if (event.target === document.getElementById('modal-grupos-titulares')) {
+    fecharModalGruposTitulares();
+  }
 });
 
 // Fechar modais com a tecla Esc
 document.addEventListener('keydown', function(event) {
   if (event.key !== 'Escape') return;
-  if (!document.getElementById('modal-datas-mes').hasAttribute('hidden')) {
+  if (!document.getElementById('modal-grupos-titulares').hasAttribute('hidden')) {
+    fecharModalGruposTitulares();
+  } else if (!document.getElementById('modal-datas-mes').hasAttribute('hidden')) {
     fecharModalDatasMes();
   } else if (!document.getElementById('modal-cartao').hasAttribute('hidden')) {
     fecharModalCartao();

@@ -126,6 +126,34 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
+    .card-cartao-avisos {
+      margin: 4px 0 var(--espacamento-sm);
+    }
+
+    .card-cartao-aviso {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #1d1d1d;
+      text-shadow: none;
+    }
+
+    .card-cartao-aviso-hoje {
+      background: #d92d20;
+      color: #ffffff;
+      animation: card-cartao-pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes card-cartao-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.65; }
+    }
+
     .card-cartao-numero {
       font-size: 22px;
       font-weight: bold;
@@ -450,6 +478,7 @@
         <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: var(--cor-texto-light);">Total devido</p>
         <p style="margin: 0; font-size: 20px; font-weight: bold; color: var(--cor-primaria);" id="total-saldos-abertos">R$ 0,00</p>
         <div id="total-por-titular" style="margin-top: var(--espacamento-sm); display: grid; gap: 4px;"></div>
+        <button type="button" onclick="abrirModalGruposTitulares()" style="margin-top: 8px; font-size: 12px; padding: 3px 10px; border: 1px solid var(--cor-borda); border-radius: 4px; background: #fff; color: var(--cor-secundaria); cursor: pointer;">Agrupar titulares (casal)</button>
       </div>
     </div>
 
@@ -642,6 +671,36 @@
       <div class="modal-footer">
         <button class="btn btn-primary" onclick="salvarDatasMes()">Salvar</button>
         <button class="btn btn-fechar" onclick="fecharModalDatasMes()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: agrupar titulares (casais / grupos que recebem um total só) -->
+  <div id="modal-grupos-titulares" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="titulo-grupos-titulares">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="titulo-grupos-titulares">Agrupar titulares</h2>
+        <button class="btn-fechar" onclick="fecharModalGruposTitulares()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin: 0 0 var(--espacamento-md) 0; font-size: 13px; color: var(--cor-texto-light);">
+          Junte dois ou mais titulares num total só — ex.: um casal (Marden + Raissa) a quem você manda o somatório completo. Não muda o total geral, só a quebra "Total devido por titular".
+        </p>
+
+        <div id="lista-grupos-titulares" style="margin-bottom: var(--espacamento-lg);"></div>
+
+        <div class="form-group">
+          <label for="input-nome-grupo">Nome do grupo</label>
+          <input type="text" id="input-nome-grupo" placeholder="Ex.: Marden e Raissa">
+        </div>
+        <div class="form-group">
+          <label>Titulares no grupo</label>
+          <div id="novos-membros-grupo" style="display: grid; gap: 6px; margin-top: 4px;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="adicionarGrupoTitular()">Criar grupo</button>
+        <button class="btn btn-fechar" onclick="fecharModalGruposTitulares()">Fechar</button>
       </div>
     </div>
   </div>
