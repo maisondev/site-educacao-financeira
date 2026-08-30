@@ -196,6 +196,34 @@
       }
     });
 
+    teste('competência da fatura vem do VENCIMENTO, não do fechamento', () => {
+      if (typeof smCompetenciaVencimentoFatura !== 'function') {
+        throw new Error('smCompetenciaVencimentoFatura indisponível');
+      }
+      // Fecha 29/08, vence 05/09 → a fatura é de Setembro, com o mês guardado
+      // no padrão antigo (fechamento) ou no novo (vencimento): mesmo resultado.
+      assertEq(smCompetenciaVencimentoFatura({ mes: '2026-08', vencimento: '05/09' }), '2026-09', 'mês antigo = fechamento');
+      assertEq(smCompetenciaVencimentoFatura({ mes: '2026-09', vencimento: '05/09' }), '2026-09', 'mês novo = vencimento');
+      // Virada de ano: fecha em dezembro, vence em janeiro.
+      assertEq(smCompetenciaVencimentoFatura({ mes: '2026-12', vencimento: '10/01' }), '2027-01', 'virada de ano');
+      // Sem mês no vencimento: usa o próprio mês da fatura.
+      assertEq(smCompetenciaVencimentoFatura({ mes: '2026-09', vencimento: '05' }), '2026-09', 'vencimento só com o dia');
+    });
+
+    teste('smFaturasDoMes conta a fatura no mês do vencimento', () => {
+      if (typeof smFaturasDoMes !== 'function') throw new Error('smFaturasDoMes indisponível');
+      const snap = snapshot([Store.CHAVES.CARTOES]);
+      try {
+        Store.gravar(Store.CHAVES.CARTOES, [{
+          nome: 'Teste', datasPorMes: [{ mes: '2026-08', fechamento: '29/08', vencimento: '05/09', saldo: 1000 }]
+        }]);
+        assertEq(smFaturasDoMes('2026-08'), 0, 'nada no mês do fechamento');
+        assertEq(smFaturasDoMes('2026-09'), 1000, 'valor inteiro no mês do vencimento');
+      } finally {
+        restaurar(snap);
+      }
+    });
+
     teste('formatação BRL: ida e volta preserva o valor', () => {
       if (typeof formatarMoedaBrasileira !== 'function' || typeof parseValorBrasileiro !== 'function') {
         throw new Error('funções de formatacao.js indisponíveis');

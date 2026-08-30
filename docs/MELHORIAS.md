@@ -171,12 +171,27 @@ do Mercado não duplicando ao editar a mesma compra.
 Sobra de N10: só `index.html` tem `<link rel="manifest">` + `theme-color` no HTML; as demais
 dependem da injeção via `main.js`. Colar as tags no template para as próximas páginas já nascerem completas.
 
-#### C11. Consistência da convenção "competência = mês de vencimento" (≈45min)
+#### C11. Consistência da convenção "competência = mês de vencimento" ✅ FEITO 2026-08-30
 
-A convenção foi decidida em 30/08 e Itaú/Bradesco foram migrados. Varrer `cartoes.js`,
-`analise-fatura.js`, `parcelas-cartao.js` e `saldo-mes.js` conferindo que todo lugar que deriva a
-competência de uma fatura usa a data de **vencimento**, não a de fechamento. Documentar o resultado
-em um teste de fumaça (fatura fecha 29/08, vence 05/09 → `2026-09`).
+**Varredura** de `cartoes.js`, `analise-fatura.js`, `parcelas-cartao.html` (= `fluxo-caixa-futuro.js`
++ `saldo-mes.js`) e `saldo-mes.js` — nenhum ponto deriva a competência da fatura do **fechamento**:
+
+- `analise-fatura.js`: `competencia` sai do regex `Vencimento …(DD)/(MM)/(YYYY)` (`afParsearFatura`),
+  com fallback para o mês atual e campo `#af-comp` editável.
+- `saldo-mes.js`: `smCompetenciaVencimentoFatura(fatura)` calcula o mês de vencimento a partir de
+  `fatura.mes` + `fatura.vencimento` (dia ou dia/mês), tratando virada de ano; `smFaturasDoMes`
+  filtra por ele. `parcelas-cartao` usa esse mesmo caminho via `calcularSaldoDoMes`.
+- `cartoes.js`: `datasPorMes[].mes` é opaco (vem do manifesto / do seletor "Gerenciar datas por
+  mês"); `sincronizarFaturasExistentes` e `registrarDataPorMes` montam a `data` da despesa a partir
+  do dia/mês de **vencimento** com virada de ano, e passam `fatura.mes` como `competenciaFatura`.
+
+**Ressalva anotada:** em `adicionarDespesaDeCartao`, `despesa.competencia` vem da data de
+vencimento calculada e `origemFatura` de `fatura.mes` — iguais com dados no padrão novo; podem
+divergir só em registro legado (Itaú/Bradesco já migrados). Não vale mexer agora.
+
+**Teste de fumaça** em `verificacao.html`: `smCompetenciaVencimentoFatura` para fatura que fecha
+29/08 e vence 05/09 → `2026-09` (nos dois padrões de `mes`), virada de ano `2026-12`+`10/01` →
+`2027-01`; e `smFaturasDoMes` conta o saldo em `2026-09`, zero em `2026-08`.
 
 #### C12. Home: card do Mercado e do Carro-garagem no grupo certo ✅ FEITO 2026-08-30 — os dois já têm card em `index.html`; texto do Carro atualizado para citar garagem, lista da oficina e paridade.
 
@@ -192,7 +207,7 @@ Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos
 3. ~~**C3** — travar a fatura para não contar em dobro nas despesas variáveis~~ ✅ 2026-08-30.
 4. ~~**C4** — Mercado visível no Painel e nos Relatórios~~ ✅ 2026-08-30.
 
-**P0 fechado + C8, C10, C12.** Próximo: P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura) ou P2 (C9 testes, C11 varredura da convenção de competência).
+**P0 fechado + C8, C10, C11, C12.** Próximo: P1 (C5 onboarding, C6 busca global, C7 taxonomia da análise de fatura) ou P2 (C9 testes).
 
 ---
 
