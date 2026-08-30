@@ -754,6 +754,7 @@
   </footer>
 
   <script src="./assets/js/nucleo/storage.js"></script>
+  <script src="./assets/js/nucleo/competencia.js"></script>
   <script src="./assets/js/nucleo/icones.js"></script>
   <script src="./assets/js/nucleo/navegacao.js"></script>
   <script src="./assets/js/nucleo/main.js"></script>
@@ -764,6 +765,7 @@
   <script src="./assets/js/paginas/reserva-emergencia.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      if (typeof migrarCompetencias === 'function') migrarCompetencias();
       configurarTodosCamposMoeda();
     });
   </script>

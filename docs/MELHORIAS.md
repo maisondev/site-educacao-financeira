@@ -148,12 +148,12 @@ paralelo ao `CAD_CATEGORIAS_PADRAO`. O de/para `AF_PARA_CATEGORIA_DV` é grossei
 coisa em "outro". Fazer `afCategorizar` sugerir direto as categorias de `Cadastros.categorias()`
 e alimentar `regras_categorizacao` (que N2 já criou) como memória única.
 
-#### C8. Fechar mês também oferece backup + competência onde falta (≈1h)
+#### C8. Fechar mês também oferece backup + competência onde falta (≈1h) — PARCIAL 2026-08-30
 
 - A ação "Fechar mês" (`competencia.js`) arquiva o retrato mas não lembra do backup. Ao fechar,
-  oferecer "exportar backup agora" (reusa `backup.js`).
-- `reserva-emergencia.html` e `renda-extra.html` ainda não carregam `competencia.js` (sobra de N8):
-  a migração desses só roda de carona quando o usuário abre outra página. Adicionar o `<script>`.
+  oferecer "exportar backup agora" (reusa `backup.js`). ⬜ pendente.
+- ✅ `reserva-emergencia.html` e `renda-extra.html` agora carregam `competencia.js` e chamam
+  `migrarCompetencias()` no `DOMContentLoaded`.
 
 ### P2 — Melhoram a rotina / reduzem risco
 
@@ -164,7 +164,7 @@ Cobrir: soma do rateio de cartão limitada ao saldo (`rateioEfetivo` + fator pro
 `meses[AAAA-MM]` (migração idempotente do `pagoEm`/`provisionada` antigos), e `sincronizarDespesaVariavel`
 do Mercado não duplicando ao editar a mesma compra.
 
-#### C10. Tags de PWA no `TEMPLATE_PAGINA.html` (≈15min)
+#### C10. Tags de PWA no `TEMPLATE_PAGINA.html` ✅ FEITO 2026-08-30 — `<link rel="manifest">` + `theme-color` no `<head>` do template.
 
 Sobra de N10: só `index.html` tem `<link rel="manifest">` + `theme-color` no HTML; as demais
 dependem da injeção via `main.js`. Colar as tags no template para as próximas páginas já nascerem completas.
@@ -176,7 +176,7 @@ A convenção foi decidida em 30/08 e Itaú/Bradesco foram migrados. Varrer `car
 competência de uma fatura usa a data de **vencimento**, não a de fechamento. Documentar o resultado
 em um teste de fumaça (fatura fecha 29/08, vence 05/09 → `2026-09`).
 
-#### C12. Home: card do Mercado e do Carro-garagem no grupo certo (≈15min)
+#### C12. Home: card do Mercado e do Carro-garagem no grupo certo ✅ FEITO 2026-08-30 — os dois já têm card em `index.html`; texto do Carro atualizado para citar garagem, lista da oficina e paridade.
 
 Conferir se `mercado.html` e a nova visão de garagem do `carro.html` estão nos grupos de
 `index.html` (regra do `CLAUDE.md`: toda página → link no menu **e** card na home).
