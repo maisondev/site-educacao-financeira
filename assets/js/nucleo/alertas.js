@@ -31,8 +31,10 @@ function altPrazoEmTexto(dias) {
   return `há ${Math.abs(dias)} dias`;
 }
 
-function altAlerta(severidade, titulo, detalhe, href, rotuloLink) {
-  return { severidade, titulo, detalhe, href, rotuloLink };
+// `dias` = dias até o evento (negativo = venceu, 0 = hoje, null = sem data).
+// É a chave primária de ordenação: o que é para hoje/já venceu vem antes.
+function altAlerta(severidade, titulo, detalhe, href, rotuloLink, dias) {
+  return { severidade, titulo, detalhe, href, rotuloLink, dias: dias == null ? null : dias };
 }
 
 // Próxima ocorrência de um dia do mês (o mesmo critério dos lembretes).
@@ -59,7 +61,8 @@ function altAlertasCartoes() {
         `Fatura do ${nome} vence ${altPrazoEmTexto(dias)}`,
         `Dia ${parseInt(cartao.vencimento, 10)} de cada mês.`,
         './cartoes.html',
-        'Ver cartões'
+        'Ver cartões',
+        dias
       ));
     }
 
@@ -70,7 +73,8 @@ function altAlertasCartoes() {
         `Fatura do ${nome} fecha ${altPrazoEmTexto(diasFechamento)}`,
         'Compras após o fechamento caem na fatura seguinte.',
         './cartoes.html',
-        'Ver cartões'
+        'Ver cartões',
+        diasFechamento
       ));
     }
   });
@@ -103,7 +107,8 @@ function altAlertasDividas() {
         ? `${formatarMoedaBrasileira(valor)} por mês · faltam ${formatarMoedaBrasileira(faltante)}.`
         : `Falta pagar ${formatarMoedaBrasileira(faltante)}.`,
       './dividas.html',
-      'Ver dívidas'
+      'Ver dívidas',
+      dias
     ));
     return alertas;
   }, []);
@@ -134,7 +139,8 @@ function altAlertasDespesasFixas() {
       `${d.nome} vence ${altPrazoEmTexto(dias)} e não está paga`,
       `${formatarMoedaBrasileira(d.valor || 0)} · dia ${parseInt(d.vencimentoDia, 10)} de cada mês.`,
       './despesas-fixas.html',
-      'Ver despesas fixas'
+      'Ver despesas fixas',
+      dias
     ));
     return alertas;
   }, []);
@@ -157,7 +163,8 @@ function altAlertasMetas() {
         : `Meta "${meta.titulo}" vence ${altPrazoEmTexto(dias)}`,
       `Faltam ${formatarMoedaBrasileira(faltante)} para os ${formatarMoedaBrasileira(alvo)}.`,
       './metas.html',
-      'Ver metas'
+      'Ver metas',
+      dias
     ));
     return alertas;
   }, []);
@@ -278,7 +285,8 @@ function altAlertasSaldo() {
     `Saldo projetado do mês está negativo em ${formatarMoedaBrasileira(Math.abs(r.saldo))}`,
     `${formatarMoedaBrasileira(r.saidas)} de saídas para ${formatarMoedaBrasileira(r.receitas)} de receitas.`,
     '#container-saldo-mes',
-    'Ver detalhamento do saldo do mês'
+    'Ver detalhamento do saldo do mês',
+    0
   )];
 }
 
@@ -293,7 +301,15 @@ function gerarAlertas() {
     altAlertasMetas(),
     altAlertasReserva(),
     altAlertasBackup()
-  ).sort((a, b) => ALERTA_ORDEM[a.severidade] - ALERTA_ORDEM[b.severidade]);
+  ).sort((a, b) => {
+    // 1º critério: prazo. O que vence antes (ou já venceu) sobe;
+    // alertas sem data (reserva, backup, envelopes) ficam por último.
+    const da = a.dias == null ? Infinity : a.dias;
+    const db = b.dias == null ? Infinity : b.dias;
+    if (da !== db) return da - db;
+    // 2º critério: severidade, para desempatar no mesmo dia.
+    return ALERTA_ORDEM[a.severidade] - ALERTA_ORDEM[b.severidade];
+  });
 }
 
 function altEscapar(texto) {
