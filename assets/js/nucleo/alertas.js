@@ -82,6 +82,77 @@ function altAlertasCartoes() {
   return alertas;
 }
 
+// "05" ou "05/09" -> 5
+function altDiaDoCampo(valor) {
+  const m = String(valor || '').trim().match(/^(\d{1,2})/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// Última ocorrência do dia de fechamento em/antes do vencimento daquela fatura.
+function altDataFechamento(vencimento, diaFechamento) {
+  if (!diaFechamento) return null;
+  let d = new Date(vencimento.getFullYear(), vencimento.getMonth(), diaFechamento);
+  if (d > vencimento) {
+    d = new Date(vencimento.getFullYear(), vencimento.getMonth() - 1, diaFechamento);
+  }
+  return d;
+}
+
+// Fatura que já fechou e ainda não foi paga, no intervalo entre o fechamento e
+// alguns dias após o vencimento. Cobre a lacuna do alerta de vencimento
+// (altAlertasCartoes só olha os 3 dias anteriores ao dia do vencimento e nunca
+// enxerga uma fatura vencida).
+function altAlertasFaturaFechada() {
+  const alertas = [];
+  const hoje = altHoje();
+
+  Store.ler(Store.CHAVES.CARTOES, []).forEach(cartao => {
+    const nome = cartao.nome || 'Cartão';
+
+    (cartao.datasPorMes || []).forEach(entrada => {
+      const saldo = Number(entrada.saldo) || 0;
+      if (saldo <= 0 || entrada.foiPaga) return;
+
+      const partes = String(entrada.mes || '').split('-').map(Number);
+      const ano = partes[0];
+      const mes = partes[1];
+      const diaVenc = altDiaDoCampo(entrada.vencimento) || altDiaDoCampo(cartao.vencimento);
+      if (!ano || !mes || !diaVenc) return;
+
+      const dataVencimento = new Date(ano, mes - 1, diaVenc);
+      const dias = Math.round((dataVencimento - hoje) / 86400000);
+
+      // Entrada muito à frente: ainda não é assunto.
+      if (dias > 45) return;
+
+      // Só depois do fechamento.
+      const diaFech = altDiaDoCampo(entrada.fechamento) || altDiaDoCampo(cartao.fechamento);
+      const dataFechamento = altDataFechamento(dataVencimento, diaFech);
+      if (dataFechamento && hoje < dataFechamento) return;
+
+      // 0..3 dias para o vencimento já é coberto por altAlertasCartoes.
+      if (dias >= 0 && dias <= ALERTA_DIAS_CARTAO) return;
+
+      const separado = entrada.dinheiroSeparado
+        ? 'dinheiro já separado'
+        : 'sem dinheiro separado ainda';
+
+      alertas.push(altAlerta(
+        dias < 0 ? 'critico' : (dias <= 10 ? 'atencao' : 'info'),
+        dias < 0
+          ? `Fatura do ${nome} venceu ${altPrazoEmTexto(dias)} e não está paga`
+          : `Fatura do ${nome} fechou — falta pagar`,
+        `${formatarMoedaBrasileira(saldo)} · vence ${altPrazoEmTexto(dias)} (dia ${diaVenc}) · ${separado}.`,
+        './cartoes.html',
+        'Ver cartões',
+        dias
+      ));
+    });
+  });
+
+  return alertas;
+}
+
 function altAlertasDividas() {
   const lista = typeof smListaDividas === 'function' ? smListaDividas() : [];
 
@@ -294,6 +365,7 @@ function gerarAlertas() {
   return [].concat(
     altAlertasSaldo(),
     altAlertasCartoes(),
+    altAlertasFaturaFechada(),
     altAlertasDespesasFixas(),
     altAlertasDividas(),
     altAlertasEnvelopes(),

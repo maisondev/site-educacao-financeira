@@ -1123,12 +1123,16 @@ const AF_BANCO_LABEL = {
 };
 
 // Existe análise salva (em analise-fatura.html) para a fatura deste mês e banco?
+// A store é chaveada por "AAAA-MM|Banco" (uma análise por banco por mês); links
+// antigos ainda podem ter a chave só com a competência.
 function analiseSalvaDaFatura(cartao, competencia) {
   if (!competencia) return false;
   const bancoLabel = AF_BANCO_LABEL[obterBancoPorNome(cartao.nome)] || 'Outro';
   const analises = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
-  const analise = analises[competencia];
-  return !!(analise && (analise.banco || 'Outro') === bancoLabel);
+  const porChave = analises[competencia + '|' + bancoLabel];
+  if (porChave) return true;
+  const antiga = analises[competencia];
+  return !!(antiga && (antiga.banco || 'Outro') === bancoLabel);
 }
 
 // Monta os links "Ver análise" / "Ver revisão" da fatura de um mês, quando
@@ -1148,7 +1152,8 @@ function linksFaturaCartao(cartao, competencia) {
   const estilo = 'color: #fff; text-decoration: underline; font-size: 11px; opacity: 0.95;';
   const links = [];
   if (temAnalise) {
-    links.push(`<a href="./analise-fatura.html?abrir=${encodeURIComponent(competencia)}" style="${estilo}">Ver análise</a>`);
+    const chaveAnalise = competencia + '|' + bancoLabel;
+    links.push(`<a href="./analise-fatura.html?abrir=${encodeURIComponent(chaveAnalise)}" style="${estilo}">Ver análise</a>`);
   }
   if (temRevisao) {
     links.push(`<a href="./revisao-faturas.html?abrir=${encodeURIComponent(chaveRevisao)}" style="${estilo}">Ver revisão</a>`);

@@ -318,6 +318,22 @@ Uma fatura é sempre identificada pelo **mês em que vence** (quando o dinheiro 
 - Vale para: campo `competencia` do JSON, `<title>`/`<h1>` do HTML de análise, nome dos arquivos (`*-setembro-2026.*`) e nome da pasta do mês no Drive.
 - Nubank e Caixa já seguiam isso; Itaú e Bradesco foram migrados (pastas e conteúdo).
 
+### `analise_faturas` chaveado por competência + banco (decidido 2026-08-30)
+
+**Arquivo**: `analise-fatura.html` + `assets/js/paginas/analise-fatura.js` — chave `Store.CHAVES.ANALISE_FATURAS` (`analise_faturas`).
+
+Antes a store usava **só a competência** como chave (`analise_faturas["2026-09"]`), então salvar a análise do Bradesco de setembro apagava a do Nubank do mesmo mês. Agora a chave é **`afChave(competencia, banco)` = `"AAAA-MM|Banco"`** (`banco` = valor do `<select id="af-banco">`: `Bradesco`, `Nubank`, `Itaú`, …, `Outro`). Regra: **uma análise por banco por mês** — só sobrescreve quando competência **e** banco batem.
+
+- `afMigrarChaves(dados)` roda dentro de `afLerTodas()`: converte chaves antigas (`/^\d{4}-\d{2}$/`) para `"<competencia>|<banco>"` e persiste (best-effort). Idempotente.
+- `afEstado.chave` guarda a chave do registro salvo/aberto; `afAutoSalvarSeSalva()` grava nela.
+- `afAbrirAnalise(chave)` e o deep-link `?abrir=` aceitam a chave nova **ou** só a competência (links antigos de "Meus Cartões"): nesse caso acham a 1ª entrada com aquela `competencia`.
+- Histórico ("Análises salvas") ordena por competência desc, depois banco asc; botões Abrir/Excluir passam a chave completa.
+- **Consumidores**: `relatorios.js` (`relGastosFaturaPorCategoria`) soma **todas** as entradas da competência (Nubank + Bradesco); `cartoes.js` (`analiseSalvaDaFatura`, link "Ver análise" → `?abrir=<comp>|<Banco>`); `revisao-faturas.js` (`rfSincronizar` deriva competência de `reg.competencia`). Todos com fallback para a chave antiga.
+
+### Mensagem de status da análise aparece perto dos botões (2026-08-30)
+
+`afMostrarMsg` escreve em **dois** elementos: `#af-msg` (topo, contexto de upload) e `#af-msg-acoes` (logo abaixo dos botões "Salvar análise / Lançar / Baixar CSV"), e rola até a cópia visível mais próxima do centro da tela. Antes só existia `#af-msg` no topo, então quem clicava em "Salvar" já rolado para baixo não via a confirmação e achava que "nada acontecia". `afSalvarAnalise` também trata `QuotaExceededError` (localStorage cheio) com aviso em vez de falhar em silêncio.
+
 ### Resumo "Total devido por titular"
 
 Abaixo do total geral, o resumo mostra a quebra por pessoa:
@@ -331,7 +347,7 @@ Abaixo do total geral, o resumo mostra a quebra por pessoa:
 ### Vínculos com Análise e Revisão de Fatura (2026-08-30)
 
 Cada card do resumo "saldos abertos" (`atualizarVisualizacao` → `lista-saldos-por-cartao`) e cada card de cartão (`montarCardCartao`) linkam a fatura do mês às páginas de detalhe, quando existe registro da **mesma competência e mesmo banco**:
-- `analiseSalvaDaFatura(cartao, competencia)` — casa `AF_BANCO_LABEL[obterBancoPorNome(nome)]` com `analise_faturas[competencia].banco`.
+- `analiseSalvaDaFatura(cartao, competencia)` — procura `analise_faturas["<competencia>|<Banco>"]` (chave nova; ver seção abaixo), com fallback para a chave antiga só com a competência casando `AF_BANCO_LABEL[obterBancoPorNome(nome)]` com `.banco`.
 - `linksFaturaCartao(cartao, competencia)` — "Ver análise" → `analise-fatura.html?abrir=<comp>`; "Ver revisão" → `revisao-faturas.html?abrir=<comp>|<Banco>`.
 - Destino: `inicializarAnaliseFatura` chama `afAbrirAnalise(abrir)`; `revisao-faturas.js` tem `rfIrParaRevisao(chave)` (rola e destaca; troca o filtro p/ "todas" se a revisão estiver concluída). Ambos limpam a query com `history.replaceState`.
 - Reciprocidade: breadcrumb de `analise-fatura.html`/`revisao-faturas.html` passa por "Meus Cartões"; `cartoes.html` tem botões "Analisar fatura" / "Revisão de faturas".
@@ -345,13 +361,17 @@ No card do resumo, `montarTrilhaPagamento(c, mes, dataAtual)` mostra 3 passos an
 
 `comFaturaDoMes(cartaoId, mes, fn)` — helper que acha/cria a entrada de `datasPorMes` do mês, aplica `fn`, salva e re-renderiza.
 
+### Alerta "fatura fechada aguardando pagamento" (2026-08-30)
+
+`altAlertasFaturaFechada()` (`alertas.js`) cobre a lacuna entre o fechamento e o vencimento: `altAlertasCartoes()` só alerta nos 3 dias anteriores ao dia do vencimento e, como `altDiasAteDiaDoMes` sempre rola para a frente, nunca enxerga fatura vencida. O novo alerta lê `Store.CHAVES.CARTOES` direto (dashboard não carrega `cartoes.js`): para cada `datasPorMes` com `saldo > 0` e `!foiPaga`, monta a data de vencimento a partir de `mes` (competência = mês de vencimento) + dia de `entrada.vencimento`/`cartao.vencimento`, exige que já tenha passado o fechamento (`altDataFechamento`), ignora entrada > 45 dias à frente e pula 0–3 dias (já coberto). Severidade: vencida → `critico`; ≤ 10 dias → `atencao`; senão `info`. Detalhe mostra saldo, prazo e se o dinheiro já foi separado (`entrada.dinheiroSeparado`).
+
 ## Página de Revisão de Faturas — esteira (localStorage)
 
 **Arquivo**: `revisao-faturas.html` + `assets/js/paginas/revisao-faturas.js` — chave `Store.CHAVES.REVISAO_FATURAS` (`revisao_faturas`).
 
 Transforma cada fatura fechada numa lista de tarefas de revisão pendente, para não só pagar a fatura mas sair dela com 1 corte definido para o mês seguinte.
 
-**Fonte de dados**: lê `Store.CHAVES.ANALISE_FATURAS` (`analise_faturas`, gerado em `analise-fatura.html`). Como aquela store guarda **só uma análise por competência** (Itaú sobrescreve Nubank no mesmo mês), a revisão guarda um **snapshot** dos números no momento em que é criada e sobrevive à sobrescrita. Fluxo do usuário: analisar 1 banco → salvar → **Sincronizar** na esteira → analisar o próximo banco → Sincronizar de novo.
+**Fonte de dados**: lê `Store.CHAVES.ANALISE_FATURAS` (`analise_faturas`, gerado em `analise-fatura.html`). Desde 2026-08-30 aquela store é chaveada por **`"AAAA-MM|Banco"`** (uma análise por banco por mês — ver seção abaixo), então Nubank e Bradesco de setembro coexistem. A revisão continua guardando um **snapshot** dos números no momento em que é criada (protege contra reanálise do mesmo banco). Fluxo do usuário: analisar 1 banco → salvar → **Sincronizar** na esteira → analisar o próximo banco → Sincronizar de novo. `rfSincronizar` deriva a competência de `reg.competencia` (não da chave).
 
 **Estrutura do store**: `{ [competencia|banco]: { competencia, banco, estado, criadaEm, atualizadaEm, snapshot, tarefas: [] } }`
 - `estado`: `'a-revisar'` → `'em-revisao'` (ao marcar a 1ª tarefa) → `'concluida'` (botão "Concluir revisão"; reabrível).

@@ -333,17 +333,22 @@ function relGastosVariaveisPorCategoria(competencia) {
 
 function relGastosFaturaPorCategoria(competencia) {
   const todas = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
-  const reg = todas[competencia];
   const acc = {};
-  if (!reg || !Array.isArray(reg.lancamentos)) return acc;
-  const inclusos = new Set(reg.inclusos && reg.inclusos.length
-    ? reg.inclusos
-    : reg.lancamentos.map(l => l.cartao || '__sem__'));
-  reg.lancamentos.forEach(l => {
-    if (l.tipo === 'pagamento') return;
-    if (!inclusos.has(l.cartao || '__sem__')) return;
-    const cat = REL_FATURA_PARA_CATEGORIA[l.categoria] || 'outro';
-    acc[cat] = (acc[cat] || 0) + (Number(l.valor) || 0);
+  // A store é chaveada por "AAAA-MM|Banco": soma todas as análises da competência
+  // (ex.: Nubank + Bradesco do mesmo mês). Aceita também chave antiga só com a competência.
+  Object.keys(todas).forEach(chave => {
+    const reg = todas[chave];
+    if (!reg || !Array.isArray(reg.lancamentos)) return;
+    if ((reg.competencia || chave.split('|')[0]) !== competencia) return;
+    const inclusos = new Set(reg.inclusos && reg.inclusos.length
+      ? reg.inclusos
+      : reg.lancamentos.map(l => l.cartao || '__sem__'));
+    reg.lancamentos.forEach(l => {
+      if (l.tipo === 'pagamento') return;
+      if (!inclusos.has(l.cartao || '__sem__')) return;
+      const cat = REL_FATURA_PARA_CATEGORIA[l.categoria] || 'outro';
+      acc[cat] = (acc[cat] || 0) + (Number(l.valor) || 0);
+    });
   });
   return acc;
 }

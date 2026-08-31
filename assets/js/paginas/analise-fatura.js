@@ -1,10 +1,32 @@
 // Análise de Fatura de Cartão
 // Lê o PDF (ou texto) de uma fatura fechada, categoriza os lançamentos e
 // permite filtrar por cartão. Tudo roda no navegador; nada é enviado a servidor.
-// Persistência: localStorage['analise_faturas'] = { [competencia]: { ...analise } }
+// Persistência: localStorage['analise_faturas'] = { ["AAAA-MM|Banco"]: { ...analise } }
+// Uma análise por banco por mês — Nubank e Bradesco de setembro coexistem;
+// reanalisar o mesmo banco/mês sobrescreve só aquela entrada.
 
 const AF_STORAGE_KEY = 'analise_faturas';
 const AF_SEM_CARTAO = '__sem__';
+
+// Chave de um registro de análise: competência + banco.
+function afChave(competencia, banco) {
+  return `${competencia}|${banco || 'Outro'}`;
+}
+
+// Converte chaves antigas (só "AAAA-MM") para "AAAA-MM|Banco". Retorna true se mudou algo.
+function afMigrarChaves(dados) {
+  let mudou = false;
+  Object.keys(dados).forEach(k => {
+    if (!/^\d{4}-\d{2}$/.test(k)) return;
+    const reg = dados[k] || {};
+    const nova = afChave(reg.competencia || k, reg.banco);
+    if (nova === k || dados[nova]) return;
+    dados[nova] = reg;
+    delete dados[k];
+    mudou = true;
+  });
+  return mudou;
+}
 
 // Chave das regras aprendidas de categorização (trecho da descrição -> categoria AF).
 const AF_REGRAS_KEY = (typeof Store !== 'undefined' && Store.CHAVES.REGRAS_CATEGORIZACAO)
@@ -148,10 +170,22 @@ function afFormatarCompetencia(iso) {
 }
 
 function afMostrarMsg(texto, tipo) {
-  const el = document.getElementById('af-msg');
-  el.textContent = texto;
-  el.className = 'af-msg ' + (tipo === 'erro' ? 'af-erro' : 'af-ok');
-  el.hidden = false;
+  const cls = 'af-msg ' + (tipo === 'erro' ? 'af-erro' : 'af-ok');
+  // Mostra a mensagem no topo (contexto de upload) e junto dos botões de ação,
+  // porque quem clica em "Salvar análise" costuma estar com a página rolada para baixo.
+  ['af-msg', 'af-msg-acoes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = texto;
+    el.className = cls;
+    el.hidden = false;
+  });
+  // Traz para a tela a cópia que estiver mais perto de onde o usuário está.
+  const perto = [document.getElementById('af-msg-acoes'), document.getElementById('af-msg')]
+    .filter(el => el && el.offsetParent !== null)
+    .map(el => ({ el, dist: Math.abs(el.getBoundingClientRect().top - window.innerHeight / 2) }))
+    .sort((a, b) => a.dist - b.dist)[0];
+  if (perto) perto.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // --- extração de texto do PDF ----------------------------------------------------
@@ -487,7 +521,11 @@ function afLerTodas() {
   try {
     const bruto = localStorage.getItem(AF_STORAGE_KEY);
     const dados = bruto ? JSON.parse(bruto) : {};
-    return dados && typeof dados === 'object' ? dados : {};
+    if (!dados || typeof dados !== 'object') return {};
+    if (afMigrarChaves(dados)) {
+      try { afGravarTodas(dados); } catch (e) { /* segue com a versão migrada em memória */ }
+    }
+    return dados;
   } catch (e) {
     console.error('Erro ao ler análises salvas:', e);
     return {};
@@ -499,43 +537,73 @@ function afGravarTodas(dados) {
 }
 
 function afSalvarAnalise() {
-  if (!afEstado) return;
-  const comp = document.getElementById('af-comp').value || afEstado.competencia;
+  if (!afEstado) {
+    afMostrarMsg('Analise uma fatura antes de salvar.', 'erro');
+    return;
+  }
+  const campoComp = document.getElementById('af-comp');
+  const comp = (campoComp && campoComp.value) || afEstado.competencia;
+  if (!/^\d{4}-\d{2}$/.test(comp || '')) {
+    afMostrarMsg('Informe a competência (mês da fatura) antes de salvar.', 'erro');
+    return;
+  }
   afEstado.competencia = comp;
   afEstado.salva = true;
 
   const todas = afLerTodas();
-  todas[comp] = {
+  const chave = afChave(comp, afEstado.banco);
+  afEstado.chave = chave;
+  delete todas[comp]; // remove eventual chave antiga (só competência) desta mesma fatura
+  todas[chave] = {
     banco: afEstado.banco,
     competencia: comp,
     dataImportacao: new Date().toISOString(),
     inclusos: Array.from(afEstado.inclusos),
     lancamentos: afEstado.lancamentos
   };
-  afGravarTodas(todas);
-  afMostrarMsg(`Análise de ${afFormatarCompetencia(comp)} salva no navegador.`, 'ok');
+  try {
+    afGravarTodas(todas);
+  } catch (e) {
+    console.error('Não foi possível salvar a análise:', e);
+    const semEspaco = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014);
+    afMostrarMsg(
+      semEspaco
+        ? 'Sem espaço no navegador para salvar. Faça um backup e limpe análises antigas no histórico.'
+        : 'Não foi possível salvar a análise no navegador. Veja o console para detalhes.',
+      'erro'
+    );
+    return;
+  }
+  afMostrarMsg(`Análise de ${afEstado.banco || 'fatura'} — ${afFormatarCompetencia(comp)} salva no navegador.`, 'ok');
   afRenderizarHistorico();
 }
 
 function afAutoSalvarSeSalva() {
   if (afEstado && afEstado.salva) {
     const todas = afLerTodas();
-    const comp = afEstado.competencia;
-    if (todas[comp]) {
-      todas[comp].inclusos = Array.from(afEstado.inclusos);
-      todas[comp].lancamentos = afEstado.lancamentos;
+    const chave = afEstado.chave || afChave(afEstado.competencia, afEstado.banco);
+    if (todas[chave]) {
+      todas[chave].inclusos = Array.from(afEstado.inclusos);
+      todas[chave].lancamentos = afEstado.lancamentos;
       afGravarTodas(todas);
     }
   }
 }
 
-function afAbrirAnalise(comp) {
+function afAbrirAnalise(chave) {
   const todas = afLerTodas();
-  const reg = todas[comp];
+  // aceita a chave nova ("AAAA-MM|Banco") ou, para links antigos, só a competência
+  let reg = todas[chave];
+  let chaveReal = chave;
+  if (!reg && /^\d{4}-\d{2}$/.test(chave || '')) {
+    chaveReal = Object.keys(todas).find(k => (todas[k].competencia || k.split('|')[0]) === chave);
+    reg = chaveReal ? todas[chaveReal] : null;
+  }
   if (!reg) return;
   afEstado = {
     banco: reg.banco || 'Outro',
-    competencia: reg.competencia || comp,
+    competencia: reg.competencia || (chaveReal || '').split('|')[0],
+    chave: chaveReal,
     lancamentos: (reg.lancamentos || []).map(l => Object.assign({ recorrente: false }, l)),
     inclusos: new Set(reg.inclusos && reg.inclusos.length
       ? reg.inclusos
@@ -548,10 +616,13 @@ function afAbrirAnalise(comp) {
   document.getElementById('af-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function afExcluirAnalise(comp) {
-  if (!confirm(`Excluir a análise de ${afFormatarCompetencia(comp)}?`)) return;
+function afExcluirAnalise(chave) {
   const todas = afLerTodas();
-  delete todas[comp];
+  const reg = todas[chave];
+  if (!reg) return;
+  const rotulo = `${reg.banco || 'fatura'} — ${afFormatarCompetencia(reg.competencia || chave.split('|')[0])}`;
+  if (!confirm(`Excluir a análise de ${rotulo}?`)) return;
+  delete todas[chave];
   afGravarTodas(todas);
   afRenderizarHistorico();
 }
@@ -792,23 +863,31 @@ function afAlterarRecorrente(chk) {
 // --- render: histórico -------------------------------------------------------
 function afRenderizarHistorico() {
   const todas = afLerTodas();
-  const comps = Object.keys(todas).sort().reverse();
+  // ordena por competência (desc) e, dentro do mês, por banco (asc)
+  const chaves = Object.keys(todas).sort((a, b) => {
+    const ca = todas[a].competencia || a.split('|')[0];
+    const cb = todas[b].competencia || b.split('|')[0];
+    if (ca !== cb) return cb.localeCompare(ca);
+    return (todas[a].banco || '').localeCompare(todas[b].banco || '');
+  });
   const secao = document.getElementById('af-historico-secao');
   const cont = document.getElementById('af-historico');
 
-  if (!comps.length) {
+  if (!chaves.length) {
     secao.hidden = true;
     return;
   }
   secao.hidden = false;
 
-  cont.innerHTML = comps.map(comp => {
-    const reg = todas[comp];
+  cont.innerHTML = chaves.map(chave => {
+    const reg = todas[chave];
+    const comp = reg.competencia || chave.split('|')[0];
     const lancs = (reg.lancamentos || []).filter(l => l.tipo !== 'pagamento');
     const inclusos = new Set(reg.inclusos && reg.inclusos.length ? reg.inclusos : lancs.map(l => l.cartao || AF_SEM_CARTAO));
     const total = lancs
       .filter(l => inclusos.has(l.cartao || AF_SEM_CARTAO))
       .reduce((s, l) => s + (l.valor || 0), 0);
+    const chaveJs = chave.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     return `
       <div class="af-hist-item">
         <div class="af-hist-info">
@@ -816,8 +895,8 @@ function afRenderizarHistorico() {
           <span>${afFmt(total)} · ${lancs.length} lançamento${lancs.length === 1 ? '' : 's'}</span>
         </div>
         <div class="af-hist-acoes">
-          <button type="button" class="af-btn-mini" onclick="afAbrirAnalise('${comp}')">Abrir</button>
-          <button type="button" class="af-btn-mini af-btn-perigo" onclick="afExcluirAnalise('${comp}')">Excluir</button>
+          <button type="button" class="af-btn-mini" onclick="afAbrirAnalise('${chaveJs}')">Abrir</button>
+          <button type="button" class="af-btn-mini af-btn-perigo" onclick="afExcluirAnalise('${chaveJs}')">Excluir</button>
         </div>
       </div>
     `;
@@ -1139,10 +1218,15 @@ function inicializarAnaliseFatura() {
 
   afRenderizarHistorico();
 
-  // Deep-link vindo de "Meus Cartões": ?abrir=AAAA-MM abre a análise daquele mês.
+  // Deep-link vindo de "Meus Cartões": ?abrir=AAAA-MM|Banco (ou só AAAA-MM, links antigos).
   const abrir = new URLSearchParams(location.search).get('abrir');
-  if (abrir && afLerTodas()[abrir]) {
-    afAbrirAnalise(abrir);
-    history.replaceState(null, '', location.pathname);
+  if (abrir) {
+    const todas = afLerTodas();
+    const existe = todas[abrir] ||
+      Object.keys(todas).some(k => (todas[k].competencia || k.split('|')[0]) === abrir);
+    if (existe) {
+      afAbrirAnalise(abrir);
+      history.replaceState(null, '', location.pathname);
+    }
   }
 }

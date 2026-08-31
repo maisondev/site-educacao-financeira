@@ -235,9 +235,12 @@ function rfSincronizar(silencioso) {
   let novas = 0;
   let atualizadas = 0;
 
-  Object.keys(analises).forEach(comp => {
-    const reg = analises[comp];
+  // analises é chaveado por "AAAA-MM|Banco" (uma análise por banco por mês);
+  // chaves antigas podem ter só a competência.
+  Object.keys(analises).forEach(chaveAf => {
+    const reg = analises[chaveAf];
     if (!reg || !Array.isArray(reg.lancamentos)) return;
+    const comp = reg.competencia || chaveAf.split('|')[0];
     const banco = reg.banco || 'Outro';
     const chave = rfChaveFatura(comp, banco);
     const snapshot = rfMontarSnapshot(reg);
