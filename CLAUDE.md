@@ -364,7 +364,13 @@ No card do resumo, `montarTrilhaPagamento(c, mes, dataAtual)` mostra 3 passos an
 
 ### Alerta "fatura fechada aguardando pagamento" (2026-08-30)
 
-`altAlertasFaturaFechada()` (`alertas.js`) cobre a lacuna entre o fechamento e o vencimento: `altAlertasCartoes()` só alerta nos 3 dias anteriores ao dia do vencimento e, como `altDiasAteDiaDoMes` sempre rola para a frente, nunca enxerga fatura vencida. O novo alerta lê `Store.CHAVES.CARTOES` direto (dashboard não carrega `cartoes.js`): para cada `datasPorMes` com `saldo > 0` e `!foiPaga`, monta a data de vencimento a partir de `mes` (competência = mês de vencimento) + dia de `entrada.vencimento`/`cartao.vencimento`, exige que já tenha passado o fechamento (`altDataFechamento`), ignora entrada > 45 dias à frente e pula 0–3 dias (já coberto). Severidade: vencida → `critico`; ≤ 10 dias → `atencao`; senão `info`. Detalhe mostra saldo, prazo e se o dinheiro já foi separado (`entrada.dinheiroSeparado`).
+`altAlertasFaturaFechada()` (`alertas.js`) cobre a lacuna entre o fechamento e o vencimento: `altAlertasCartoes()` só alerta nos 3 dias anteriores ao dia do vencimento e, como `altDiasAteDiaDoMes` sempre rola para a frente, nunca enxerga fatura vencida. O novo alerta lê `Store.CHAVES.CARTOES` direto (dashboard não carrega `cartoes.js`): para cada `datasPorMes` com `saldo > 0` e `!foiPaga`, monta a data de vencimento a partir de `mes` (competência = mês de vencimento) + dia de `entrada.vencimento`/`cartao.vencimento`, exige que já tenha passado o fechamento (`altDataFechamento`), ignora entrada > 45 dias à frente e pula 0–3 dias (já coberto). Sem limite para trás (fatura vencida e não paga fica em alerta para sempre).
+
+- **Antes de vencer** (`dias >= 0`): título "Fatura do X fechada — provisionar pagamento" (ou "dinheiro já separado"); **nunca** diz "não está paga". Severidade `atencao` (≤10 dias) ou `info`.
+- **Depois de vencer** (`dias < 0`): "Fatura do X venceu há N dias e não está paga", `critico`.
+- Detalhe: `R$ saldo · fatura de <mês por extenso> · venceu/vence <prazo> (dia D) · <estado do dinheiro separado, com valor se houver>`.
+- Link: **"Abrir fatura"** → `cartoes.html?fatura=<ultimos>|<AAAA-MM>`. `abrirFaturaDeParametros()` (em `cartoes.js`, no `inicializarCartoes`) acha o cartão pelos 4 últimos, seta `cartaoEmEdicaoId` e chama `abrirModalDatasMes(comp)` — o modal "Gerenciar datas por mês" abre naquele mês. `history.replaceState` limpa a query.
+- O modal "Gerenciar datas por mês" tem o checkbox **`#chk-fatura-paga-mes`** ("Fatura deste mês está paga") → `alternarFaturaPagaMes()` grava `datasPorMes[].foiPaga` do mês selecionado na hora (sem a trava análise+dinheiro-separado do fluxo guiado do resumo; aqui é edição manual).
 
 ## Página de Revisão de Faturas — esteira (localStorage)
 
