@@ -59,8 +59,10 @@ function rfFmt(valor) {
   return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-function rfChaveFatura(competencia, banco) {
-  return competencia + '|' + (banco || 'Outro');
+function rfChaveFatura(competencia, banco, apelido) {
+  const base = competencia + '|' + (banco || 'Outro');
+  const ap = String(apelido || '').trim();
+  return ap ? base + '|' + ap : base;
 }
 
 // Normaliza a descrição de uma assinatura para comparar entre meses.
@@ -235,14 +237,15 @@ function rfSincronizar(silencioso) {
   let novas = 0;
   let atualizadas = 0;
 
-  // analises é chaveado por "AAAA-MM|Banco" (uma análise por banco por mês);
-  // chaves antigas podem ter só a competência.
+  // analises é chaveado por "AAAA-MM|Banco[|Apelido]" (pode haver mais de uma
+  // análise do mesmo banco no mês); chaves antigas podem ter só a competência.
   Object.keys(analises).forEach(chaveAf => {
     const reg = analises[chaveAf];
     if (!reg || !Array.isArray(reg.lancamentos)) return;
     const comp = reg.competencia || chaveAf.split('|')[0];
     const banco = reg.banco || 'Outro';
-    const chave = rfChaveFatura(comp, banco);
+    const apelido = reg.apelido || chaveAf.split('|')[2] || '';
+    const chave = rfChaveFatura(comp, banco, apelido);
     const snapshot = rfMontarSnapshot(reg);
     const baseline = rfBaselineSnapshots(todas, comp, banco);
 
@@ -250,6 +253,7 @@ function rfSincronizar(silencioso) {
       todas[chave] = {
         competencia: comp,
         banco: banco,
+        apelido: apelido,
         criadaEm: new Date().toISOString(),
         atualizadaEm: new Date().toISOString(),
         estado: 'a-revisar',
@@ -389,7 +393,9 @@ function rfRender() {
   const todas = rfLerTodas();
   const revisoes = Object.keys(todas)
     .map(chave => Object.assign({ chave }, todas[chave]))
-    .sort((a, b) => b.competencia.localeCompare(a.competencia) || a.banco.localeCompare(b.banco));
+    .sort((a, b) => b.competencia.localeCompare(a.competencia)
+      || a.banco.localeCompare(b.banco)
+      || (a.apelido || '').localeCompare(b.apelido || ''));
 
   // resumo
   const cont = { 'a-revisar': 0, 'em-revisao': 0, 'concluida': 0 };
@@ -476,7 +482,7 @@ function rfRenderRevisao(rev) {
     <article class="rf-revisao rf-estado-${rev.estado}" data-chave="${rfEscapar(rev.chave)}">
       <header class="rf-rev-head">
         <div>
-          <h3>${formatarCompetencia(rev.competencia)} — ${rfEscapar(rev.banco)}</h3>
+          <h3>${formatarCompetencia(rev.competencia)} — ${rfEscapar(rev.banco)}${rev.apelido ? ' · ' + rfEscapar(rev.apelido) : ''}</h3>
           <p class="rf-rev-num">
             Total ${rfFmt(s.total || 0)} · ${s.qtdLancamentos || 0} lançamentos
             ${s.maior && s.maior.valor ? ` · maior: ${rfEscapar(s.maior.descricao)} (${rfFmt(s.maior.valor)})` : ''}
@@ -522,13 +528,16 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function rfIrParaRevisao(chave) {
-  const seletor = '.rf-revisao[data-chave="' + chave.replace(/"/g, '\\"') + '"]';
-  let el = document.querySelector(seletor);
+  const achar = () => document.querySelector('.rf-revisao[data-chave="' + chave.replace(/"/g, '\\"') + '"]')
+    // deep-link de "Meus Cartões" vem como "AAAA-MM|Banco"; casa a 1ª revisão com esse prefixo
+    || Array.from(document.querySelectorAll('.rf-revisao[data-chave]'))
+      .find(el => (el.getAttribute('data-chave') || '').startsWith(chave + '|'));
+  let el = achar();
   if (!el) {
     // Pode estar concluída e fora do filtro padrão — mostra todas e tenta de novo.
     rfFiltroEstado = 'todas';
     rfRender();
-    el = document.querySelector(seletor);
+    el = achar();
   }
   if (!el) return;
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });

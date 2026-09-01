@@ -1,16 +1,19 @@
 // Análise de Fatura de Cartão
 // Lê o PDF (ou texto) de uma fatura fechada, categoriza os lançamentos e
 // permite filtrar por cartão. Tudo roda no navegador; nada é enviado a servidor.
-// Persistência: localStorage['analise_faturas'] = { ["AAAA-MM|Banco"]: { ...analise } }
-// Uma análise por banco por mês — Nubank e Bradesco de setembro coexistem;
+// Persistência: localStorage['analise_faturas'] = { ["AAAA-MM|Banco[|Apelido]"]: { ...analise } }
+// Uma análise por banco por mês; com "apelido" (opcional) dá pra guardar várias
+// faturas do mesmo banco no mesmo mês (ex.: um cartão por pessoa). Sem apelido,
 // reanalisar o mesmo banco/mês sobrescreve só aquela entrada.
 
 const AF_STORAGE_KEY = 'analise_faturas';
 const AF_SEM_CARTAO = '__sem__';
 
-// Chave de um registro de análise: competência + banco.
-function afChave(competencia, banco) {
-  return `${competencia}|${banco || 'Outro'}`;
+// Chave de um registro de análise: competência + banco (+ apelido, quando houver).
+function afChave(competencia, banco, apelido) {
+  const base = `${competencia}|${banco || 'Outro'}`;
+  const ap = String(apelido || '').trim();
+  return ap ? `${base}|${ap}` : base;
 }
 
 // Converte chaves antigas (só "AAAA-MM") para "AAAA-MM|Banco". Retorna true se mudou algo.
@@ -500,8 +503,10 @@ function afMontarEstado(banco, parsed, preCategorizado) {
   const cartoes = new Set();
   lancamentos.forEach(l => cartoes.add(l.cartao || AF_SEM_CARTAO));
 
+  const campoApelido = document.getElementById('af-apelido');
   return {
     banco: banco,
+    apelido: campoApelido ? campoApelido.value.trim() : '',
     competencia: parsed.competencia || afMesAtualISO(),
     lancamentos: lancamentos,
     inclusos: cartoes, // todos marcados por padrão
@@ -553,13 +558,16 @@ function afSalvarAnalise() {
   // o seletor é a fonte da verdade do emissor no momento de salvar
   const selBanco = document.getElementById('af-banco');
   if (selBanco && selBanco.value) afEstado.banco = selBanco.value;
+  const campoApelido = document.getElementById('af-apelido');
+  afEstado.apelido = campoApelido ? campoApelido.value.trim() : (afEstado.apelido || '');
 
   const todas = afLerTodas();
-  const chave = afChave(comp, afEstado.banco);
+  const chave = afChave(comp, afEstado.banco, afEstado.apelido);
   afEstado.chave = chave;
   delete todas[comp]; // remove eventual chave antiga (só competência) desta mesma fatura
   todas[chave] = {
     banco: afEstado.banco,
+    apelido: afEstado.apelido || '',
     competencia: comp,
     dataImportacao: new Date().toISOString(),
     inclusos: Array.from(afEstado.inclusos),
@@ -578,14 +586,15 @@ function afSalvarAnalise() {
     );
     return;
   }
-  afMostrarMsg(`Análise de ${afEstado.banco || 'fatura'} — ${afFormatarCompetencia(comp)} salva no navegador.`, 'ok');
+  const rotuloBanco = `${afEstado.banco || 'fatura'}${afEstado.apelido ? ` (${afEstado.apelido})` : ''}`;
+  afMostrarMsg(`Análise de ${rotuloBanco} — ${afFormatarCompetencia(comp)} salva no navegador.`, 'ok');
   afRenderizarHistorico();
 }
 
 function afAutoSalvarSeSalva() {
   if (afEstado && afEstado.salva) {
     const todas = afLerTodas();
-    const chave = afEstado.chave || afChave(afEstado.competencia, afEstado.banco);
+    const chave = afEstado.chave || afChave(afEstado.competencia, afEstado.banco, afEstado.apelido);
     if (todas[chave]) {
       todas[chave].inclusos = Array.from(afEstado.inclusos);
       todas[chave].lancamentos = afEstado.lancamentos;
@@ -596,16 +605,28 @@ function afAutoSalvarSeSalva() {
 
 function afAbrirAnalise(chave) {
   const todas = afLerTodas();
-  // aceita a chave nova ("AAAA-MM|Banco") ou, para links antigos, só a competência
+  // aceita a chave completa ("AAAA-MM|Banco[|Apelido]") ou, para links vindos de
+  // "Meus Cartões", só "AAAA-MM|Banco" ou até só a competência — nesses casos
+  // abre a 1ª análise que casar (competência e, quando informado, banco).
   let reg = todas[chave];
   let chaveReal = chave;
-  if (!reg && /^\d{4}-\d{2}$/.test(chave || '')) {
-    chaveReal = Object.keys(todas).find(k => (todas[k].competencia || k.split('|')[0]) === chave);
-    reg = chaveReal ? todas[chaveReal] : null;
+  if (!reg) {
+    const partes = String(chave || '').split('|');
+    const comp = partes[0];
+    const banco = partes[1];
+    if (/^\d{4}-\d{2}$/.test(comp || '')) {
+      chaveReal = Object.keys(todas).find(k => {
+        const r = todas[k];
+        if ((r.competencia || k.split('|')[0]) !== comp) return false;
+        return !banco || (r.banco || 'Outro') === banco;
+      });
+      reg = chaveReal ? todas[chaveReal] : null;
+    }
   }
   if (!reg) return;
   afEstado = {
     banco: reg.banco || 'Outro',
+    apelido: reg.apelido || (String(chaveReal || '').split('|')[2] || ''),
     competencia: reg.competencia || (chaveReal || '').split('|')[0],
     chave: chaveReal,
     lancamentos: (reg.lancamentos || []).map(l => Object.assign({ recorrente: false }, l)),
@@ -616,6 +637,8 @@ function afAbrirAnalise(chave) {
   };
   const selBanco = document.getElementById('af-banco');
   if (selBanco) selBanco.value = afEstado.banco;
+  const campoApelido = document.getElementById('af-apelido');
+  if (campoApelido) campoApelido.value = afEstado.apelido;
   afRenderResultado();
   document.getElementById('af-resultado').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -636,6 +659,8 @@ function afRenderResultado() {
   if (!afEstado) return;
   document.getElementById('af-resultado').hidden = false;
   document.getElementById('af-comp').value = afEstado.competencia;
+  const campoApelido = document.getElementById('af-apelido');
+  if (campoApelido) campoApelido.value = afEstado.apelido || '';
 
   afRenderFiltroCartoes();
   afRenderTiles();
@@ -872,7 +897,10 @@ function afRenderizarHistorico() {
     const ca = todas[a].competencia || a.split('|')[0];
     const cb = todas[b].competencia || b.split('|')[0];
     if (ca !== cb) return cb.localeCompare(ca);
-    return (todas[a].banco || '').localeCompare(todas[b].banco || '');
+    const ba = todas[a].banco || '';
+    const bb = todas[b].banco || '';
+    if (ba !== bb) return ba.localeCompare(bb);
+    return (todas[a].apelido || '').localeCompare(todas[b].apelido || '');
   });
   const secao = document.getElementById('af-historico-secao');
   const cont = document.getElementById('af-historico');
@@ -895,7 +923,7 @@ function afRenderizarHistorico() {
     return `
       <div class="af-hist-item">
         <div class="af-hist-info">
-          <strong>${afFormatarCompetencia(comp)}</strong> — ${afEscapar(reg.banco || '')}<br>
+          <strong>${afFormatarCompetencia(comp)}</strong> — ${afEscapar(reg.banco || '')}${reg.apelido ? ' · ' + afEscapar(reg.apelido) : ''}<br>
           <span>${afFmt(total)} · ${lancs.length} lançamento${lancs.length === 1 ? '' : 's'}</span>
         </div>
         <div class="af-hist-acoes">
@@ -1245,6 +1273,12 @@ function inicializarAnaliseFatura() {
   document.getElementById('af-banco').addEventListener('change', (e) => {
     if (afEstado) afEstado.banco = e.target.value;
   });
+  const campoApelido = document.getElementById('af-apelido');
+  if (campoApelido) {
+    campoApelido.addEventListener('input', (e) => {
+      if (afEstado) afEstado.apelido = e.target.value.trim();
+    });
+  }
 
   afRenderizarHistorico();
 

@@ -1123,16 +1123,20 @@ const AF_BANCO_LABEL = {
 };
 
 // Existe análise salva (em analise-fatura.html) para a fatura deste mês e banco?
-// A store é chaveada por "AAAA-MM|Banco" (uma análise por banco por mês); links
-// antigos ainda podem ter a chave só com a competência.
+// A store é chaveada por "AAAA-MM|Banco[|Apelido]" (pode haver mais de uma análise
+// do mesmo banco no mês, uma por apelido); links antigos podem ter só a competência.
 function analiseSalvaDaFatura(cartao, competencia) {
   if (!competencia) return false;
   const bancoLabel = AF_BANCO_LABEL[obterBancoPorNome(cartao.nome)] || 'Outro';
   const analises = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
-  const porChave = analises[competencia + '|' + bancoLabel];
-  if (porChave) return true;
+  if (analises[competencia + '|' + bancoLabel]) return true;
   const antiga = analises[competencia];
-  return !!(antiga && (antiga.banco || 'Outro') === bancoLabel);
+  if (antiga && (antiga.banco || 'Outro') === bancoLabel) return true;
+  return Object.keys(analises).some(k => {
+    const r = analises[k];
+    return r && (r.competencia || k.split('|')[0]) === competencia
+      && (r.banco || 'Outro') === bancoLabel;
+  });
 }
 
 // Monta os links "Ver análise" / "Ver revisão" da fatura de um mês, quando

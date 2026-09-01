@@ -318,17 +318,18 @@ Uma fatura é sempre identificada pelo **mês em que vence** (quando o dinheiro 
 - Vale para: campo `competencia` do JSON, `<title>`/`<h1>` do HTML de análise, nome dos arquivos (`*-setembro-2026.*`) e nome da pasta do mês no Drive.
 - Nubank e Caixa já seguiam isso; Itaú e Bradesco foram migrados (pastas e conteúdo).
 
-### `analise_faturas` chaveado por competência + banco (decidido 2026-08-30)
+### `analise_faturas` chaveado por competência + banco + apelido (decidido 2026-08-30, apelido em 2026-08-31)
 
 **Arquivo**: `analise-fatura.html` + `assets/js/paginas/analise-fatura.js` — chave `Store.CHAVES.ANALISE_FATURAS` (`analise_faturas`).
 
-Antes a store usava **só a competência** como chave (`analise_faturas["2026-09"]`), então salvar a análise do Bradesco de setembro apagava a do Nubank do mesmo mês. Agora a chave é **`afChave(competencia, banco)` = `"AAAA-MM|Banco"`** (`banco` = valor do `<select id="af-banco">`: `Bradesco`, `Nubank`, `Itaú`, …, `Outro`). Regra: **uma análise por banco por mês** — só sobrescreve quando competência **e** banco batem.
+Antes a store usava **só a competência** como chave (`analise_faturas["2026-09"]`), então salvar a análise do Bradesco de setembro apagava a do Nubank do mesmo mês. Depois passou a **`afChave(competencia, banco)` = `"AAAA-MM|Banco"`** — mas isso ainda colapsava várias faturas do **mesmo** banco no mês (um cartão por pessoa: Nubank Mônica, Nubank Raíssa…). Agora a chave é **`afChave(competencia, banco, apelido)` = `"AAAA-MM|Banco[|Apelido]"`**: `banco` = valor do `<select id="af-banco">` (`Bradesco`, `Nubank`, `Inter`, `Itaú`, …, `Outro`); `apelido` = campo de texto **opcional** `#af-apelido`. Regra: **sem apelido**, reanalisar o mesmo banco/mês sobrescreve aquela entrada (comportamento antigo); **com apelido**, cada apelido é uma entrada independente.
 
-- `afMigrarChaves(dados)` roda dentro de `afLerTodas()`: converte chaves antigas (`/^\d{4}-\d{2}$/`) para `"<competencia>|<banco>"` e persiste (best-effort). Idempotente.
+- Antes de salvar, o `<select id="af-banco">` é reconhecido pelo texto da fatura (`afDetectarBanco` — marcas tipo `CARTÕES CAIXA`, `Banco Inter`, `Bradesco`) e ajustado sozinho; o valor do seletor + `#af-apelido` no momento do clique em "Salvar" são a fonte da verdade (`afEstado.banco`/`afEstado.apelido` sincronizados via `change`/`input` também).
+- `afMigrarChaves(dados)` roda dentro de `afLerTodas()`: converte chaves antigas (`/^\d{4}-\d{2}$/`) para `"<competencia>|<banco>"` e persiste (best-effort). Idempotente. Não mexe em chaves já com banco.
 - `afEstado.chave` guarda a chave do registro salvo/aberto; `afAutoSalvarSeSalva()` grava nela.
-- `afAbrirAnalise(chave)` e o deep-link `?abrir=` aceitam a chave nova **ou** só a competência (links antigos de "Meus Cartões"): nesse caso acham a 1ª entrada com aquela `competencia`.
-- Histórico ("Análises salvas") ordena por competência desc, depois banco asc; botões Abrir/Excluir passam a chave completa.
-- **Consumidores**: `relatorios.js` (`relGastosFaturaPorCategoria`) soma **todas** as entradas da competência (Nubank + Bradesco); `cartoes.js` (`analiseSalvaDaFatura`, link "Ver análise" → `?abrir=<comp>|<Banco>`); `revisao-faturas.js` (`rfSincronizar` deriva competência de `reg.competencia`). Todos com fallback para a chave antiga.
+- `afAbrirAnalise(chave)` e o deep-link `?abrir=` aceitam a chave completa, **ou** `"AAAA-MM|Banco"`, **ou** só a competência (links antigos de "Meus Cartões"): nesses casos abrem a 1ª entrada que casar (competência e, se informado, banco).
+- Histórico ("Análises salvas") ordena por competência desc, depois banco asc, depois apelido asc; mostra `· <apelido>` no rótulo; botões Abrir/Excluir passam a chave completa.
+- **Consumidores**: `relatorios.js` (`relGastosFaturaPorCategoria`) soma **todas** as entradas da competência (varre por `reg.competencia`, indiferente ao apelido); `cartoes.js` (`analiseSalvaDaFatura` faz varredura por competência+banco, cobrindo chaves com apelido; link "Ver análise" → `?abrir=<comp>|<Banco>`, resolvido para a 1ª análise daquele banco); `revisao-faturas.js` (`rfSincronizar` deriva competência/banco/apelido de `reg.*` e `rfChaveFatura(comp, banco, apelido)` cria uma revisão por apelido). Todos com fallback para as chaves antigas.
 
 ### Mensagem de status da análise aparece perto dos botões (2026-08-30)
 
@@ -371,9 +372,9 @@ No card do resumo, `montarTrilhaPagamento(c, mes, dataAtual)` mostra 3 passos an
 
 Transforma cada fatura fechada numa lista de tarefas de revisão pendente, para não só pagar a fatura mas sair dela com 1 corte definido para o mês seguinte.
 
-**Fonte de dados**: lê `Store.CHAVES.ANALISE_FATURAS` (`analise_faturas`, gerado em `analise-fatura.html`). Desde 2026-08-30 aquela store é chaveada por **`"AAAA-MM|Banco"`** (uma análise por banco por mês — ver seção abaixo), então Nubank e Bradesco de setembro coexistem. A revisão continua guardando um **snapshot** dos números no momento em que é criada (protege contra reanálise do mesmo banco). Fluxo do usuário: analisar 1 banco → salvar → **Sincronizar** na esteira → analisar o próximo banco → Sincronizar de novo. `rfSincronizar` deriva a competência de `reg.competencia` (não da chave).
+**Fonte de dados**: lê `Store.CHAVES.ANALISE_FATURAS` (`analise_faturas`, gerado em `analise-fatura.html`). Aquela store é chaveada por **`"AAAA-MM|Banco[|Apelido]"`** (ver seção abaixo), então Nubank e Bradesco de setembro — e vários cartões Nubank com apelido — coexistem. A revisão espelha isso: `rfChaveFatura(comp, banco, apelido)` cria uma esteira por apelido. A revisão continua guardando um **snapshot** dos números no momento em que é criada (protege contra reanálise). Fluxo do usuário: analisar 1 fatura → salvar → **Sincronizar** na esteira → analisar a próxima → Sincronizar de novo. `rfSincronizar` deriva competência/banco/apelido de `reg.*` (não da chave).
 
-**Estrutura do store**: `{ [competencia|banco]: { competencia, banco, estado, criadaEm, atualizadaEm, snapshot, tarefas: [] } }`
+**Estrutura do store**: `{ [competencia|banco[|apelido]]: { competencia, banco, apelido, estado, criadaEm, atualizadaEm, snapshot, tarefas: [] } }`
 - `estado`: `'a-revisar'` → `'em-revisao'` (ao marcar a 1ª tarefa) → `'concluida'` (botão "Concluir revisão"; reabrível).
 - `snapshot`: `{ total, qtdLancamentos, porCategoria, encargos, maior, assinaturas[], parcelamentosNovos[] }` — respeita os cartões `inclusos` da análise e ignora `tipo:'pagamento'`.
 - `tarefas[]`: `{ id, tipo, texto, feito, auto, chave? }`. `tipo`: `checklist` (5 fixas, `RF_CHECKLIST_FIXO`), `insight` (automáticas), `livre` (o usuário digita).
