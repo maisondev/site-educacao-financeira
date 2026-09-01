@@ -49,6 +49,29 @@ function altDiasAteDiaDoMes(dia) {
   return Math.round((proxima - hoje) / 86400000);
 }
 
+// Competência (AAAA-MM) em que cai uma data a `dias` de hoje.
+function altCompetenciaEmDias(dias) {
+  if (dias == null) return null;
+  const d = altHoje();
+  d.setDate(d.getDate() + dias);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+// "fatura de julho de 2026 · " (ou '' se não der pra formatar).
+function altRefFaturaTexto(competencia) {
+  const rot = (competencia && typeof formatarCompetencia === 'function')
+    ? formatarCompetencia(competencia)
+    : competencia;
+  return rot ? `fatura de ${rot} · ` : '';
+}
+
+// Link pro modal de datas daquela fatura, quando o cartão tem 4 últimos.
+function altHrefFatura(cartao, competencia) {
+  return (cartao && cartao.ultimos && competencia)
+    ? `./cartoes.html?fatura=${encodeURIComponent(cartao.ultimos + '|' + competencia)}`
+    : './cartoes.html';
+}
+
 function altAlertasCartoes() {
   const alertas = [];
 
@@ -56,24 +79,31 @@ function altAlertasCartoes() {
     const nome = cartao.nome || 'Cartão';
     const dias = altDiasAteDiaDoMes(cartao.vencimento);
     if (dias !== null && dias <= ALERTA_DIAS_CARTAO) {
+      const comp = altCompetenciaEmDias(dias);
       alertas.push(altAlerta(
         dias <= 1 ? 'critico' : 'atencao',
         `Fatura do ${nome} vence ${altPrazoEmTexto(dias)}`,
-        `Dia ${parseInt(cartao.vencimento, 10)} de cada mês.`,
-        './cartoes.html',
-        'Ver cartões',
+        `${altRefFaturaTexto(comp)}dia ${parseInt(cartao.vencimento, 10)} de cada mês.`,
+        altHrefFatura(cartao, comp),
+        cartao.ultimos ? 'Abrir fatura' : 'Ver cartões',
         dias
       ));
     }
 
     const diasFechamento = altDiasAteDiaDoMes(cartao.fechamento);
     if (diasFechamento !== null && diasFechamento <= ALERTA_DIAS_CARTAO) {
+      // Fatura que fecha agora vence no ciclo seguinte: competência = mês do
+      // próximo vencimento depois desse fechamento.
+      const diasVenc = altDiasAteDiaDoMes(cartao.vencimento);
+      const compFecha = altCompetenciaEmDias(
+        diasVenc != null && diasVenc >= diasFechamento ? diasVenc : diasFechamento + 20
+      );
       alertas.push(altAlerta(
         'info',
         `Fatura do ${nome} fecha ${altPrazoEmTexto(diasFechamento)}`,
-        'Compras após o fechamento caem na fatura seguinte.',
-        './cartoes.html',
-        'Ver cartões',
+        `${altRefFaturaTexto(compFecha)}compras após o fechamento caem na fatura seguinte.`,
+        altHrefFatura(cartao, compFecha),
+        cartao.ultimos ? 'Abrir fatura' : 'Ver cartões',
         diasFechamento
       ));
     }
@@ -158,21 +188,12 @@ function altAlertasFaturaFechada() {
         ? `venceu ${altPrazoEmTexto(dias)}`
         : `vence ${altPrazoEmTexto(dias)}`;
 
-      const rotuloComp = typeof formatarCompetencia === 'function'
-        ? formatarCompetencia(entrada.mes)
-        : entrada.mes;
-      const refFatura = rotuloComp ? `fatura de ${rotuloComp} · ` : '';
-
-      const href = cartao.ultimos
-        ? `./cartoes.html?fatura=${encodeURIComponent(cartao.ultimos + '|' + entrada.mes)}`
-        : './cartoes.html';
-
       alertas.push(altAlerta(
         severidade,
         titulo,
-        `${formatarMoedaBrasileira(saldo)} · ${refFatura}${quando} (dia ${diaVenc}) · ${detalheSeparado}.`,
-        href,
-        'Abrir fatura',
+        `${formatarMoedaBrasileira(saldo)} · ${altRefFaturaTexto(entrada.mes)}${quando} (dia ${diaVenc}) · ${detalheSeparado}.`,
+        altHrefFatura(cartao, entrada.mes),
+        cartao.ultimos ? 'Abrir fatura' : 'Ver cartões',
         dias
       ));
     });
