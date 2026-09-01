@@ -163,12 +163,16 @@ function altAlertasFaturaFechada() {
         : entrada.mes;
       const refFatura = rotuloComp ? `fatura de ${rotuloComp} · ` : '';
 
+      const href = cartao.ultimos
+        ? `./cartoes.html?fatura=${encodeURIComponent(cartao.ultimos + '|' + entrada.mes)}`
+        : './cartoes.html';
+
       alertas.push(altAlerta(
         severidade,
         titulo,
         `${formatarMoedaBrasileira(saldo)} · ${refFatura}${quando} (dia ${diaVenc}) · ${detalheSeparado}.`,
-        './cartoes.html',
-        'Ver cartões',
+        href,
+        'Abrir fatura',
         dias
       ));
     });

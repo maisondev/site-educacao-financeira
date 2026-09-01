@@ -657,6 +657,13 @@
           <input type="text" id="input-saldo-mes" placeholder="1.500,00" data-moeda inputmode="decimal">
         </div>
         <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: normal;">
+            <input type="checkbox" id="chk-fatura-paga-mes" style="width: 16px; height: 16px;" onchange="alternarFaturaPagaMes()">
+            Fatura deste mês está paga
+          </label>
+          <p style="margin: 4px 0 0 24px; font-size: 12px; color: var(--cor-texto-light);">Marcar/desmarcar salva na hora.</p>
+        </div>
+        <div class="form-group">
           <label for="input-rateio-titular">Parte da fatura é de outra pessoa - Opcional</label>
           <p style="margin: 0 0 6px 0; font-size: 12px; color: var(--cor-texto-light);">Ex.: você emprestou este cartão e a compra foi de outra pessoa. O valor abaixo é imputado a ela na quebra "Total devido por titular" (o total geral não muda).</p>
           <div style="display: grid; grid-template-columns: 1fr 120px; gap: var(--espacamento-sm);">

@@ -237,6 +237,23 @@ function inicializarCartoes() {
       e.target.value = '';
     });
   }
+
+  abrirFaturaDeParametros();
+}
+
+// Deep-link de um alerta do painel: ?fatura=<ultimos>|<AAAA-MM> abre o modal
+// "Gerenciar datas por mês" já naquele mês, pra marcar a fatura como paga.
+function abrirFaturaDeParametros() {
+  const alvo = new URLSearchParams(location.search).get('fatura');
+  if (!alvo) return;
+  const [ultimos, comp] = alvo.split('|');
+  history.replaceState(null, '', location.pathname);
+  if (!ultimos || !/^\d{4}-\d{2}$/.test(comp || '')) return;
+
+  const cartao = obterCartoes().find(c => String(c.ultimos) === String(ultimos));
+  if (!cartao) return;
+  cartaoEmEdicaoId = cartao.id;
+  abrirModalDatasMes(comp);
 }
 
 // --- Importar cartão a partir do manifesto gerado na análise de fatura ---
@@ -493,7 +510,7 @@ function fecharModalCartao() {
 
 // --- Gerenciamento de datas por mês ---
 
-function abrirModalDatasMes() {
+function abrirModalDatasMes(mesForcado) {
   if (!cartaoEmEdicaoId) return;
 
   const cartoes = obterCartoes();
@@ -505,8 +522,11 @@ function abrirModalDatasMes() {
   const hoje = new Date();
   const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
   // Abre já no mês da última fatura registrada (não no mês do calendário),
-  // para o rateio/saldo cair no mês certo.
-  const mesInicial = obterUltimaFaturaDisponivel(cartao)?.mes || mesAtual;
+  // para o rateio/saldo cair no mês certo. `mesForcado` (deep-link de um alerta)
+  // tem prioridade.
+  const mesInicial = (mesForcado && /^\d{4}-\d{2}$/.test(mesForcado))
+    ? mesForcado
+    : (obterUltimaFaturaDisponivel(cartao)?.mes || mesAtual);
   document.getElementById('select-mes-data').value = mesInicial;
 
   preencherCamposDatasMes(cartao, mesInicial);
@@ -544,6 +564,31 @@ function preencherCamposDatasMes(cartao, mes) {
     document.getElementById('input-rateio-valor').value = '';
     document.getElementById('chk-rateio-repetir').checked = !!cartao.rateioRecorrente;
   }
+
+  const chkPaga = document.getElementById('chk-fatura-paga-mes');
+  if (chkPaga) chkPaga.checked = !!(dataAtual && dataAtual.foiPaga);
+}
+
+// Marca/desmarca a fatura de um mês como paga direto no modal "Gerenciar datas
+// por mês" — grava na hora, sem a trava do fluxo guiado (aqui é edição manual).
+function alternarFaturaPagaMes() {
+  if (!cartaoEmEdicaoId) return;
+  const mes = document.getElementById('select-mes-data').value;
+  if (!mes) return;
+  const marcado = document.getElementById('chk-fatura-paga-mes').checked;
+
+  const cartoes = obterCartoes();
+  const cartao = cartoes.find(c => c.id === parseInt(cartaoEmEdicaoId));
+  if (!cartao) return;
+  cartao.datasPorMes = cartao.datasPorMes || [];
+
+  const i = cartao.datasPorMes.findIndex(d => d.mes === mes);
+  if (i !== -1) cartao.datasPorMes[i].foiPaga = marcado;
+  else cartao.datasPorMes.push({ mes, foiPaga: marcado });
+
+  salvarCartoes(cartoes);
+  renderizarHistoricoDatas();
+  atualizarVisualizacao();
 }
 
 function fecharModalDatasMes() {
