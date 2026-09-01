@@ -57,12 +57,18 @@ function altCompetenciaEmDias(dias) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-// "fatura de julho de 2026 · " (ou '' se não der pra formatar).
-function altRefFaturaTexto(competencia) {
-  const rot = (competencia && typeof formatarCompetencia === 'function')
-    ? formatarCompetencia(competencia)
-    : competencia;
-  return rot ? `fatura de ${rot} · ` : '';
+// "jul/2026" — rótulo curto pro título do alerta.
+function altCompCurta(competencia) {
+  const m = /^(\d{4})-(\d{2})$/.exec(String(competencia || ''));
+  if (!m) return '';
+  const ab = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  return `${ab[Number(m[2]) - 1]}/${m[1]}`;
+}
+
+// "Fatura do Nubank (set/2026)" — nome do cartão com a competência no título.
+function altNomeFaturaComMes(nome, competencia) {
+  const curta = altCompCurta(competencia);
+  return curta ? `${nome} (${curta})` : nome;
 }
 
 // Link pro modal de datas daquela fatura, quando o cartão tem 4 últimos.
@@ -82,8 +88,8 @@ function altAlertasCartoes() {
       const comp = altCompetenciaEmDias(dias);
       alertas.push(altAlerta(
         dias <= 1 ? 'critico' : 'atencao',
-        `Fatura do ${nome} vence ${altPrazoEmTexto(dias)}`,
-        `${altRefFaturaTexto(comp)}dia ${parseInt(cartao.vencimento, 10)} de cada mês.`,
+        `Fatura do ${altNomeFaturaComMes(nome, comp)} vence ${altPrazoEmTexto(dias)}`,
+        `dia ${parseInt(cartao.vencimento, 10)} de cada mês.`,
         altHrefFatura(cartao, comp),
         cartao.ultimos ? 'Abrir fatura' : 'Ver cartões',
         dias
@@ -100,8 +106,8 @@ function altAlertasCartoes() {
       );
       alertas.push(altAlerta(
         'info',
-        `Fatura do ${nome} fecha ${altPrazoEmTexto(diasFechamento)}`,
-        `${altRefFaturaTexto(compFecha)}compras após o fechamento caem na fatura seguinte.`,
+        `Fatura do ${altNomeFaturaComMes(nome, compFecha)} fecha ${altPrazoEmTexto(diasFechamento)}`,
+        'compras após o fechamento caem na fatura seguinte.',
         altHrefFatura(cartao, compFecha),
         cartao.ultimos ? 'Abrir fatura' : 'Ver cartões',
         diasFechamento
@@ -170,18 +176,19 @@ function altAlertasFaturaFechada() {
             : 'dinheiro já separado')
         : 'sem dinheiro separado ainda';
 
+      const nomeMes = altNomeFaturaComMes(nome, entrada.mes);
       let severidade;
       let titulo;
       if (dias < 0) {
         // Só depois de vencer o alerta fala em "não está paga".
         severidade = 'critico';
-        titulo = `Fatura do ${nome} venceu ${altPrazoEmTexto(dias)} e não está paga`;
+        titulo = `Fatura do ${nomeMes} venceu ${altPrazoEmTexto(dias)} e não está paga`;
       } else {
         // Ainda vai vencer: alerta informativo, focado em provisionar o valor.
         severidade = jaSeparado ? 'info' : (dias <= 10 ? 'atencao' : 'info');
         titulo = jaSeparado
-          ? `Fatura do ${nome} fechada — dinheiro já separado`
-          : `Fatura do ${nome} fechada — provisionar pagamento`;
+          ? `Fatura do ${nomeMes} fechada — dinheiro já separado`
+          : `Fatura do ${nomeMes} fechada — provisionar pagamento`;
       }
 
       const quando = dias < 0
@@ -191,7 +198,7 @@ function altAlertasFaturaFechada() {
       alertas.push(altAlerta(
         severidade,
         titulo,
-        `${formatarMoedaBrasileira(saldo)} · ${altRefFaturaTexto(entrada.mes)}${quando} (dia ${diaVenc}) · ${detalheSeparado}.`,
+        `${formatarMoedaBrasileira(saldo)} · ${quando} (dia ${diaVenc}) · ${detalheSeparado}.`,
         altHrefFatura(cartao, entrada.mes),
         cartao.ultimos ? 'Abrir fatura' : 'Ver cartões',
         dias
