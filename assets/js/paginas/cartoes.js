@@ -743,6 +743,7 @@ function salvarDatasMes() {
   salvarCartoes(cartoes);
   renderizarHistoricoDatas();
   atualizarVisualizacao();
+  fecharModalDatasMes();
 
   if (despesaLancada) {
     alert(`Datas e saldo salvos! Despesa de ${formatarMoedaBrasileira(saldo)} adicionada em Despesas Variáveis.`);
