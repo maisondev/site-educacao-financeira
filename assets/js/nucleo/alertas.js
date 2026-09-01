@@ -133,16 +133,40 @@ function altAlertasFaturaFechada() {
       // 0..3 dias para o vencimento já é coberto por altAlertasCartoes.
       if (dias >= 0 && dias <= ALERTA_DIAS_CARTAO) return;
 
-      const separado = entrada.dinheiroSeparado
-        ? 'dinheiro já separado'
+      const jaSeparado = !!entrada.dinheiroSeparado;
+      const detalheSeparado = jaSeparado
+        ? (Number(entrada.valorSeparado) > 0
+            ? `dinheiro separado (${formatarMoedaBrasileira(entrada.valorSeparado)})`
+            : 'dinheiro já separado')
         : 'sem dinheiro separado ainda';
 
+      let severidade;
+      let titulo;
+      if (dias < 0) {
+        // Só depois de vencer o alerta fala em "não está paga".
+        severidade = 'critico';
+        titulo = `Fatura do ${nome} venceu ${altPrazoEmTexto(dias)} e não está paga`;
+      } else {
+        // Ainda vai vencer: alerta informativo, focado em provisionar o valor.
+        severidade = jaSeparado ? 'info' : (dias <= 10 ? 'atencao' : 'info');
+        titulo = jaSeparado
+          ? `Fatura do ${nome} fechada — dinheiro já separado`
+          : `Fatura do ${nome} fechada — provisionar pagamento`;
+      }
+
+      const quando = dias < 0
+        ? `venceu ${altPrazoEmTexto(dias)}`
+        : `vence ${altPrazoEmTexto(dias)}`;
+
+      const rotuloComp = typeof formatarCompetencia === 'function'
+        ? formatarCompetencia(entrada.mes)
+        : entrada.mes;
+      const refFatura = rotuloComp ? `fatura de ${rotuloComp} · ` : '';
+
       alertas.push(altAlerta(
-        dias < 0 ? 'critico' : (dias <= 10 ? 'atencao' : 'info'),
-        dias < 0
-          ? `Fatura do ${nome} venceu ${altPrazoEmTexto(dias)} e não está paga`
-          : `Fatura do ${nome} fechou — falta pagar`,
-        `${formatarMoedaBrasileira(saldo)} · vence ${altPrazoEmTexto(dias)} (dia ${diaVenc}) · ${separado}.`,
+        severidade,
+        titulo,
+        `${formatarMoedaBrasileira(saldo)} · ${refFatura}${quando} (dia ${diaVenc}) · ${detalheSeparado}.`,
         './cartoes.html',
         'Ver cartões',
         dias
@@ -189,25 +213,36 @@ function altAlertasDespesasFixas() {
   const dados = Store.ler(Store.CHAVES.DESPESAS_FIXAS, null);
   if (!dados || !Array.isArray(dados.despesas)) return [];
 
-  const mesAtual = new Date().toISOString().slice(0, 7);
+  const hoje = altHoje();
+  const compDe = (data) => `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
 
   return dados.despesas.reduce((alertas, d) => {
     if (d.oculta || !d.vencimentoDia) return alertas;
 
-    // Já pago no ciclo deste mês: nada a cobrar.
-    const regMes = d.meses && d.meses[mesAtual];
-    if (regMes) {
-      if (regMes.status === 'pago') return alertas;
-    } else if (typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === mesAtual) {
-      return alertas;
-    }
-
     const dias = altDiasAteDiaDoMes(d.vencimentoDia);
     if (dias === null || dias > ALERTA_DIAS_DESPESA_FIXA) return alertas;
 
+    // Competência em que cai o próximo vencimento pode não ser o mês do
+    // calendário (ex.: dia 31, vencimento dia 1 -> cai no mês seguinte).
+    // Marcar como paga em qualquer uma das duas competências limpa o alerta.
+    const alvo = new Date(hoje);
+    alvo.setDate(hoje.getDate() + dias);
+    const comps = [compDe(hoje), compDe(alvo)];
+
+    const estadoNoMes = (c) => {
+      const reg = d.meses && d.meses[c];
+      if (reg) return reg.status || null;
+      return (typeof d.pagoEm === 'string' && d.pagoEm.slice(0, 7) === c) ? 'pago' : null;
+    };
+    const estados = comps.map(estadoNoMes);
+    if (estados.includes('pago')) return alertas;
+    const provisionada = estados.includes('reservado');
+
     alertas.push(altAlerta(
       dias <= 1 ? 'critico' : 'atencao',
-      `${d.nome} vence ${altPrazoEmTexto(dias)} e não está paga`,
+      provisionada
+        ? `${d.nome} vence ${altPrazoEmTexto(dias)} — provisionada, falta pagar`
+        : `${d.nome} vence ${altPrazoEmTexto(dias)} e não está paga`,
       `${formatarMoedaBrasileira(d.valor || 0)} · dia ${parseInt(d.vencimentoDia, 10)} de cada mês.`,
       './despesas-fixas.html',
       'Ver despesas fixas',
