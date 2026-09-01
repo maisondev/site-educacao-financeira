@@ -550,6 +550,10 @@ function afSalvarAnalise() {
   afEstado.competencia = comp;
   afEstado.salva = true;
 
+  // o seletor é a fonte da verdade do emissor no momento de salvar
+  const selBanco = document.getElementById('af-banco');
+  if (selBanco && selBanco.value) afEstado.banco = selBanco.value;
+
   const todas = afLerTodas();
   const chave = afChave(comp, afEstado.banco);
   afEstado.chave = chave;
@@ -1083,8 +1087,31 @@ function afLancarEmDespesas() {
 }
 
 // --- fluxo de importação ----------------------------------------------------
+
+// Reconhece o emissor pelo texto da fatura. Retorna o value exato do <select id="af-banco">
+// ou null quando não há marca clara (mantém o que o usuário escolheu).
+function afDetectarBanco(texto) {
+  const t = ' ' + String(texto || '').toLowerCase().replace(/\s+/g, ' ') + ' ';
+  const regras = [
+    ['Caixa', /cart(õ|o)es caixa|caixa econ(ô|o)mica/],
+    ['Nubank', /nubank|nu pagamentos|nu financeira/],
+    ['Inter', /banco inter|inter\.co|bancointer\.com/],
+    ['Bradesco', /bradesco/],
+    ['Itaú', /ita(ú|u) unibanco|ita(ú|u) uniclass|cart(ã|a)o ita(ú|u)| itau /],
+    ['Santander', /santander/],
+    ['Banco do Brasil', /banco do brasil|ourocard/]
+  ];
+  const achou = regras.find(([, re]) => re.test(t));
+  return achou ? achou[0] : null;
+}
+
 function afProcessarTexto(texto) {
-  const banco = document.getElementById('af-banco').value;
+  const selBanco = document.getElementById('af-banco');
+  const detectado = afDetectarBanco(texto);
+  if (detectado && selBanco && Array.from(selBanco.options).some(o => o.value === detectado)) {
+    selBanco.value = detectado;
+  }
+  const banco = selBanco ? selBanco.value : 'Outro';
   const parsed = afParsearFatura(texto);
   if (!parsed.lancamentos.length) {
     afMostrarMsg('Não consegui identificar lançamentos. Cole a seção "Lançamentos" da fatura (com data, descrição e valor em cada linha).', 'erro');
@@ -1214,6 +1241,9 @@ function inicializarAnaliseFatura() {
   if (btnLancar) btnLancar.addEventListener('click', afLancarEmDespesas);
   document.getElementById('af-comp').addEventListener('change', (e) => {
     if (afEstado) afEstado.competencia = e.target.value;
+  });
+  document.getElementById('af-banco').addEventListener('change', (e) => {
+    if (afEstado) afEstado.banco = e.target.value;
   });
 
   afRenderizarHistorico();
