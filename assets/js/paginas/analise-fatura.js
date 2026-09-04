@@ -238,32 +238,41 @@ function afParsearFatura(textoBruto) {
   const lancamentos = [];
   let cartaoAtual = '';
   let titularAtual = '';
+  let linhaAnterior = '';
 
   for (const linha of linhas) {
-    // cabeçalho de cartão: "<Titular> Cartão NNNN XXXX XXXX NNNN"
-    if (/Cart[aã]o/i.test(linha) && !reData.test(linha)) {
-      if (/N[uú]mero do Cart[aã]o/i.test(linha)) continue; // rótulo da página, não define titular
-      const trecho = linha.match(/Cart[aã]o[ :]+([\dX ]*\d{4})/i);
+    // cabeçalho de cartão: "<Titular> Cartão NNNN XXXX XXXX NNNN" (Itaú/Nubank/Bradesco)
+    // ou, em duas linhas, "<TITULAR>" seguido de "Picpay Card final NNNN" (PicPay).
+    if ((/Cart[aã]o/i.test(linha) || /\bCard\b/i.test(linha)) && !reData.test(linha)) {
+      if (/N[uú]mero do Cart[aã]o/i.test(linha)) { linhaAnterior = linha; continue; } // rótulo da página, não define titular
+      const trecho = linha.match(/(?:Cart[aã]o|Card)(?:\s+final)?[ :]+([\dX ]*\d{4})/i);
       if (trecho) {
         const grupos = trecho[1].match(/\d{4}/g);
         if (grupos && grupos.length) {
           cartaoAtual = grupos[grupos.length - 1];
-          const antes = linha.slice(0, linha.search(/Cart[aã]o/i)).trim();
+          const posTermo = linha.search(/Cart[aã]o|Card/i);
+          const antes = linha.slice(0, posTermo).trim();
+          const anteriorTrim = linhaAnterior.trim();
           if (antes.split(/\s+/).filter(Boolean).length >= 2 && !/n[uú]mero/i.test(antes)) {
             titularAtual = antes;
+          } else if (/^[A-ZÀ-Ú][A-ZÀ-Ú .]{3,}$/.test(anteriorTrim) && anteriorTrim.split(/\s+/).filter(Boolean).length >= 2) {
+            // titular numa linha própria, acima do cabeçalho do cartão (layout PicPay)
+            titularAtual = anteriorTrim;
           }
+          linhaAnterior = linha;
           continue;
         }
       }
     }
 
-    if (/^Total\s+(para|d[ao])\b/i.test(linha)) continue;
+    if (/^Total\s+(para|d[ao])\b/i.test(linha)) { linhaAnterior = linha; continue; }
 
     const mData = linha.match(reData);
-    if (!mData) continue;
+    if (!mData) { linhaAnterior = linha; continue; }
 
     let resto = linha.replace(reData, '').trim();
-    if (!/[A-Za-zÀ-ÿ]/.test(resto)) continue; // sem texto: código de barras / data solta
+    linhaAnterior = linha;
+    if (!resto) continue; // data solta, sem conteúdo depois
 
     const valores = resto.match(reValor);
     if (!valores || !valores.length) continue;
