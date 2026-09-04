@@ -272,7 +272,7 @@ function afParsearFatura(textoBruto) {
 
     let resto = linha.replace(reData, '').trim();
     linhaAnterior = linha;
-    if (!resto) continue; // data solta, sem conteúdo depois
+    if (!resto || !/[A-Za-zÀ-ÿ]/.test(resto)) continue; // data solta / código de barras, sem descrição
 
     const valores = resto.match(reValor);
     if (!valores || !valores.length) continue;
