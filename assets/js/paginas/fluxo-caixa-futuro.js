@@ -175,7 +175,8 @@ function renderizarTabela() {
   `;
 
   compras.forEach(compra => {
-    const valorParcela = (compra.valorTotal / compra.numParcelas).toFixed(2);
+    const numParcelas = Number(compra.numParcelas) || 1;
+    const valorParcela = numParcelas > 0 ? (compra.valorTotal / numParcelas).toFixed(2) : '0.00';
     const dataParts = compra.dataInicio.split('-');
     const dataFormatada = `${dataParts[1]}/${dataParts[0]}`;
 
@@ -184,7 +185,7 @@ function renderizarTabela() {
         <td>${compra.descricao}</td>
         <td>${compra.cartao}</td>
         <td class="valor-destaque">${compra.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-        <td>${compra.numParcelas}x</td>
+        <td>${numParcelas}x</td>
         <td>${dataFormatada}</td>
         <td>${parseFloat(valorParcela).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
         <td>
@@ -227,15 +228,18 @@ function renderizarCalendario() {
       const anoIniciNum = parseInt(anoInicio);
 
       // Calcular qual é o mês da compra
+      const numParcelas = Number(compra.numParcelas) || 1;
+      if (numParcelas <= 0) continue;
+
       const dataPrimeiraParcela = new Date(anoIniciNum, mesIniciNum - 1);
 
       // Verificar cada parcela
-      for (let j = 0; j < compra.numParcelas; j++) {
+      for (let j = 0; j < numParcelas; j++) {
         const dataParcela = new Date(dataPrimeiraParcela.getFullYear(), dataPrimeiraParcela.getMonth() + j);
         const mesParcelaAno = `${dataParcela.getFullYear()}-${String(dataParcela.getMonth() + 1).padStart(2, '0')}`;
 
         if (mesParcelaAno === mesAno) {
-          const valorParcela = compra.valorTotal / compra.numParcelas;
+          const valorParcela = compra.valorTotal / numParcelas;
           parcelas.push({
             descricao: compra.descricao,
             valor: valorParcela,

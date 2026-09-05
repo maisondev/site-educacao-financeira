@@ -989,14 +989,20 @@ function afHashLanc(l) {
 }
 
 // "DD/MM" (sem ano) + competência da fatura -> data ISO "AAAA-MM-DD".
-// Se o mês da compra for maior que o da competência, é compra do ano anterior
-// (ex.: compra de dezembro na fatura de janeiro).
+// Se o mês da compra for significativamente anterior ao da competência,
+// é compra do ano anterior (ex.: compra de dezembro na fatura de janeiro).
 function afDataISOde(l, comp) {
   const m = /^(\d{2})\/(\d{2})$/.exec(l.data || '');
   const c = /^(\d{4})-(\d{2})$/.exec(comp || '');
   if (!m || !c) return `${comp || afMesAtualISO()}-01`;
   let ano = parseInt(c[1], 10);
-  if (parseInt(m[2], 10) > parseInt(c[2], 10)) ano -= 1;
+  const mesComp = parseInt(c[2], 10);
+  const mesTransacao = parseInt(m[2], 10);
+  // Só decrementar se mês anterior for muito distante (extrato multi-mês típico)
+  // ou se for padrão dezembro -> janeiro
+  if ((mesComp <= 3 && mesTransacao > 9) || (mesTransacao > mesComp + 2)) {
+    ano -= 1;
+  }
   return `${ano}-${m[2]}-${m[1]}`;
 }
 

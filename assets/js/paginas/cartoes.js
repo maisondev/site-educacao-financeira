@@ -658,11 +658,11 @@ function salvarDatasMes() {
   const fechamento = fechamentoMes ? `${fechamentoDia}/${fechamentoMes}` : fechamentoDia;
   const vencimento = vencimentoMes ? `${vencimentoDia}/${vencimentoMes}` : vencimentoDia;
 
-  saldo = saldo ? Math.round(saldo * 100) / 100 : null;
+  saldo = saldo != null && saldo !== '' ? Math.round(saldo * 100) / 100 : null;
 
   const rateioTitular = document.getElementById('input-rateio-titular').value.trim();
   let rateioValor = parseValorBrasileiro(document.getElementById('input-rateio-valor').value);
-  rateioValor = rateioValor ? Math.round(rateioValor * 100) / 100 : null;
+  rateioValor = rateioValor != null && rateioValor !== '' ? Math.round(rateioValor * 100) / 100 : null;
   const rateioRepetir = document.getElementById('chk-rateio-repetir').checked;
 
   if ((rateioTitular && !rateioValor) || (!rateioTitular && rateioValor)) {

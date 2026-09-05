@@ -99,9 +99,12 @@ function criarCardMetas() {
     return criarCardVazio('Metas Financeiras', 'Defina seus objetivos de médio e longo prazo.', './metas.html', 'Adicionar meta');
   }
 
-  const atingidas = metas.filter(m => m.valorAtual >= m.valorAlvo).length;
+  const atingidas = metas.filter(m => m.valorAlvo > 0 && m.valorAtual >= m.valorAlvo).length;
   const emProgresso = metas.length - atingidas;
-  const progressoMedio = metas.reduce((sum, m) => sum + Math.min((m.valorAtual / m.valorAlvo) * 100, 100), 0) / metas.length;
+  const progressoMedio = metas.reduce((sum, m) => {
+    if (m.valorAlvo <= 0) return sum;
+    return sum + Math.min((m.valorAtual / m.valorAlvo) * 100, 100);
+  }, 0) / (metas.filter(m => m.valorAlvo > 0).length || 1);
 
   return `
     <div class="card-dashboard">

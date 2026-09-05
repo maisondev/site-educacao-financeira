@@ -497,13 +497,26 @@ function lrSalvarEdicao(id) {
   const raiz = document.querySelector(`.lr-edicao[data-id="${id}"]`);
   if (!raiz) return;
 
-  const valor = parseValorBrasileiro(raiz.querySelector('.lr-ed-valor').value);
-  const descricao = raiz.querySelector('.lr-ed-descricao').value.trim();
-  const estabelecimento = raiz.querySelector('.lr-ed-estabelecimento').value.trim();
-  const categoria = raiz.querySelector('.lr-ed-categoria').value;
-  const formaPagamento = raiz.querySelector('.lr-ed-pagamento').value;
-  const data = raiz.querySelector('.lr-ed-data').value;
-  const hora = raiz.querySelector('.lr-ed-hora').value;
+  const elValor = raiz.querySelector('.lr-ed-valor');
+  const elDescricao = raiz.querySelector('.lr-ed-descricao');
+  const elEstabelecimento = raiz.querySelector('.lr-ed-estabelecimento');
+  const elCategoria = raiz.querySelector('.lr-ed-categoria');
+  const elFormaPagamento = raiz.querySelector('.lr-ed-pagamento');
+  const elData = raiz.querySelector('.lr-ed-data');
+  const elHora = raiz.querySelector('.lr-ed-hora');
+
+  if (!elValor || !elDescricao || !elEstabelecimento || !elCategoria || !elFormaPagamento || !elData || !elHora) {
+    lrMostrarMensagem('Erro ao acessar campos de edição.', 'erro');
+    return;
+  }
+
+  const valor = parseValorBrasileiro(elValor.value);
+  const descricao = elDescricao.value.trim();
+  const estabelecimento = elEstabelecimento.value.trim();
+  const categoria = elCategoria.value;
+  const formaPagamento = elFormaPagamento.value;
+  const data = elData.value;
+  const hora = elHora.value;
 
   if (!valor || valor <= 0) {
     lrMostrarMensagem('Informe um valor válido para salvar a edição.', 'erro');
