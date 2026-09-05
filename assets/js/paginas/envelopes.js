@@ -210,7 +210,7 @@ function criarCardEnvelope(envelope, rendaTotal) {
   const valorAlocado = (rendaTotal * envelope.percentual) / 100;
   const registros = envelope.registros || envelope.despesas || [];
   const totalGasto = registros.reduce((sum, r) => sum + r.valor, 0);
-  const percentualUsado = (totalGasto / valorAlocado) * 100;
+  const percentualUsado = valorAlocado > 0 ? (totalGasto / valorAlocado) * 100 : 0;
   const sobra = valorAlocado - totalGasto;
 
   // Migrar despesas antigas para registros

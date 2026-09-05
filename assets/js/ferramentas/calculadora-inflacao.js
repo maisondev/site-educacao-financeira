@@ -17,7 +17,6 @@ function calcularInflacao(event) {
 
   const valorAtual = valorPassado * Math.pow(1 + taxaDecimal, anos);
 
-  const perdaPoder = ((valorAtual - valorPassado) / valorPassado) * 100;
   const percentualPerdaPoder = ((valorPassado / valorAtual) * 100 - 100) * -1;
 
   const resultadoContainer = document.getElementById('resultado');

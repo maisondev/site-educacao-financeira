@@ -49,7 +49,7 @@ function gerarTabelaProgressao(capital, taxa, tempo) {
   const corpoTabela = document.getElementById('corpo-tabela');
   corpoTabela.innerHTML = '';
 
-  const tempoInt = Math.ceil(tempo);
+  const tempoInt = Math.floor(tempo);
 
   for (let t = 1; t <= tempoInt; t++) {
     const jurosAcumulados = capital * taxa * t;

@@ -7,9 +7,9 @@ const CHAVE_HISTORICO_MENSAL = 'historico_mensal';
 
 // Chaves cujos itens são lançamentos datados e ganham `competencia`.
 const COMPETENCIA_FONTES = [
-  { chave: 'despesas_variaveis', campoData: 'data' },
-  { chave: 'receitas_lista', campoData: 'data' },
-  { chave: 'rendas_extras', campoData: 'dataInicio' }
+  { chave: Store.CHAVES.DESPESAS_VARIAVEIS, campoData: 'data' },
+  { chave: Store.CHAVES.RECEITAS, campoData: 'data' },
+  { chave: Store.CHAVES.RENDAS_EXTRAS, campoData: 'dataInicio' }
 ];
 
 // Fontes cujos lançamentos datados ficam dentro de um sub-array (ou sob uma
@@ -58,13 +58,7 @@ function competenciaSelecionada() {
 
 function definirCompetenciaSelecionada(competencia) {
   if (!competenciaValida(competencia)) return false;
-  try {
-    localStorage.setItem(CHAVE_COMPETENCIA_SELECIONADA, competencia);
-    return true;
-  } catch (e) {
-    console.error('[competencia] não foi possível guardar a seleção:', e);
-    return false;
-  }
+  return Store.gravar(CHAVE_COMPETENCIA_SELECIONADA, competencia);
 }
 
 // "2026-08" → "agosto de 2026"

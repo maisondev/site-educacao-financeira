@@ -13,12 +13,11 @@ class GerenciadorCartoesAdicionais {
   }
 
   carregarDados() {
-    const dadosSalvos = localStorage.getItem('cartoes_adicionais_dados');
-    this.cartoes = dadosSalvos ? JSON.parse(dadosSalvos) : [];
+    this.cartoes = Store.ler(Store.CHAVES.CARTOES_ADICIONAIS, []);
   }
 
   salvarDados() {
-    localStorage.setItem('cartoes_adicionais_dados', JSON.stringify(this.cartoes));
+    Store.gravar(Store.CHAVES.CARTOES_ADICIONAIS, this.cartoes);
   }
 
   definirDataHoje() {

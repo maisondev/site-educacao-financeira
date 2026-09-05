@@ -1,26 +1,12 @@
 // Funções para gerar lembretes de eventos importantes dos cartões
 
-const CHAVE_CARTOES = 'cartoes';
-
 function obterCartoes() {
-  try {
-    const cartoes = localStorage.getItem(CHAVE_CARTOES);
-    return cartoes ? JSON.parse(cartoes) : [];
-  } catch (e) {
-    console.error('Erro ao obter cartões:', e);
-    return [];
-  }
+  return Store.ler(Store.CHAVES.CARTOES, []);
 }
 
 function obterDespesasFixasLembrete() {
-  try {
-    const bruto = localStorage.getItem('despesas_fixas');
-    const dados = bruto ? JSON.parse(bruto) : null;
-    return dados && Array.isArray(dados.despesas) ? dados.despesas : [];
-  } catch (e) {
-    console.error('Erro ao obter despesas fixas:', e);
-    return [];
-  }
+  const dados = Store.ler(Store.CHAVES.DESPESAS_FIXAS, null);
+  return dados && Array.isArray(dados.despesas) ? dados.despesas : [];
 }
 
 function gerarLembretesProximos30Dias() {

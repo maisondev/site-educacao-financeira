@@ -2,13 +2,13 @@
 // Renda mensal é compartilhada entre todas as páginas
 
 function obterRendaMensal() {
-  const renda = localStorage.getItem('renda_mensal');
+  const renda = Store.ler(Store.CHAVES.RENDA);
   return renda ? parseFloat(renda) : null;
 }
 
 function definirRendaMensal(valor) {
   if (valor && valor > 0) {
-    localStorage.setItem('renda_mensal', valor.toString());
+    Store.gravar(Store.CHAVES.RENDA, valor.toString());
     return true;
   }
   return false;
@@ -16,14 +16,14 @@ function definirRendaMensal(valor) {
 
 // Mês/ano de referência do valor de renda atual (ex: competência do contracheque que o originou)
 function obterRendaMensalCompetencia() {
-  return localStorage.getItem('renda_mensal_competencia') || null;
+  return Store.ler(Store.CHAVES.RENDA_COMPETENCIA) || null;
 }
 
 function definirRendaMensalCompetencia(competencia) {
   if (competencia) {
-    localStorage.setItem('renda_mensal_competencia', competencia);
+    Store.gravar(Store.CHAVES.RENDA_COMPETENCIA, competencia);
   } else {
-    localStorage.removeItem('renda_mensal_competencia');
+    Store.remover(Store.CHAVES.RENDA_COMPETENCIA);
   }
 }
 
@@ -32,7 +32,7 @@ function definirRendaMensalCompetencia(competencia) {
 // meses de salário variável (hora extra, 13º, falta) sem redigitação.
 function obterRendaPorCompetencia() {
   try {
-    const bruto = localStorage.getItem('renda_por_competencia');
+    const bruto = Store.ler(Store.CHAVES.RENDA_POR_COMPETENCIA);
     const dados = bruto ? JSON.parse(bruto) : {};
     return dados && typeof dados === 'object' && !Array.isArray(dados) ? dados : {};
   } catch (e) {
@@ -55,7 +55,7 @@ function definirRendaDaCompetencia(competencia, valor) {
     delete mapa[competencia];
   }
   try {
-    localStorage.setItem('renda_por_competencia', JSON.stringify(mapa));
+    Store.gravar(Store.CHAVES.RENDA_POR_COMPETENCIA, JSON.stringify(mapa));
   } catch (e) {
     console.error('Erro ao gravar renda por competência:', e);
   }
