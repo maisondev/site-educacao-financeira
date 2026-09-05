@@ -142,7 +142,9 @@ function obterDados() {
 }
 
 function salvarDados(dados) {
-  Store.gravar(Store.CHAVES.DIVIDAS, dados);
+  if (!Store.gravar(Store.CHAVES.DIVIDAS, dados)) {
+    console.error('[dividas] falha ao gravar');
+  }
 }
 
 // ---------------------------------------------------------------------------

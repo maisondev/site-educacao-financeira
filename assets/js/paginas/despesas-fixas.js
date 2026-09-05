@@ -98,6 +98,7 @@ function obterDados() {
   // Migração idempotente: estado único (pagoEm / provisionada) -> estado por competência.
   // meses = { "AAAA-MM": { status: "reservado" | "pago", pagoEm?: "AAAA-MM-DD" } }
   let migrou = false;
+  const registrosALimpar = [];
   dados.despesas.forEach(d => {
     if (!d.meses || typeof d.meses !== 'object') d.meses = {};
     if (d.pagoEm) {
@@ -105,17 +106,22 @@ function obterDados() {
       if (competenciaValida(c) && !d.meses[c]) {
         d.meses[c] = { status: 'pago', pagoEm: d.pagoEm };
       }
-      delete d.pagoEm;
+      registrosALimpar.push(d);
       migrou = true;
     }
     if (d.provisionada) {
       const c = competenciaAtual();
       if (!d.meses[c]) d.meses[c] = { status: 'reservado' };
-      delete d.provisionada;
+      registrosALimpar.push(d);
       migrou = true;
     }
   });
-  if (migrou) Store.gravar(CHAVE_DESPESAS_FIXAS, dados);
+  if (migrou && Store.gravar(CHAVE_DESPESAS_FIXAS, dados)) {
+    registrosALimpar.forEach(d => {
+      delete d.pagoEm;
+      delete d.provisionada;
+    });
+  }
 
   return dados;
 }

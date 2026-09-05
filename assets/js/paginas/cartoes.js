@@ -54,7 +54,9 @@ if (typeof adicionarDespesaDeCartao !== 'function') {
       return d.categoria !== 'cartao' || chaveDoCartao(d) !== chave;
     });
     filtradas.push(obj);
-    Store.gravar(CHAVE, filtradas);
+    if (!Store.gravar(CHAVE, filtradas)) {
+      console.error('[cartoes] falha ao gravar despesa do cartão');
+    }
   };
 }
 
@@ -219,10 +221,11 @@ function migrarCartoesLegado() {
       });
       mudou = true;
     });
-    Store.remover(CHAVE_CARTAO_CREDITO);
   }
 
-  if (mudou) salvarCartoes(atuais);
+  if (mudou && salvarCartoes(atuais)) {
+    Store.remover(CHAVE_CARTAO_CREDITO);
+  }
 }
 
 function inicializarCartoes() {
@@ -439,7 +442,9 @@ function obterCartoes() {
 }
 
 function salvarCartoes(cartoes) {
-  Store.gravar(Store.CHAVES.CARTOES, cartoes);
+  if (!Store.gravar(Store.CHAVES.CARTOES, cartoes)) {
+    console.error('[cartoes] falha ao gravar cartões');
+  }
 }
 
 function limparFormularioCartao() {

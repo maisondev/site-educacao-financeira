@@ -86,7 +86,9 @@ function obterDespesasVariaveis() {
 }
 
 function salvarDespesasVariaveis(despesas) {
-  Store.gravar(CHAVE_DESPESAS_VARIAVEIS, despesas);
+  if (!Store.gravar(CHAVE_DESPESAS_VARIAVEIS, despesas)) {
+    console.error('[despesas-variaveis] falha ao gravar');
+  }
 }
 
 // Identifica de qual cartão é uma despesa (para manter só 1 fatura por cartão).

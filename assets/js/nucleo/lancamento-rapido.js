@@ -84,7 +84,11 @@ function lrSomarMes(competencia, delta) {
   if (typeof competenciaSomarMeses === 'function') {
     return competenciaSomarMeses(competencia, delta);
   }
-  const [ano, mes] = competencia.split('-').map(Number);
+  const partes = competencia.split('-').map(Number);
+  if (partes.length !== 2 || !partes[0] || !partes[1]) {
+    return lrCompetenciaAtual();
+  }
+  const [ano, mes] = partes;
   const d = new Date(ano, mes - 1 + delta, 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
@@ -351,7 +355,11 @@ function lrAtualizarSugestao() {
 const LR_LIMITE_LISTA = 120;
 
 function lrRotuloMes(chave) {
-  const [ano, mes] = chave.split('-').map(Number);
+  const partes = chave.split('-').map(Number);
+  if (partes.length !== 2 || !partes[0] || !partes[1]) {
+    return 'Inválido';
+  }
+  const [ano, mes] = partes;
   const rotulo = new Date(ano, mes - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   return rotulo.charAt(0).toUpperCase() + rotulo.slice(1);
 }

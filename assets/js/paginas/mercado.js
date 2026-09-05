@@ -37,13 +37,19 @@ function obterDadosMercado() {
       precisaSalvar = true;
     }
   });
-  if (precisaSalvar) Store.gravar(Store.CHAVES.MERCADO, dados);
+  if (precisaSalvar) {
+    if (!Store.gravar(Store.CHAVES.MERCADO, dados)) {
+      console.error('[mercado] falha ao gravar migração de dados');
+    }
+  }
 
   return dados;
 }
 
 function salvarDadosMercado(dados) {
-  Store.gravar(Store.CHAVES.MERCADO, dados);
+  if (!Store.gravar(Store.CHAVES.MERCADO, dados)) {
+    console.error('[mercado] falha ao gravar dados');
+  }
 }
 
 // ===== Vínculo com Despesas Variáveis =====
