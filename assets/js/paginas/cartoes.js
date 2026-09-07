@@ -1200,16 +1200,10 @@ function analiseSalvaDaFatura(cartao, competencia) {
 
   // Se não achou no mês específico, procura qualquer análise deste banco
   // (útil quando análise foi feita de um mês futuro e o cartão ainda não tem saldo registrado)
-  const temAnalise = Object.keys(analises).some(k => {
+  return Object.keys(analises).some(k => {
     const r = analises[k];
     return r && (r.banco || 'Outro') === bancoLabel;
   });
-
-  if (bancoCartao === 'picpay' && temAnalise) {
-    console.log(`[analiseSalvaDaFatura] Encontrou análise de PicPay!`);
-  }
-
-  return temAnalise;
 }
 
 // Monta os links "Ver análise" / "Ver revisão" da fatura de um mês, quando
