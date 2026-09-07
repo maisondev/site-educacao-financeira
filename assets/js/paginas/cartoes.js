@@ -1172,8 +1172,8 @@ function agruparCartoesPorBanco(cartoes) {
 
 // Rótulo do banco como gravado na Análise de Fatura (valores do select #af-banco).
 const AF_BANCO_LABEL = {
-  nubank: 'Nubank', itau: 'Itaú', bradesco: 'Bradesco',
-  santander: 'Santander', caixa: 'Caixa', bb: 'Banco do Brasil'
+  nubank: 'Nubank', inter: 'Inter', itau: 'Itaú', bradesco: 'Bradesco',
+  santander: 'Santander', caixa: 'Caixa', bb: 'Banco do Brasil', picpay: 'PicPay'
 };
 
 // Existe análise salva (em analise-fatura.html) para este banco?
@@ -1184,13 +1184,6 @@ function analiseSalvaDaFatura(cartao, competencia) {
   const bancoCartao = obterBancoPorNome(cartao.nome);
   const bancoLabel = AF_BANCO_LABEL[bancoCartao] || 'Outro';
   const analises = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
-
-  // Debug: log para TODOS os PicPay
-  if (bancoCartao === 'picpay') {
-    console.log(`[analiseSalvaDaFatura] ${cartao.nome} - competencia="${competencia}", bancoLabel="${bancoLabel}"`);
-    console.log(`  Chaves em analises:`, Object.keys(analises));
-    console.log(`  Procurando exata: "${competencia}|${bancoLabel}":`, !!analises[`${competencia}|${bancoLabel}`]);
-  }
 
   // Procura por competência exata se fornecida
   if (competencia) {
