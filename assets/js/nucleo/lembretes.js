@@ -1,10 +1,14 @@
 // Funções para gerar lembretes de eventos importantes dos cartões
 
 function obterCartoes() {
+  // Verificação segura: se Store não foi carregado ainda, retornar array vazio
+  if (typeof Store === 'undefined') return [];
   return Store.ler(Store.CHAVES.CARTOES, []);
 }
 
 function obterDespesasFixasLembrete() {
+  // Verificação segura: se Store não foi carregado ainda, retornar array vazio
+  if (typeof Store === 'undefined') return [];
   const dados = Store.ler(Store.CHAVES.DESPESAS_FIXAS, null);
   return dados && Array.isArray(dados.despesas) ? dados.despesas : [];
 }
