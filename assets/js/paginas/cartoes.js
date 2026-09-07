@@ -1044,9 +1044,12 @@ function atualizarVisualizacao() {
   if (cartoesComSaldo.length > 0) {
     resumoDiv.style.display = 'block';
 
-    // Agrupar por banco
+    // Agrupar por banco, excluindo faturas já pagas
     const cartoesPorBanco = {};
     cartoesComSaldo.forEach(c => {
+      // Não mostrar fatura paga (só mostra enquanto está em aberto)
+      if (faturaPaga(c)) return;
+
       const banco = obterBancoPorNome(c.nome) || 'outros';
       if (!cartoesPorBanco[banco]) {
         cartoesPorBanco[banco] = [];
@@ -1728,6 +1731,16 @@ document.addEventListener('keydown', function(event) {
     fecharModalDatasMes();
   } else if (!document.getElementById('modal-cartao').hasAttribute('hidden')) {
     fecharModalCartao();
+  }
+});
+
+// Recarregar dados quando volta de outra página (ex: análise-fatura.html)
+window.addEventListener('focus', () => {
+  atualizarVisualizacao();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    atualizarVisualizacao();
   }
 });
 
