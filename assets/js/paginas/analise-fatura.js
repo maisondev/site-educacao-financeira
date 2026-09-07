@@ -219,7 +219,76 @@ async function afExtrairTextoPDF(arrayBuffer) {
 }
 
 // --- parser da fatura ----------------------------------------------------------
+// Parser específico para o formato do Inter (DD de mês YYYY ... - R$ XXX,XX)
+function afParsearInterFatura(textoBruto) {
+  const linhas = String(textoBruto || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const meses = { jan: '01', fev: '02', mar: '03', abr: '04', mai: '05', jun: '06',
+                  jul: '07', ago: '08', set: '09', out: '10', nov: '11', dez: '12' };
+
+  const lancamentos = [];
+  let cartaoAtual = '';
+
+  // Procura por linhas que começam com "DD de mês"
+  // Formato: "DD de mês YYYY DESCRIÇÃO - R$ XXX,XX" ou "DD de mês YYYY DESCRIÇÃO + R$ XXX,XX"
+  const reInterData = /^(\d{1,2})\s+de\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-z.]*\s+(\d{4})\s+(.+?)\s*[-+]\s*R\$\s*([\d.,]+)/i;
+
+  for (const linha of linhas) {
+    // Detecta cabeçalho de cartão
+    if (/^CARTÃO\s+.*(\d{4})/i.test(linha)) {
+      const m = linha.match(/(\d{4})/);
+      if (m) cartaoAtual = m[1];
+      continue;
+    }
+
+    // Pula linhas de cabeçalho e total
+    if (/^Data\s+Movimen|^Total\s+Cart/i.test(linha)) continue;
+
+    // Tenta parsear como lançamento Inter
+    const m = linha.match(reInterData);
+    if (m) {
+      const dia = m[1].padStart(2, '0');
+      const mesNum = meses[m[2].toLowerCase()] || '00';
+      const ano = m[3];
+      const descricao = (m[4] || '').trim().replace(/\s+/g, ' ');
+      const valorStr = m[5];
+
+      if (!/^TOTAL|^CARTÃO/i.test(descricao) && descricao.length > 0) {
+        const valor = afParseBR(valorStr);
+        if (valor) {
+          // Detecta tipo: pagamento, encargo ou compra
+          let tipo = 'compra';
+          const dU = descricao.toUpperCase();
+          if (/PAG(AMENT|TO|\.)|\bPGTO\b|DEB\s*EM\s*C\/?C|DEB\.?\s*CONTA|CR[EÉ]DITO RECEBIDO|ON LINE/.test(dU)) {
+            tipo = 'pagamento';
+          } else if (/^IOF|\bIOF\b|\bJUROS\b|\bMULTA\b|\bENCARGO|ANUIDADE|\bTARIFA\b/.test(dU)) {
+            tipo = 'encargo';
+          }
+
+          lancamentos.push({
+            id: afGerarId(),
+            data: `${dia}/${mesNum}`,
+            descricao: descricao,
+            cidade: '',
+            cartao: cartaoAtual,
+            titular: '',
+            parcelaAtual: null,
+            parcelaTotal: null,
+            valor: Math.abs(valor),
+            tipo: tipo
+          });
+        }
+      }
+    }
+  }
+
+  return lancamentos.length > 0 ? { lancamentos, banco: 'Inter' } : null;
+}
+
 function afParsearFatura(textoBruto) {
+  // Tenta parser Inter primeiro
+  const resultadoInter = afParsearInterFatura(textoBruto);
+  if (resultadoInter) return resultadoInter;
+
   let linhas = String(textoBruto || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
   // Se veio tudo grudado numa linha só, quebra antes de cada "DD/MM " ou "DD/MM\t"
@@ -267,7 +336,18 @@ function afParsearFatura(textoBruto) {
 
     if (/^Total\s+(para|d[ao])\b/i.test(linha)) { linhaAnterior = linha; continue; }
 
-    const mData = linha.match(reData);
+    let mData = linha.match(reData);
+    // Fallback para formato Inter: "DD de mês" (ex: "26 de fev")
+    if (!mData && /^\d{1,2}\s+de\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)/i.test(linha)) {
+      const mInterData = linha.match(/^(\d{1,2})\s+de\s+(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)/i);
+      if (mInterData) {
+        const meses = { jan: '01', fev: '02', mar: '03', abr: '04', mai: '05', jun: '06',
+                        jul: '07', ago: '08', set: '09', out: '10', nov: '11', dez: '12' };
+        const mesNum = meses[mInterData[2].toLowerCase()];
+        const dia = mInterData[1].padStart(2, '0');
+        mData = [null, dia, mesNum]; // fake match object com dia/mês nos índices 1 e 2
+      }
+    }
     if (!mData) { linhaAnterior = linha; continue; }
 
     let resto = linha.replace(reData, '').trim();
@@ -1142,7 +1222,8 @@ function afDetectarBanco(texto) {
     ['Bradesco', /bradesco/],
     ['Itaú', /ita(ú|u) unibanco|ita(ú|u) uniclass|cart(ã|a)o ita(ú|u)| itau /],
     ['Santander', /santander/],
-    ['Banco do Brasil', /banco do brasil|ourocard/]
+    ['Banco do Brasil', /banco do brasil|ourocard/],
+    ['PicPay', /picpay|pic pay/]
   ];
   const achou = regras.find(([, re]) => re.test(t));
   return achou ? achou[0] : null;
