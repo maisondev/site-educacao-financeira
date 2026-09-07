@@ -1173,20 +1173,32 @@ const AF_BANCO_LABEL = {
   santander: 'Santander', caixa: 'Caixa', bb: 'Banco do Brasil'
 };
 
-// Existe análise salva (em analise-fatura.html) para a fatura deste mês e banco?
+// Existe análise salva (em analise-fatura.html) para este banco?
+// Procura por: 1) competência exata do mês; 2) qualquer mês do mesmo banco.
 // A store é chaveada por "AAAA-MM|Banco[|Apelido]" (pode haver mais de uma análise
 // do mesmo banco no mês, uma por apelido); links antigos podem ter só a competência.
 function analiseSalvaDaFatura(cartao, competencia) {
-  if (!competencia) return false;
   const bancoLabel = AF_BANCO_LABEL[obterBancoPorNome(cartao.nome)] || 'Outro';
   const analises = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
-  if (analises[competencia + '|' + bancoLabel]) return true;
-  const antiga = analises[competencia];
-  if (antiga && (antiga.banco || 'Outro') === bancoLabel) return true;
+
+  // Procura por competência exata se fornecida
+  if (competencia) {
+    if (analises[competencia + '|' + bancoLabel]) return true;
+    const antiga = analises[competencia];
+    if (antiga && (antiga.banco || 'Outro') === bancoLabel) return true;
+    const temMesmoMes = Object.keys(analises).some(k => {
+      const r = analises[k];
+      return r && (r.competencia || k.split('|')[0]) === competencia
+        && (r.banco || 'Outro') === bancoLabel;
+    });
+    if (temMesmoMes) return true;
+  }
+
+  // Se não achou no mês específico, procura qualquer análise deste banco
+  // (útil quando análise foi feita de um mês futuro e o cartão ainda não tem saldo registrado)
   return Object.keys(analises).some(k => {
     const r = analises[k];
-    return r && (r.competencia || k.split('|')[0]) === competencia
-      && (r.banco || 'Outro') === bancoLabel;
+    return r && (r.banco || 'Outro') === bancoLabel;
   });
 }
 
