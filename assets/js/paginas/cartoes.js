@@ -1181,8 +1181,16 @@ const AF_BANCO_LABEL = {
 // A store é chaveada por "AAAA-MM|Banco[|Apelido]" (pode haver mais de uma análise
 // do mesmo banco no mês, uma por apelido); links antigos podem ter só a competência.
 function analiseSalvaDaFatura(cartao, competencia) {
-  const bancoLabel = AF_BANCO_LABEL[obterBancoPorNome(cartao.nome)] || 'Outro';
+  const bancoCartao = obterBancoPorNome(cartao.nome);
+  const bancoLabel = AF_BANCO_LABEL[bancoCartao] || 'Outro';
   const analises = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
+
+  // Debug: log para entender o que está acontecendo
+  if (bancoCartao === 'picpay' && !competencia) {
+    console.log(`[analiseSalvaDaFatura] PicPay sem competência - chaves na análise:`, Object.keys(analises));
+    console.log(`[analiseSalvaDaFatura] Procurando banco="${bancoLabel}" em:`,
+      Object.entries(analises).map(([k, v]) => `${k}(banco="${v.banco || 'Outro'}")`));
+  }
 
   // Procura por competência exata se fornecida
   if (competencia) {
@@ -1199,10 +1207,16 @@ function analiseSalvaDaFatura(cartao, competencia) {
 
   // Se não achou no mês específico, procura qualquer análise deste banco
   // (útil quando análise foi feita de um mês futuro e o cartão ainda não tem saldo registrado)
-  return Object.keys(analises).some(k => {
+  const temAnalise = Object.keys(analises).some(k => {
     const r = analises[k];
     return r && (r.banco || 'Outro') === bancoLabel;
   });
+
+  if (bancoCartao === 'picpay' && temAnalise) {
+    console.log(`[analiseSalvaDaFatura] Encontrou análise de PicPay!`);
+  }
+
+  return temAnalise;
 }
 
 // Monta os links "Ver análise" / "Ver revisão" da fatura de um mês, quando

@@ -175,7 +175,8 @@ function obterLembretesCache() {
 }
 
 // Renderizar ao carregar a página
-document.addEventListener('DOMContentLoaded', renderizarLembretes);
-
-// Pré-calcular lembretes imediatamente (sem aguardar DOMContentLoaded)
-obterLembretesCache();
+document.addEventListener('DOMContentLoaded', function() {
+  // Pré-calcular lembretes quando DOM está pronto (Store já foi carregado)
+  obterLembretesCache();
+  renderizarLembretes();
+});
