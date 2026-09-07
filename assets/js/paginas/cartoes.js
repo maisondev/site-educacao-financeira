@@ -1185,11 +1185,11 @@ function analiseSalvaDaFatura(cartao, competencia) {
   const bancoLabel = AF_BANCO_LABEL[bancoCartao] || 'Outro';
   const analises = Store.ler(Store.CHAVES.ANALISE_FATURAS, {}) || {};
 
-  // Debug: log para entender o que está acontecendo
-  if (bancoCartao === 'picpay' && !competencia) {
-    console.log(`[analiseSalvaDaFatura] PicPay sem competência - chaves na análise:`, Object.keys(analises));
-    console.log(`[analiseSalvaDaFatura] Procurando banco="${bancoLabel}" em:`,
-      Object.entries(analises).map(([k, v]) => `${k}(banco="${v.banco || 'Outro'}")`));
+  // Debug: log para TODOS os PicPay
+  if (bancoCartao === 'picpay') {
+    console.log(`[analiseSalvaDaFatura] ${cartao.nome} - competencia="${competencia}", bancoLabel="${bancoLabel}"`);
+    console.log(`  Chaves em analises:`, Object.keys(analises));
+    console.log(`  Procurando exata: "${competencia}|${bancoLabel}":`, !!analises[`${competencia}|${bancoLabel}`]);
   }
 
   // Procura por competência exata se fornecida
